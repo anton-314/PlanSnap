@@ -1,7 +1,7 @@
 # Fortschritt
 
 **Aktuelle Phase:** 3 – Fundament
-**Letzte Aktualisierung:** 2026-11-23
+**Letzte Aktualisierung:** 2026-11-24
 
 ## Phasen
 
@@ -34,7 +34,22 @@ Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein 
 - 2026-11-23: Konfliktregel für überbestimmte Räume: `S > T` und `q² > χ²(r; 0,99)`. Die reine Summenregel hätte in der Simulation 17 bis 45 % korrekter Räume als Widerspruch gemeldet, die kombinierte Regel rund 1 %. Eine ausdrückliche Bestätigung ist nur im Band zwischen dem 95-%- und dem 99-%-Quantil nötig, weil eine Warnung allein an `S > T` in der Simulation 16 bis 44 % korrekter Räume getroffen hätte. Messungen ohne Gegenprobe sind mathematisch nicht prüfbar und werden mit empfohlenem Zusatzmaß ausgewiesen.
 - 2026-11-24: Diskret mehrdeutige Räume werden `PROPOSED`. Die numerische Qualität des Ablaufs wird ab jetzt am Produktionscode über den portierten Prüfstand abgenommen (T-GEO-005, T-GEO-006), nicht in weiteren Prototyp-Runden. Bekannte Grenze im Prototyp: 5 von 22 abweichenden Formen in einer Klasse von 2.400 Fällen blieben unerkannt.
 
+## Wiedereinstieg (Stand 2026-11-24, Lauf unterbrochen)
+
+- **`main`:** T-BLD-001 bis -006 und T-ARC-001 bis -007 sind gemergt. Letzter voller Build grün auf `4ab0baa`. `main` ist 27 Commits vor `origin/main`, weil erst nach dem Phase-3-Gate gepusht wird.
+- **Gate Phase 3:** nicht bestanden. Kein Tag, kein Push, CI noch nie auf GitHub gelaufen. Welle 1 ist nicht gestartet.
+- **Unfertig:** T-ARC-008 auf Branch `wip/T-ARC-008` (`caadf81`), nicht gemergt, Kotlin-Stand ungeprüft. Der Code verweist auf DOMAIN §5.6, den es noch nicht gibt.
+- **Prototypen:** Sicherung in `~/PlanSnap-handoff/scratchpad-2026-11-24`. Der Prüfstand `docs/research/evaluation-prototype/` auf dem WIP-Branch braucht `numpy`.
+
 ## Nächste Schritte
 
-1. Phase 3 gemäß `docs/TASKS.md` umsetzen.
-2. Gate prüfen, Tag `phase-3-foundation` setzen und pushen.
+1. T-ARC-008 auf `wip/T-ARC-008` fertigstellen:
+   - DOMAIN aktualisieren: §4-Tabelle, §5.4, A2 bis A5, B7/B8, neuer §5.6 (Formabstand, Alternativen, Empfehlung, Gleichstand).
+   - ADR 0018 um die Ergänzung T-ARC-008 erweitern, mit Suchgrenze und Zahlen (17/22 im Original, 18/22 mit neuem Formabstand).
+   - `docs/research/evaluation-prototype/README.md` schreiben (Zweck, Befehl, Seed 20261124, K1a bis K4, Sollwerte, Gradient 1e-7 gegenüber 1e-9, numpy).
+   - `stress.py` mit Mehrdeutigkeitsregel erneut laufen lassen und die Tabelle übernehmen.
+   - Volle DoD ausführen, WIP-Commit durch `feat(core): model ambiguous room shapes [T-ARC-008]` ersetzen.
+2. Offene Entscheidung: In K1b bleiben 5 von 180 `NEEDS_ADJUSTMENT`-Räumen mit zweiter gültiger Form von der Regel unberührt und könnten nach Bestätigung `ADJUSTED` werden.
+3. T-ARC-008 mergen, voller Gate-Lauf: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug`, `:core:geometry:pitest`, `scripts/run-instrumented-tests.sh`.
+4. Abschließendes Vertragsreview durch `reviewer`. Bei `APPROVE`: Tag `phase-3-foundation`, `git push origin main --tags`, ersten CI-Lauf prüfen.
+5. Welle 1, Batch 1.1 starten.
