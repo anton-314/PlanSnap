@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     api(project(":core:common"))
+    api(libs.kotlinx.collections.immutable)
 }
