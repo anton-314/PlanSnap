@@ -14,6 +14,9 @@ enum class SolverStart {
 
     /** Turns of the chord polygon. */
     CHORD_POLYGON,
+
+    /** Equal turn magnitude with the declared and measured directions. */
+    DIRECTION_TURNS,
 }
 
 /** One hard condition of DOMAIN section 5.1, used to select an independent set (DOMAIN section 5.4). */
@@ -67,17 +70,17 @@ sealed interface SolverOutcome {
         val solution: ShapeSolution,
     ) : SolverOutcome
 
-    /** No start value produced a valid simple outline: `CONFLICT(NO_SIMPLE_SHAPE)`. */
+    /** No start value produced a valid simple outline. Not a final status: the evaluation continues at step B2. */
     data object NoSimpleShape : SolverOutcome
 }
 
 /** Deterministic equality-constrained SQP solver (DOMAIN sections 5.1 to 5.3, ADR 0004). */
 fun interface ShapeSolver {
     /**
-     * Solves [input] under exactly the hard [conditions], normally `ConstraintAnalysis.independentSelection`
-     * (DOMAIN sections 5.4 and 5.5). Conditions outside [conditions] are ignored. If a closure row is not selected, the
-     * result is only a linearization start for the adjustment and is never displayed. Equal arguments yield a
-     * bit-identical outcome.
+     * Solves [input] under the hard [conditions], normally `ConstraintAnalysis.independentSelection` (DOMAIN sections
+     * 5.4 and 5.5). Hard conditions outside [conditions] are not enforced. They only refine the start and rank the
+     * candidates by their residual (DOMAIN section 5.3). If [conditions] omits a hard condition, the result is only a
+     * linearization start for the adjustment and is never displayed. Equal arguments yield a bit-identical outcome.
      *
      * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
      */

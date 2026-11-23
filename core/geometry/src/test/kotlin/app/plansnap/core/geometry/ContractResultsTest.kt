@@ -130,7 +130,7 @@ class ContractResultsTest {
     @Test
     fun `given contract enums when read then value names are stable`() {
         assertEquals(
-            listOf("TARGET_TURNS", "MEAN_TURNS", "CHORD_POLYGON"),
+            listOf("TARGET_TURNS", "MEAN_TURNS", "CHORD_POLYGON", "DIRECTION_TURNS"),
             SolverStart.entries.map { it.name },
         )
         assertEquals(listOf("EXACT", "MEASUREMENT_ERROR", "SHAPE_DEVIATION"), ClosureClass.entries.map { it.name })

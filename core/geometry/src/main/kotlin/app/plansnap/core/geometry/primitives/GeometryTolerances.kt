@@ -95,6 +95,30 @@ object GeometryTolerances {
     /** Standard normal quantile at 0.99, used above the table limit. */
     const val NORMAL_QUANTILE_99: Double = 2.3263478740408408
 
+    /** Tolerance `ε` in degrees: a turn direction is violated only at `d · τ < −ε` (DOMAIN section 3). */
+    const val TURN_DIRECTION_TOLERANCE_DEG: Double = 2.0
+
+    /** Maximum steps of the start refinement (DOMAIN section 5.3). */
+    const val START_REFINEMENT_MAX_ITERATIONS: Int = 60
+
+    /** Maximum damping trials per step of the start refinement. */
+    const val START_REFINEMENT_MAX_TRIALS: Int = 12
+
+    /** Initial damping `δ` of the start refinement. */
+    const val START_REFINEMENT_INITIAL_DAMPING: Double = 1e-3
+
+    /** Smallest damping `δ` of the start refinement. */
+    const val START_REFINEMENT_MIN_DAMPING: Double = 1e-12
+
+    /** Divisor of the damping after an accepted step. */
+    const val START_REFINEMENT_DAMPING_DECREASE: Double = 3.0
+
+    /** Factor of the damping after a rejected trial. */
+    const val START_REFINEMENT_DAMPING_INCREASE: Double = 4.0
+
+    /** Termination threshold of `‖Jᵀc‖_∞` in the start refinement. */
+    const val START_REFINEMENT_GRADIENT: Double = 1e-13
+
     /** Below this `|sin τ|` a corner counts as nearly collinear (DOMAIN section 8). */
     const val NEAR_COLLINEAR_SIN: Double = 1e-6
 

@@ -12,6 +12,7 @@ import app.plansnap.core.domain.command.ReconcileOutcome
 import app.plansnap.core.domain.command.RoomDetails
 import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
 import app.plansnap.core.domain.evaluation.AdjustmentProposal
+import app.plansnap.core.domain.evaluation.CorrectionSummary
 import app.plansnap.core.domain.evaluation.EvaluatedShape
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.domain.evaluation.currentCancellationSignal
@@ -32,6 +33,7 @@ import app.plansnap.core.domain.snap.SnapTargets
 import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.cancellation.CancellationSignal
 import app.plansnap.core.geometry.determinacy.Determinacy
+import app.plansnap.core.geometry.determinacy.MeasurementControl
 import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Polygon2
@@ -90,6 +92,10 @@ class DomainContractTest {
             areaMm2 = 500_000.0,
             perimeterMm = 3414.2,
         )
+
+    private val rawLengths = persistentListOf(1000L, 1414L, 1000L)
+    private val solvedShape = shape.copy(lengthsMm = persistentListOf(1000.0, 1414.0, 1000.0))
+    private val control = MeasurementControl(redundancy = 2, uncontrolled = emptyList())
 
     private fun assertRejected(block: () -> Unit) {
         assertThrows(IllegalArgumentException::class.java) { block() }
@@ -214,9 +220,9 @@ class DomainContractTest {
             listOf(
                 RoomEvaluation.Open(roomId, persistentListOf(Vec2.ZERO), noOpenings),
                 RoomEvaluation.Confirmed(roomId, shape, noOpenings),
-                RoomEvaluation.NeedsAdjustment(roomId, shape, error, proposalOf(adjustment), noOpenings),
+                RoomEvaluation.NeedsAdjustment(roomId, shape, error, proposalOf(adjustment), noOpenings, control),
                 RoomEvaluation.Adjusted(roomId, shape, noOpenings),
-                RoomEvaluation.Proposed(roomId, shape, determinacy, noOpenings),
+                RoomEvaluation.Proposed(roomId, solvedShape, determinacy, rawLengths, null, noOpenings),
                 RoomEvaluation.Conflict(roomId, ConflictReason.WALL_TOO_LONG, null, null, noOpenings),
             )
         assertEquals(ShapeStatus.entries.toList(), evaluations.map { it.status })
@@ -255,11 +261,41 @@ class DomainContractTest {
                 ClosureError(1.0, 0.0, 0.0),
                 proposalOf(adjustmentOf(4)),
                 noOpenings,
+                control,
             )
         }
         assertRejected {
-            RoomEvaluation.Proposed(roomId, shape, Determinacy(2, 2, null), noOpenings)
+            RoomEvaluation.Proposed(roomId, solvedShape, Determinacy(2, 2, null), rawLengths, null, noOpenings)
         }
+    }
+
+    @Test
+    fun `given proposal with adjusted lengths when correction is missing then it is rejected`() {
+        val determinacy = Determinacy(freeVariables = 3, rank = 2, recommendation = null)
+        val adjustedRaw = persistentListOf(1000L, 1400L, 1000L)
+        val summary = CorrectionSummary(14.2, 8.1, 14.2, ObservationRef.WallLength(1))
+
+        assertRejected { RoomEvaluation.Proposed(roomId, shape, determinacy, adjustedRaw, null, noOpenings) }
+        assertRejected {
+            RoomEvaluation.Proposed(roomId, shape, determinacy, persistentListOf(1000L), summary, noOpenings)
+        }
+        assertEquals(
+            summary,
+            RoomEvaluation.Proposed(roomId, shape, determinacy, adjustedRaw, summary, noOpenings).correction,
+        )
+    }
+
+    @Test
+    fun `given correction summary when values are invalid then it is rejected`() {
+        val wall = ObservationRef.WallLength(0)
+        assertEquals(null, CorrectionSummary(0.0, null, 0.0, null).normalizedSquareSum)
+        assertRejected { CorrectionSummary(1.0, 1.0, -1.0, wall) }
+        assertRejected { CorrectionSummary(1.0, 1.0, Double.NaN, wall) }
+        assertRejected { CorrectionSummary(0.5, 1.0, 1.0, wall) }
+        assertRejected { CorrectionSummary(Double.POSITIVE_INFINITY, 1.0, 1.0, wall) }
+        assertRejected { CorrectionSummary(1.0, -1.0, 1.0, wall) }
+        assertRejected { CorrectionSummary(1.0, Double.NaN, 1.0, wall) }
+        assertRejected { CorrectionSummary(1.0, 1.0, 1.0, null) }
     }
 
     @Test

@@ -5,6 +5,7 @@ import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.determinacy.Determinacy
 import app.plansnap.core.geometry.determinacy.MeasurementControl
 import app.plansnap.core.geometry.primitives.ClosureTolerance
+import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Polygon2
 import app.plansnap.core.geometry.primitives.Vec2
 import app.plansnap.core.geometry.primitives.Winding
@@ -19,6 +20,7 @@ import app.plansnap.core.model.RoomId
 import app.plansnap.core.model.ShapeStatus
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
+import kotlin.math.abs
 
 /** Whether a room with this status appears in PDF, PNG and SVG (DOMAIN sections 4 and 12). */
 val ShapeStatus.isExportable: Boolean
@@ -63,6 +65,34 @@ data class AdjustmentProposal(
     /** Whether [given] satisfies [requiredConfirmation]. */
     fun isConfirmedBy(given: AdjustmentConfirmation): Boolean =
         requiredConfirmation == AdjustmentConfirmation.SIMPLE || given == AdjustmentConfirmation.EXPLICIT
+}
+
+/**
+ * Corrections behind a proposed shape (DOMAIN section 5.5, step B7).
+ *
+ * @property correctionSumMm sum norm `S` of the corrections.
+ * @property normalizedSquareSum `q²`, `null` without redundancy (`r = 0`), where it is not defined.
+ * @property maxCorrectionMm largest single correction, at most [correctionSumMm].
+ * @property largestCorrection affected measurement. Required once [maxCorrectionMm] exceeds `SOLVER_RESIDUAL_MM`.
+ */
+data class CorrectionSummary(
+    val correctionSumMm: Double,
+    val normalizedSquareSum: Double?,
+    val maxCorrectionMm: Double,
+    val largestCorrection: ObservationRef?,
+) {
+    init {
+        require(maxCorrectionMm.isFinite() && maxCorrectionMm >= 0.0) { "Invalid correction: $maxCorrectionMm" }
+        require(correctionSumMm.isFinite() && correctionSumMm >= maxCorrectionMm) {
+            "Correction sum must be at least the largest correction: $correctionSumMm"
+        }
+        require(normalizedSquareSum == null || (normalizedSquareSum.isFinite() && normalizedSquareSum >= 0.0)) {
+            "Invalid normalized square sum: $normalizedSquareSum"
+        }
+        require(largestCorrection != null || maxCorrectionMm <= GeometryTolerances.SOLVER_RESIDUAL_MM) {
+            "A correction above the solver residual needs its measurement"
+        }
+    }
 }
 
 /**
@@ -147,7 +177,7 @@ sealed interface RoomEvaluation {
      * @property shape adjustment preview.
      * @property closureError error components of the target shape.
      * @property proposal adjustment to pass to `AcceptAdjustment` with its required confirmation.
-     * @property measurementControl controllability of the measurements (DOMAIN section 5.5).
+     * @property measurementControl controllability of the measurements (DOMAIN section 5.5), always present.
      */
     data class NeedsAdjustment(
         override val roomId: RoomId,
@@ -155,7 +185,7 @@ sealed interface RoomEvaluation {
         val closureError: ClosureError,
         val proposal: AdjustmentProposal,
         override val openingStatuses: ImmutableMap<OpeningId, OpeningStatus>,
-        val measurementControl: MeasurementControl? = null,
+        val measurementControl: MeasurementControl,
     ) : RoomEvaluation {
         init {
             require(proposal.adjustment.adjustedLengthsMm.size == shape.outline.vertices.size) {
@@ -179,15 +209,26 @@ sealed interface RoomEvaluation {
      * Proposed shape with missing measurements.
      *
      * @property determinacy rank analysis with at least one missing measurement and the recommended one.
+     * @property rawLengthsMm raw wall lengths, one per wall.
+     * @property correction corrections of the adjustment. Required as soon as an effective length differs from
+     * [rawLengthsMm] by more than `SOLVER_RESIDUAL_MM`, `null` for a shape solved on the raw lengths.
      */
     data class Proposed(
         override val roomId: RoomId,
         override val shape: EvaluatedShape,
         val determinacy: Determinacy,
+        val rawLengthsMm: ImmutableList<Long>,
+        val correction: CorrectionSummary?,
         override val openingStatuses: ImmutableMap<OpeningId, OpeningStatus>,
     ) : RoomEvaluation {
         init {
             require(determinacy.missing > 0) { "A proposal has at least one missing measurement" }
+            require(rawLengthsMm.size == shape.lengthsMm.size) { "Expected one raw length per wall" }
+            val deviates =
+                shape.lengthsMm.indices.any {
+                    abs(shape.lengthsMm[it] - rawLengthsMm[it]) > GeometryTolerances.SOLVER_RESIDUAL_MM
+                }
+            require(!deviates || correction != null) { "Lengths that differ from the raw values need a correction" }
         }
 
         override val status: ShapeStatus get() = ShapeStatus.PROPOSED

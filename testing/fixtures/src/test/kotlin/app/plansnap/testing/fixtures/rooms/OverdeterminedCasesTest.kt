@@ -1,7 +1,9 @@
 package app.plansnap.testing.fixtures.rooms
 
+import app.plansnap.core.common.units.Angle
 import app.plansnap.core.common.units.TurnDirection
 import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
+import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.geometry.statistics.ChiSquareLevel
 import app.plansnap.core.geometry.statistics.ChiSquareLimits
@@ -14,6 +16,8 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.math.cos
+import kotlin.math.sqrt
 
 class OverdeterminedCasesTest {
     private val tolerance = ClosureTolerance()
@@ -23,8 +27,23 @@ class OverdeterminedCasesTest {
         val keys = OverdeterminedCases.ALL.map { it.key }
 
         assertEquals(keys.toSet().size, keys.size)
-        assertEquals(16, keys.size)
-        listOf("NH1", "NH2", "NH3", "NM6", "Decision 3", "Decision 4", "Decision 5").forEach { finding ->
+        assertEquals(27, keys.size)
+        listOf(
+            "NH1",
+            "NH2",
+            "NH3",
+            "NM6",
+            "Decision 3",
+            "Decision 4",
+            "Decision 5",
+            "H1",
+            "H2",
+            "H3",
+            "M1",
+            "Flow start selection",
+            "Flow simple iterate",
+            "Flow unobserved turns",
+        ).forEach { finding ->
             assertTrue(OverdeterminedCases.ALL.any { finding in it.finding }, finding)
         }
     }
@@ -152,6 +171,71 @@ class OverdeterminedCasesTest {
     }
 
     @Test
+    fun `given self intersecting case then it closes exactly and wall 3 crosses wall 0`() {
+        val case = OverdeterminedCases.SELF_INTERSECTING_EXACT
+
+        assertEquals(0L to 0L, rectilinearGap(case.room))
+        assertEquals(
+            listOf(0L to 0L, 2000L to 0L, 2000L to 2000L, 1000L to 2000L, 1000L to -1000L, 0L to -1000L),
+            rectilinearPoints(case.room),
+        )
+        assertEquals(ConflictReason.NO_SIMPLE_SHAPE, case.expectedConflict)
+    }
+
+    @Test
+    fun `given rounded trapezoid cases then only the measured angle differs`() {
+        val rounded = OverdeterminedCases.TRAPEZOID_ROUNDED_ANGLES
+        val control = OverdeterminedCases.TRAPEZOID_ROUNDED_ANGLES_CONTROL
+
+        assertEquals(lengths(control.room), lengths(rounded.room))
+        assertEquals(CornerSpec.Measured(TurnDirection.LEFT, Angle(109_471)), rounded.room.corners[2])
+        assertEquals(CornerSpec.Measured(TurnDirection.LEFT, Angle(109_472)), control.room.corners[2])
+        assertEquals(ShapeStatus.CONFIRMED, rounded.expectedStatus)
+        assertEquals(ShapeStatus.CONFIRMED, control.expectedStatus)
+    }
+
+    @Test
+    fun `given dependent diagonal case then the diagonal follows from the two walls and the angle`() {
+        val case = OverdeterminedCases.PENTAGON_DEPENDENT_DIAGONAL
+        val alpha = Math.toRadians(118.918)
+        val implied = sqrt(2802.0 * 2802.0 + 2915.0 * 2915.0 - 2.0 * 2802.0 * 2915.0 * cos(alpha))
+
+        assertEquals(4924.191, implied, 0.001)
+        assertEquals(
+            4924L,
+            case.room.diagonals
+                .single()
+                .length.mm,
+        )
+        assertEquals(ExpectedRank(3, 3, 3, 1, 1), case.expectedRank)
+    }
+
+    @Test
+    fun `given straight corner cases then direction does not change the expected result`() {
+        val left = OverdeterminedCases.STRAIGHT_CORNER_LEFT
+        val right = OverdeterminedCases.STRAIGHT_CORNER_RIGHT
+
+        assertEquals(CornerSpec.Measured(TurnDirection.LEFT, Angle(180_000)), left.room.corners[1])
+        assertEquals(CornerSpec.Measured(TurnDirection.RIGHT, Angle(180_000)), right.room.corners[1])
+        assertEquals(left.expectedStatus, right.expectedStatus)
+        assertEquals(left.expectedCorrection, right.expectedCorrection)
+        assertEquals(
+            CornerSpec.Measured(TurnDirection.RIGHT, Angle(179_800)),
+            OverdeterminedCases.NEARLY_STRAIGHT_CORNER_RIGHT.room.corners[1],
+        )
+    }
+
+    @Test
+    fun `given proposal with correction then the affected wall and its value are named`() {
+        val case = OverdeterminedCases.PROPOSED_WITH_CORRECTION
+
+        assertEquals(ObservationRef.WallLength(3), case.expectedLargestCorrection)
+        assertEquals(mapOf(3 to 3025.0), case.expectedAdjustedLengthsMm)
+        assertEquals(50.0, checkNotNull(case.expectedCorrection).sumMm, 0.0)
+        assertEquals(50.0, checkNotNull(case.expectedCorrection).normalizedSquareSum, 0.0)
+    }
+
+    @Test
     fun `given inconsistent expectations when a case is created then it is rejected`() {
         val room = OverdeterminedCases.GAP_30_MM.room
         assertThrows(IllegalArgumentException::class.java) {
@@ -175,12 +259,17 @@ class OverdeterminedCasesTest {
 
     private fun limit(room: Room): Double = tolerance.limitMm(lengths(room).sum().toDouble())
 
+    private fun rectilinearGap(room: Room): Pair<Long, Long> = rectilinearWalk(room).last()
+
+    private fun rectilinearPoints(room: Room): List<Pair<Long, Long>> = rectilinearWalk(room).dropLast(1)
+
     /** Walks a room whose corners are all 90 degrees in integer steps, independent of production geometry. */
-    private fun rectilinearGap(room: Room): Pair<Long, Long> {
+    private fun rectilinearWalk(room: Room): List<Pair<Long, Long>> {
         var dx = 1L
         var dy = 0L
         var x = 0L
         var y = 0L
+        val points = mutableListOf(0L to 0L)
         room.walls.forEachIndexed { i, wall ->
             if (i > 0) {
                 val left = room.corners[i].direction == TurnDirection.LEFT
@@ -191,8 +280,9 @@ class OverdeterminedCasesTest {
             }
             x += dx * wall.length.mm
             y += dy * wall.length.mm
+            points += x to y
         }
-        return x to y
+        return points
     }
 
     private fun netLeftTurns(room: Room): Int =

@@ -1,25 +1,16 @@
 package app.plansnap.testing.fixtures.rooms
 
-import app.plansnap.core.common.units.Angle
-import app.plansnap.core.common.units.Length
-import app.plansnap.core.common.units.TurnDirection
 import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
 import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.determinacy.MeasurementRecommendation
-import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.model.ConflictReason
-import app.plansnap.core.model.CornerSpec
-import app.plansnap.core.model.Diagonal
-import app.plansnap.core.model.DiagonalId
 import app.plansnap.core.model.Room
-import app.plansnap.core.model.RoomId
 import app.plansnap.core.model.ShapeStatus
-import app.plansnap.core.model.Wall
-import app.plansnap.core.model.WallId
-import kotlinx.collections.immutable.toImmutableList
 
 private const val DEFAULT_CORRECTION_TOLERANCE = 0.01
-private const val RIGHT_MILLI_DEGREES = 90_000
+private const val STRAIGHT_CORNER_TOLERANCE = 0.001
+private const val M1_WALL = 3
+private const val M1_ADJUSTED_WALL_MM = 3025.0
 
 /**
  * Expected counts of the rank analysis (DOMAIN section 5.4).
@@ -65,6 +56,8 @@ data class ExpectedCorrection(
  * @property expectedCorrection size of the corrections, `null` if it is not asserted.
  * @property expectedConfirmation required confirmation, present exactly for [ShapeStatus.NEEDS_ADJUSTMENT].
  * @property expectedUncontrolled measurements that are not controllable, with their recommended measurement.
+ * @property expectedLargestCorrection measurement with the largest correction, `null` if it is not asserted.
+ * @property expectedAdjustedLengthsMm adjusted wall lengths by wall index, compared within 0.01 mm.
  */
 data class OverdeterminedCase(
     val key: String,
@@ -76,6 +69,8 @@ data class OverdeterminedCase(
     val expectedCorrection: ExpectedCorrection? = null,
     val expectedConfirmation: AdjustmentConfirmation? = null,
     val expectedUncontrolled: Map<ObservationRef, MeasurementRecommendation?> = emptyMap(),
+    val expectedLargestCorrection: ObservationRef? = null,
+    val expectedAdjustedLengthsMm: Map<Int, Double> = emptyMap(),
 ) {
     init {
         require((expectedStatus == ShapeStatus.CONFLICT) == (expectedConflict != null)) {
@@ -304,9 +299,157 @@ object OverdeterminedCases {
                 ).associateWith { MeasurementRecommendation.DiagonalBetween(fromCorner = 2, toCorner = 5) },
         )
 
+    /** H1: the outline closes with gap 0, but `w_3` crosses `w_0` at (1000, 0). */
+    val SELF_INTERSECTING_EXACT: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "h1-self-intersecting-exact",
+            finding = "H1",
+            room = declaredRoom("h1", "2000 2000 1000 3000 1000 1000", "LLLLRR", ""),
+            expectedStatus = ShapeStatus.CONFLICT,
+            expectedConflict = ConflictReason.NO_SIMPLE_SHAPE,
+        )
+
+    /** H2 case a: rounding makes the start form fail, branch B still confirms the trapezoid. */
+    val TRAPEZOID_ROUNDED_ANGLES: OverdeterminedCase =
+        roundedTrapezoid("h2a-trapezoid-109471", "F L M109471 M109471")
+
+    /** H2 case a, control value: with 109.472 degrees the start form exists. */
+    val TRAPEZOID_ROUNDED_ANGLES_CONTROL: OverdeterminedCase =
+        roundedTrapezoid("h2a-trapezoid-109472", "F L M109472 M109472")
+
+    /** H2 case b: the diagonal (0,3) follows from `L_3`, `L_4` and `α_4`, so the rank at the outline is 2. */
+    val PENTAGON_DEPENDENT_DIAGONAL: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "h2b-pentagon-dependent-diagonal",
+            finding = "H2",
+            room = mixedRoom("h2b", "4000 2864 3106 2802 2915", "F L L L M118918", "0-3=4924"),
+            expectedStatus = ShapeStatus.PROPOSED,
+            expectedRank =
+                ExpectedRank(
+                    freeVariables = 3,
+                    conditions = 3,
+                    routingRank = 3,
+                    missing = 1,
+                    redundancy = 1,
+                ),
+            expectedCorrection =
+                ExpectedCorrection(sumMm = 0.3207, normalizedSquareSum = 5.3e-5, toleranceRelative = 0.05),
+        )
+
+    /** H3: a straight corner declared left. */
+    val STRAIGHT_CORNER_LEFT: OverdeterminedCase =
+        straightCorner(
+            "h3-straight-left",
+            "M90000 M180000 M90000 M90000 M90000",
+            ExpectedCorrection(
+                sumMm = 223.3962,
+                normalizedSquareSum = 6.67592,
+                toleranceRelative = STRAIGHT_CORNER_TOLERANCE,
+            ),
+        )
+
+    /** H3: the same geometry declared right must give the same result. */
+    val STRAIGHT_CORNER_RIGHT: OverdeterminedCase =
+        straightCorner(
+            "h3-straight-right",
+            "M90000 m180000 M90000 M90000 M90000",
+            ExpectedCorrection(
+                sumMm = 223.3962,
+                normalizedSquareSum = 6.67592,
+                toleranceRelative = STRAIGHT_CORNER_TOLERANCE,
+            ),
+        )
+
+    /** H3: 179.8 degrees to the right stays within the direction tolerance. */
+    val NEARLY_STRAIGHT_CORNER_RIGHT: OverdeterminedCase =
+        straightCorner(
+            "h3-nearly-straight-right",
+            "M90000 m179800 M90000 M90000 M90000",
+            ExpectedCorrection(
+                sumMm = 231.2667,
+                normalizedSquareSum = 7.065564,
+                toleranceRelative = STRAIGHT_CORNER_TOLERANCE,
+            ),
+        )
+
+    /** M1: the proposal changes wall 3 from 3000 to 3025 mm and must report the correction. */
+    val PROPOSED_WITH_CORRECTION: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "m1-proposed-with-correction",
+            finding = "M1",
+            room = declaredRoom("m1", "5000 3000 3000 3000", "LLLL", "0-3=3050"),
+            expectedStatus = ShapeStatus.PROPOSED,
+            expectedRank = REPEATED_WALL_RANK,
+            expectedCorrection = ExpectedCorrection(sumMm = 50.0, normalizedSquareSum = 50.0),
+            expectedLargestCorrection = ObservationRef.WallLength(index = 3),
+            expectedAdjustedLengthsMm = mapOf(M1_WALL to M1_ADJUSTED_WALL_MM),
+        )
+
+    /** Systematic check: the start must take the branch that also fits the dependent closing condition. */
+    val TRIANGLE_START_BRANCH: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "flow-start-branch-triangle",
+            finding = "Flow start selection",
+            room = mixedRoom("flow-branch", "6019 5092 9633", "F M119996 L", ""),
+            expectedStatus = ShapeStatus.CONFIRMED,
+            expectedRank =
+                ExpectedRank(
+                    freeVariables = 1,
+                    conditions = 2,
+                    routingRank = 1,
+                    missing = 0,
+                    redundancy = 1,
+                ),
+        )
+
+    /** Systematic check: the solver must not leave an outline that is already closed and simple. */
+    val HEXAGON_KEEPS_SIMPLE: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "flow-keeps-simple-hexagon",
+            finding = "Flow simple iterate",
+            room = mixedRoom("flow-simple", "6497 3430 4955 2310 3418 4526", "F L M84256 L L L", ""),
+            expectedStatus = ShapeStatus.PROPOSED,
+            expectedRank =
+                ExpectedRank(
+                    freeVariables = 4,
+                    conditions = 2,
+                    routingRank = 2,
+                    missing = 2,
+                    redundancy = 0,
+                ),
+        )
+
+    /** Systematic check: the adjustment must not pull corners without an observation back to their target. */
+    val HEXAGON_UNOBSERVED_TURNS: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "flow-unobserved-turns-hexagon",
+            finding = "Flow unobserved turns",
+            room = mixedRoom("flow-pull", "2090 2597 1328 1273 9514 4745", "F L L L M81921 L", "3-5=9420"),
+            expectedStatus = ShapeStatus.PROPOSED,
+            expectedRank =
+                ExpectedRank(
+                    freeVariables = 4,
+                    conditions = 3,
+                    routingRank = 2,
+                    missing = 2,
+                    redundancy = 1,
+                ),
+        )
+
     /** Every case in a stable order. */
     val ALL: List<OverdeterminedCase> =
         listOf(
+            SELF_INTERSECTING_EXACT,
+            TRAPEZOID_ROUNDED_ANGLES,
+            TRAPEZOID_ROUNDED_ANGLES_CONTROL,
+            PENTAGON_DEPENDENT_DIAGONAL,
+            STRAIGHT_CORNER_LEFT,
+            STRAIGHT_CORNER_RIGHT,
+            NEARLY_STRAIGHT_CORNER_RIGHT,
+            PROPOSED_WITH_CORRECTION,
+            TRIANGLE_START_BRANCH,
+            HEXAGON_KEEPS_SIMPLE,
+            HEXAGON_UNOBSERVED_TURNS,
             PENTAGON_REPEATED_DIAGONAL,
             HEXAGON_ALL_DIAGONALS,
             RECTANGLE_WRONG_WALL,
@@ -373,59 +516,36 @@ private fun repeatedWall(
         expectedRank = REPEATED_WALL_RANK,
     )
 
-/** Closed room with a free closing corner and declared right angles in [directions] (index 0 is not used). */
-private fun declaredRoom(
-    id: String,
-    lengths: String,
-    directions: String,
-    diagonals: String,
-): Room =
-    closedRoom(
-        id,
-        lengths,
-        directions.mapIndexed { i, code ->
-            if (i == 0) CornerSpec.Unspecified else CornerSpec.DeclaredRight(directionOf(code))
-        },
-        diagonals,
+private fun roundedTrapezoid(
+    key: String,
+    corners: String,
+): OverdeterminedCase =
+    OverdeterminedCase(
+        key = key,
+        finding = "H2",
+        room = mixedRoom(key, "5000 3000 3000 3000", corners, ""),
+        expectedStatus = ShapeStatus.CONFIRMED,
+        expectedRank =
+            ExpectedRank(
+                freeVariables = 1,
+                conditions = 2,
+                routingRank = 1,
+                missing = 0,
+                redundancy = 1,
+            ),
     )
 
-/** Closed room in which every corner, including `V_0`, is measured as 90 degrees in [directions]. */
-private fun measuredRoom(
-    id: String,
-    lengths: String,
-    directions: String,
-): Room =
-    closedRoom(
-        id,
-        lengths,
-        directions.map { CornerSpec.Measured(directionOf(it), Angle(RIGHT_MILLI_DEGREES)) },
-        "",
+private fun straightCorner(
+    key: String,
+    corners: String,
+    correction: ExpectedCorrection,
+): OverdeterminedCase =
+    OverdeterminedCase(
+        key = key,
+        finding = "H3",
+        room = mixedRoom(key, "2150 2000 3000 4000 3000", corners, ""),
+        expectedStatus = ShapeStatus.NEEDS_ADJUSTMENT,
+        expectedRank = ALL_MEASURED_RANK,
+        expectedCorrection = correction,
+        expectedConfirmation = AdjustmentConfirmation.SIMPLE,
     )
-
-private fun closedRoom(
-    id: String,
-    lengths: String,
-    corners: List<CornerSpec>,
-    diagonals: String,
-): Room =
-    Room(
-        id = RoomId(id),
-        walls =
-            lengths
-                .split(' ')
-                .mapIndexed { i, mm ->
-                    Wall(WallId("$id-w$i"), Length(mm.toLong()), Length(GeometryTolerances.DEFAULT_THICKNESS_MM))
-                }.toImmutableList(),
-        corners = corners.toImmutableList(),
-        diagonals =
-            diagonals
-                .split(' ')
-                .filter { it.isNotEmpty() }
-                .mapIndexed { i, spec ->
-                    val (from, to, mm) = spec.split('-', '=')
-                    Diagonal(DiagonalId("$id-d$i"), from.toInt(), to.toInt(), Length(mm.toLong()))
-                }.toImmutableList(),
-        isClosed = true,
-    )
-
-private fun directionOf(code: Char): TurnDirection = if (code == 'L') TurnDirection.LEFT else TurnDirection.RIGHT

@@ -48,7 +48,8 @@ data class ObservationRedundancy(
  * a corner without an observation.
  * @property correctionSumMm sum norm `S` over the same mm-equivalent corrections as [maxCorrectionMm].
  * @property normalizedSquareSum `q² = Σ (v_i / σ_i)²` over all observations.
- * @property largestCorrection observation with the largest mm-equivalent correction, `null` if all are zero.
+ * @property largestCorrection observation with the largest mm-equivalent correction. Ties within `SOLVER_RESIDUAL_MM`
+ * go to the first in the order walls, corners, diagonals. `null` if no correction exceeds `SOLVER_RESIDUAL_MM`.
  * @property redundancies redundancy numbers of all observations: walls, observed corners, then diagonals.
  */
 data class AdjustedShape(
@@ -108,8 +109,9 @@ interface ClosureAdjuster {
     /**
      * Adjusts [input] in [mode]. Equal arguments yield a bit-identical outcome.
      *
-     * The observations stay the reference `x_0` of the correction. [startTurnsRad] is only the first linearization
-     * point `x_1` of the turns (DOMAIN section 6).
+     * The observations stay the reference `x_0` of the correction. Variables without an observation have no reference
+     * and are not pulled back to their target. [startTurnsRad] is only the first linearization point `x_1` of the turns
+     * (DOMAIN section 6).
      *
      * @param startTurnsRad finite turns `τ_0 … τ_{n-1}`, one per wall.
      * @throws IllegalArgumentException if [startTurnsRad] has the wrong size or a non-finite value.

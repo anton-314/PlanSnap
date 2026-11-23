@@ -98,40 +98,43 @@ object ChiSquareLimits {
             50.892181,
         )
 
-    /** `λ₀(r)` for `r = 1 … 30`, rounded up so that the test power is at least 0.95. */
+    /**
+     * `λ₀(r)` for `r = 1 … 30`: the smallest value with six decimals at which the test against the table limit
+     * `χ²(r; 0.99)` reaches a power of at least 0.95.
+     */
     @Suppress("MagicNumber") // Reference data with one literal per redundancy.
     private val CONTROL_THRESHOLDS: DoubleArray =
         doubleArrayOf(
-            17.814165,
+            17.814166,
             20.649919,
             22.674257,
             24.329097,
-            25.762063,
+            25.762062,
             27.043175,
             28.212040,
             29.293604,
-            30.304774,
+            30.304773,
             31.257626,
             32.161143,
             33.022219,
             33.846282,
-            34.637693,
-            35.400025,
+            34.637694,
+            35.400024,
             36.136240,
             36.848833,
             37.539925,
             38.211339,
-            38.864654,
+            38.864655,
             39.501250,
-            40.122339,
-            40.728994,
+            40.122338,
+            40.728993,
             41.322170,
-            41.902723,
+            41.902724,
             42.471421,
-            43.028956,
+            43.028955,
             43.575957,
-            44.112996,
-            44.640595,
+            44.112995,
+            44.640594,
         )
 
     private const val WILSON_HILFERTY_DIVISOR = 9.0

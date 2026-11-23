@@ -51,3 +51,26 @@ Widersprüchliche Messungen enden deterministisch in `CONFLICT`. T-GEO-005 und T
 | Große Korrektur mit einfacher Bestätigung, gleiche Räume | Rechteck 11,88 %, L 23,79 %, U 27,12 %, Kreuz 39,92 % |
 
 Messungen mit `λ(3T) < λ₀(r)` kann keine Regel zuverlässig prüfen. Die Auswertung weist sie deshalb samt empfohlenem Zusatzmaß aus, ohne den Status zu ändern. `CONFIRMED` bleibt möglich, weil sonst jeder minimal bestimmte Raum diesen Status verlöre. Oberhalb der Tabelle ist `λ₀` eine Näherung mit 95,4 bis 96,2 % Trennschärfe (geprüft für `r` bis 400), also konservativ.
+
+## Ergänzung T-ARC-007
+
+**Einfachheit im exakten Zweig.** Auch `e ≤ EXACT_CLOSURE_MM` prüft DOMAIN §7. Der Umriss 2000, 2000, 1000, 3000, 1000, 1000 mit den Richtungen L L L R R schließt mit Lücke 0, kreuzt sich aber selbst und endet in `CONFLICT(NO_SIMPLE_SHAPE)`.
+
+**`NoSimpleShape` ist kein Endstatus.** Ob eine Bedingung erst am geschlossenen Umriss abhängig wird, ist ohne Lösung nicht entscheidbar. Jedes `NoSimpleShape` aus A1 oder B1 läuft deshalb nach B2 mit Start bei den Sollwinkeln, und erst B3 entscheidet den Konflikt.
+
+**Drehrichtung.** Eine Verletzung gilt erst bei `d · wrap(τ) < −2°`. Bei `α = 180°` hat die Ecke keine Richtung.
+
+**Korrekturen im Vorschlag.** `Proposed` trägt die Rohlängen und bei abweichenden Längen verpflichtend `CorrectionSummary`. `measurementControl` ist bei `NeedsAdjustment` Pflichtfeld.
+
+**Korrekturen aus der systematischen Prüfung.** Der Prototyp fand vier weitere Ablauffehler:
+
+| Fehler | Korrektur |
+|---|---|
+| Der Ausgleich zog Variablen ohne Beobachtung zum Sollwert zurück und divergierte | Bezug `x̃_k` in DOMAIN §6 |
+| Die Startform ignorierte abhängige Bedingungen und wählte den falschen Lösungsast | Startverfeinerung und Auswahl nach Residuum (§5.3) |
+| Der Solver verließ einen bereits einfachen Umriss | Schrittannahme in §5.2, Richtungsstart S4 |
+| `s` aus Sollwerten kann vom Umlaufsinn der Form abweichen | `s_F` in DOMAIN §3 und §8 |
+
+**Prüfstand** (Prototyp, Seed 20261124, 12 000 Fälle). Ehrliche Eingaben (K1a, deklariert nur an echten 90°-Ecken): 2 400 Fälle ohne Abweichung. Bei deklarierten Ecken, die in Wahrheit nicht 90° haben (K1b, 2 400 Fälle), bleiben 17 falsche Konflikte und 22 bestätigte Formen, die alle Eingaben erfüllen, aber von der wahren Form abweichen. In K3 (2 400 Fälle) enden 6 stimmige Räume in `CONFLICT`. In einer Stichprobe aus je 1 000 Fällen von K1b und K3 konvergierte der Ausgleich bei allen 12 verbliebenen Konflikten aus der wahren Form. Das spricht für Grenzen der lokalen Suche. Der Prototyp bricht den Solver bei einem Gradienten von 1e-7 ab, nicht bei `SOLVER_GRADIENT = 1e-9`.
+
+**Offen.** Der Rang an der Lösung erkennt keine zweite diskrete Lösung. Die Aussage „Drehrichtungen wählen die Lösung“ (DOMAIN §5.4) gilt daher nicht für jede Eingabe, vor allem nicht bei freier Schlussecke (19 der 22 Fälle). Die Behandlung braucht eine eigene Entscheidung.

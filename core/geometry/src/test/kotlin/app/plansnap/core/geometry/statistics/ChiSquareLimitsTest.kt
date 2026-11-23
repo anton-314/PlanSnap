@@ -7,17 +7,23 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import kotlin.math.PI
+import kotlin.math.exp
+import kotlin.math.ln
 
 /** Reference values come from an independent regularized incomplete gamma computation (T-ARC-006). */
 class ChiSquareLimitsTest {
     @ParameterizedTest
     @CsvSource(
-        "1, 3.841459, 6.634897, 17.814165",
-        "2, 5.991465, 9.210340, 20.649920",
+        "1, 3.841459, 6.634897, 17.814166",
+        "2, 5.991465, 9.210340, 20.649919",
         "3, 7.814728, 11.344867, 22.674257",
-        "6, 12.591587, 16.811894, 27.043176",
-        "10, 18.307038, 23.209251, 31.257627",
-        "30, 43.772972, 50.892181, 44.640595",
+        "6, 12.591587, 16.811894, 27.043175",
+        "10, 18.307038, 23.209251, 31.257626",
+        "14, 23.684791, 29.141238, 34.637694",
+        "20, 31.410433, 37.566235, 38.864655",
+        "25, 37.652484, 44.314105, 41.902724",
+        "30, 43.772972, 50.892181, 44.640594",
     )
     fun `given table redundancy when read then reference values match`(
         redundancy: Int,
@@ -27,7 +33,66 @@ class ChiSquareLimitsTest {
     ) {
         assertEquals(q95, ChiSquareLimits.quantile(ChiSquareLevel.EXPLICIT_CONFIRMATION, redundancy), 1e-6)
         assertEquals(q99, ChiSquareLimits.quantile(ChiSquareLevel.CONFLICT, redundancy), 1e-6)
-        assertEquals(lambda0, ChiSquareLimits.controlThreshold(redundancy), 2e-6)
+        assertEquals(lambda0, ChiSquareLimits.controlThreshold(redundancy), 1e-9)
+    }
+
+    @Test
+    fun `given table thresholds when power is computed then each is the smallest six decimal value reaching it`() {
+        (1..GeometryTolerances.CHI_SQUARE_TABLE_MAX_REDUNDANCY).forEach { r ->
+            val limit = ChiSquareLimits.quantile(ChiSquareLevel.CONFLICT, r)
+            val threshold = ChiSquareLimits.controlThreshold(r)
+            assertTrue(power(limit, r, threshold) >= GeometryTolerances.CONTROL_POWER, "power at r=$r")
+            assertTrue(power(limit, r, threshold - 1e-6) < GeometryTolerances.CONTROL_POWER, "minimal at r=$r")
+        }
+    }
+
+    /** Power `P(χ'²(r, λ) > limit)` as a Poisson mixture, independent of production code. */
+    private fun power(
+        limit: Double,
+        r: Int,
+        lambda: Double,
+    ): Double {
+        val x = limit / 2.0
+        val half = lambda / 2.0
+        var a = r / 2.0
+        var weight = exp(-half)
+        var cdf = 0.0
+        var j = 0
+        while (j <= half || weight > 1e-18) {
+            cdf += weight * lowerGamma(a, x)
+            j++
+            a += 1.0
+            weight *= half / j
+        }
+        return 1.0 - cdf
+    }
+
+    /** Regularized lower incomplete gamma function by its power series. */
+    private fun lowerGamma(
+        a: Double,
+        x: Double,
+    ): Double {
+        var term = 1.0 / a
+        var sum = term
+        var k = a
+        while (term > sum * 1e-17) {
+            k += 1.0
+            term *= x / k
+            sum += term
+        }
+        return sum * exp(a * ln(x) - x - logGamma(a))
+    }
+
+    /** `ln Γ(a)` for a positive multiple of one half. */
+    private fun logGamma(a: Double): Double {
+        val isHalfInteger = (2.0 * a).toInt() % 2 == 1
+        var value = if (isHalfInteger) 0.5 else 1.0
+        var result = if (isHalfInteger) 0.5 * ln(PI) else 0.0
+        while (value < a) {
+            result += ln(value)
+            value += 1.0
+        }
+        return result
     }
 
     @ParameterizedTest

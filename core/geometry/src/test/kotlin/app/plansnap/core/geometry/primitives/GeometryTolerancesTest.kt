@@ -56,6 +56,18 @@ class GeometryTolerancesTest {
     }
 
     @Test
+    fun `given domain table when flow constants are read then values match`() {
+        assertEquals(2.0, GeometryTolerances.TURN_DIRECTION_TOLERANCE_DEG, 0.0)
+        assertEquals(60, GeometryTolerances.START_REFINEMENT_MAX_ITERATIONS)
+        assertEquals(12, GeometryTolerances.START_REFINEMENT_MAX_TRIALS)
+        assertEquals(1e-3, GeometryTolerances.START_REFINEMENT_INITIAL_DAMPING, 0.0)
+        assertEquals(1e-12, GeometryTolerances.START_REFINEMENT_MIN_DAMPING, 0.0)
+        assertEquals(3.0, GeometryTolerances.START_REFINEMENT_DAMPING_DECREASE, 0.0)
+        assertEquals(4.0, GeometryTolerances.START_REFINEMENT_DAMPING_INCREASE, 0.0)
+        assertEquals(1e-13, GeometryTolerances.START_REFINEMENT_GRADIENT, 0.0)
+    }
+
+    @Test
     fun `given values when compared then tolerance is inclusive`() {
         assertTrue(1.0.isCloseTo(1.5, 0.5))
         assertFalse(1.0.isCloseTo(1.5000001, 0.5))

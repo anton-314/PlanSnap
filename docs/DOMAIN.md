@@ -39,6 +39,14 @@ Rohlängen sind `Length(mm: Long)`, Rohwinkel `Angle(milliDegrees: Int)`, berech
 | `CHI_SQUARE_TABLE_MAX_REDUNDANCY` | 30 | Größte Redundanz der festen Tabellen (§5.5) |
 | `NORMAL_QUANTILE_95` | 1,6448536269514722 | Normalquantil zu 0,95 (§5.5) |
 | `NORMAL_QUANTILE_99` | 2,3263478740408408 | Normalquantil zu 0,99 (§5.5) |
+| `TURN_DIRECTION_TOLERANCE_DEG` | 2,0 | Toleranz `ε` des Drehrichtungstests (§3) |
+| `START_REFINEMENT_MAX_ITERATIONS` | 60 | Schritte der Startverfeinerung (§5.3) |
+| `START_REFINEMENT_MAX_TRIALS` | 12 | Dämpfungsversuche je Schritt (§5.3) |
+| `START_REFINEMENT_INITIAL_DAMPING` | 1e-3 | Startwert der Dämpfung (§5.3) |
+| `START_REFINEMENT_MIN_DAMPING` | 1e-12 | Kleinste Dämpfung (§5.3) |
+| `START_REFINEMENT_DAMPING_DECREASE` | 3,0 | Teiler nach einem angenommenen Schritt (§5.3) |
+| `START_REFINEMENT_DAMPING_INCREASE` | 4,0 | Faktor nach einem abgelehnten Versuch (§5.3) |
+| `START_REFINEMENT_GRADIENT` | 1e-13 | Abbruch der Startverfeinerung (§5.3) |
 | `NEAR_COLLINEAR_SIN` | 1e-6 | Grenze für fast kollineare Ecken (§8) |
 | `MITER_LIMIT_FACTOR` | 4,0 | Gehrungsgrenze als Vielfaches der Wandstärke (§8) |
 
@@ -69,6 +77,10 @@ Heading: `φ_0 = 0`, `φ_i = φ_{i-1} + τ_i` für `i = 1 … n−1`. Die Schlus
 **Umlaufsinn:** `s = +1`, wenn `Σ_{i≥1} τ̂_i ≥ 0`, sonst `s = −1`. Dabei ist `τ̂_i` der Sollwert aus der Eingabe.
 
 Die Schlussecke ist standardmäßig `Unspecified` und darf als `Measured` erfasst werden. `DeclaredRight` ist an ihr ebenfalls erlaubt. **Invariante von `Room`:** `Unspecified` ist nur an `V_0` zulässig. Jede Ecke `i ≥ 1` ist `DeclaredRight` oder `Measured`, sodass `τ̂_i` immer definiert ist.
+
+**Drehrichtungstest:** Eine Ecke mit Richtung `d` verletzt diese Richtung genau bei `d · wrap(τ) < −ε` mit `ε = TURN_DIRECTION_TOLERANCE_DEG`. Eine gemessene Ecke mit `α = 180°` hat keine Richtung und verletzt nie. `Unspecified` hat ebenfalls keine Richtung. Der Test gilt überall gleich, auch bei der Lösungsauswahl (§5.3).
+
+**Umlaufsinn der Form:** `s` aus den Sollwerten dient nur der Rechnung. Für eine geschlossene Form gilt `s_F`, das Vorzeichen ihrer Fläche. Innenwinkel (`180° − s_F · wrap(τ)`) und äußere Normalen (§8) verwenden `s_F`.
 
 **Sollwert der Schlussecke:** Ist sie `Unspecified`, sei `r = 2π·s − Σ_{i≥1} τ̂_i`, normiert auf `(−π, π]`. `τ̂_0` ist der Wert aus `{−90°, 0°, +90°}` mit dem kleinsten zyklischen Abstand zu `r`. Bei Gleichstand gewinnt der Kandidat mit dem größten `s · τ̂_0`. Beispiele: `r = −45°`, `s = +1` ergibt 0°, `r = 180°` ergibt `s · 90°`. Die Rechnung erfolgt ganzzahlig in Milligrad, damit Gleichstände exakt erkannt werden.
 
@@ -101,7 +113,7 @@ Die Schritte laufen in dieser Reihenfolge. Der erste zutreffende Schritt legt da
    - `e = max(g, max r_k, a)`
 5. **Grenzwert:** `T = max(T_abs, T_rel · U)` mit `U = Σ L_i`.
 6. **Verzweigung:**
-   - `e ≤ EXACT_CLOSURE_MM` ergibt `CONFIRMED` mit der Sollform.
+   - `e ≤ EXACT_CLOSURE_MM`: Die Sollform wird nach §7 geprüft. Ist sie einfach, folgt `CONFIRMED` mit der Sollform, sonst `CONFLICT(NO_SIMPLE_SHAPE)`.
    - `e ≤ T` ist ein **Messfehler**. Der Ausgleich aus §6 läuft im Modus `MEASUREMENT_ERROR` mit Start bei den Beobachtungen. `NotConverged` ergibt `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`, ein nicht einfacher Umriss `CONFLICT(NO_SIMPLE_SHAPE)`, sonst folgt `NEEDS_ADJUSTMENT` mit Vorschau und einfacher Bestätigung. Die Redundanz für die Kontrollierbarkeit (§5.5) ist hier `r = 2 + [Schlussecke festgelegt] + Anzahl der Diagonalen`.
    - `e > T` ist eine **Formabweichung** und läuft nach §5.5.
 
@@ -120,7 +132,7 @@ Variablen: `u = (τ_1 … τ_{n-1})`.
   - gemessene Ecke `i ≥ 1`: `τ_i − τ_i^m`
   - gemessene Schlussecke: `wrap(2π·s − Σ τ_i − τ_0^m)`
   - Diagonale `k`: `(d_k² − D_k²) / (2 D_k)`
-- Ziel (REQ-MEAS-007): `f(u) = Σ_{i ∈ W} (τ_i − τ̂_i)²`, wobei `W` alle nicht gemessenen Ecken einschließlich der Schlussecke enthält.
+- Ziel (REQ-MEAS-007): `f(u) = Σ_{i ∈ W} wrap(τ_i − τ̂_i)²`, wobei `W` alle nicht gemessenen Ecken einschließlich der Schlussecke enthält.
 
 Gemessene Ecken werden als Variablen eliminiert. Abstandsbedingungen werden durch `U` geteilt, damit alle Zeilen dieselbe Größenordnung haben.
 
@@ -130,8 +142,8 @@ Für jeden Startwert, höchstens `SOLVER_MAX_ITERATIONS` Schritte:
 
 1. `g = ∇f`, `J = ∂c/∂u` analytisch, `H = ∇²f + μI` mit `μ = 1e-8`.
 2. KKT-System lösen: `[H Jᵀ; J 0][δ; λ] = [−g; −c]` mit LU-Zerlegung und Spaltenpivotisierung. Bei Singularität `J` über die Rangbestimmung (§5.4) ausdünnen.
-3. Schrittweite `t ∈ {1, ½, ¼ …}` mit mindestens `2⁻²⁰`, sodass die Merit-Funktion `m(u) = f(u) + ρ‖c(u)‖₁` sinkt. `ρ = max(1, 2‖λ‖_∞)`, und `ρ` wächst nur.
-4. Abbruch, wenn `‖c‖_∞ · U ≤ SOLVER_RESIDUAL_MM` und `‖g + Jᵀλ‖_∞ ≤ SOLVER_GRADIENT`.
+3. Schrittweite `t ∈ {1, ½, ¼ …}` mit mindestens `2⁻²⁰`, sodass die Merit-Funktion `m(u) = f(u) + ρ‖c(u)‖₁` sinkt. `ρ = max(1, 2‖λ‖_∞)`, und `ρ` wächst nur. Ist der aktuelle Punkt geschlossen (`‖c‖_∞ · U ≤ SOLVER_RESIDUAL_MM`) und einfach (§7), wird ein Schritt nur angenommen, wenn auch der neue Umriss einfach ist.
+4. Abbruch, wenn `‖c‖_∞ · U ≤ SOLVER_RESIDUAL_MM` und `‖g + Jᵀλ‖_∞ ≤ SOLVER_GRADIENT`. Endet der Lauf ohne diesen Abbruch oder an einem nicht einfachen Punkt, gilt der letzte geschlossene und einfache Punkt, falls es einen gab.
 
 Die Implementierung verwendet nur eigene Dense-Matrizen, keine Zufallszahlen und keine Abhängigkeit von Iterationsreihenfolgen unsortierter Sammlungen.
 
@@ -142,14 +154,18 @@ Feste Reihenfolge:
 1. **S1:** Sollwerte `τ̂`.
 2. **S2:** Mittel aus `τ̂` und `s · 2π/n`.
 3. **S3:** Drehungen des **Sehnenpolygons** zu den Längen. Radius `R` per Bisektion aus `Σ 2·asin(L_i/(2R)) = 2π`. Liegt der Mittelpunkt außerhalb, wird der Bogen der längsten Seite durch `2π − 2·asin(L_max/(2R))` ersetzt.
+4. **S4:** Richtungsstart `τ_i = d_i · β` für die Ecken aus `u_frei` mit `β = (2π·s − Σ_{i≥1, gemessen} τ̂_i − τ̂_0) / Σ_{i ∈ u_frei} d_i`. S4 entfällt, wenn der Nenner 0 ist oder nicht `0 < β < π` gilt.
+
+Jeder Startwert läuft zweimal: direkt und nach der **Startverfeinerung**. Das ist ein Levenberg-Marquardt-Verfahren auf `u_frei` über alle Zeilen aus §5.4 in deren fester Reihenfolge. Je Schritt wird `(JᵀJ + δI) d = −Jᵀc` gelöst. Der Schritt wird angenommen, wenn `‖c‖₂` sinkt, dann gilt `δ = max(δ / 3, 1e-12)`. Ein abgelehnter oder nicht lösbarer Versuch setzt `δ = 4δ`. Start ist `δ = 1e-3`, höchstens 60 Schritte mit je 12 Versuchen, Abbruch bei `‖Jᵀc‖_∞ < 1e-13` oder ohne annehmbaren Versuch. Ist `I` kleiner als die Zeilenzahl, ist das verfeinerte Ergebnis selbst ein Kandidat, und auch das Solver-Ergebnis wird vor der Bewertung so verfeinert. Es dient dann nur als Linearisierungspunkt.
 
 Gültig ist ein Ergebnis, wenn es konvergiert, der Umriss einfach ist (§7) und kein Kantenabstand unter `MIN_FEATURE_MM` liegt. Von den gültigen Ergebnissen gewinnt:
 
-1. dasjenige, das alle deklarierten und gemessenen Drehrichtungen einhält,
-2. dann die kleinsten Kosten `f` (Gleichstand bei Differenz unter `COST_TIE`),
-3. dann das lexikografisch kleinste `u`, auf 1e-6 rad gerundet.
+1. dasjenige, das alle deklarierten und gemessenen Drehrichtungen nach §3 einhält,
+2. dann das kleinste Residuum der harten Bedingungen außerhalb von `I` in mm, auf ganze `EXACT_CLOSURE_MM` gerundet,
+3. dann die kleinsten Kosten `f` (Gleichstand bei Differenz unter `COST_TIE`),
+4. dann das lexikografisch kleinste `u`, auf 1e-6 rad gerundet.
 
-Ohne gültiges Ergebnis folgt `CONFLICT(NO_SIMPLE_SHAPE)`.
+Ohne gültiges Ergebnis meldet der Solver `NoSimpleShape`. Das ist kein Endstatus, §5.5 entscheidet.
 
 **Verbindlicher Referenzfall:** Längen 3000, 3000, 3000, 5000 mm mit drei Linksdrehungen ergeben Innenwinkel von `arccos(1/3)` ≈ 70,53° an beiden Ecken der 5-m-Wand, ≈ 109,47° an den beiden anderen und die Fläche `8√2` ≈ 11,314 m².
 
@@ -177,23 +193,29 @@ Beispiele: Viereck ohne Zusatzmaße `v = 3, m = 2, ρ = 2`, mit einer Diagonale 
 
 Für `e > T` gilt dieser Ablauf (ADR 0018). `v`, `m`, `I` stammen aus `analyzeConstraints`.
 
+Die Schritte laufen in dieser Reihenfolge, der erste zutreffende legt das Ergebnis fest.
+
+**Routing:** `m = ρ` startet bei A1, `m > ρ` bei B1.
+
 **Zweig A, nicht überbestimmt (`m = ρ`):**
 
-1. Solver auf allen Bedingungen. `NoSimpleShape` ergibt `CONFLICT(NO_SIMPLE_SHAPE)`.
-2. `analyze` an der Lösung. `missing > 0` ergibt `PROPOSED`.
-3. Bei `missing = 0`: Verletzt die Lösung eine deklarierte oder gemessene Drehrichtung, folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`, sonst `CONFIRMED` mit `r = 0`.
+- **A1 Solver** auf allen Bedingungen. `NoSimpleShape` führt zu **B2 mit Start bei den Sollwinkeln**.
+- **A2 Rang.** `analyze` an der Lösung. `missing > 0` ergibt `PROPOSED` mit den Rohlängen, ohne Korrekturangaben.
+- **A3 Drehrichtungen.** Bei `missing = 0` und verletzter Richtung (§3) folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`, sonst `CONFIRMED` mit `r = 0`.
 
 **Zweig B, überbestimmt (`m > ρ`):**
 
-1. **Startform.** Bei `v = 0` sind die Beobachtungen der Start. Sonst läuft der Solver auf `I`. `NoSimpleShape` ergibt `CONFLICT(NO_SIMPLE_SHAPE)`.
-2. **Ausgleich** aus §6 im Modus `SHAPE_DEVIATION`, `x_0` sind die Beobachtungen, die Startform ist nur der erste Linearisierungspunkt. `NotConverged` ergibt `CONFLICT(ADJUSTMENT_NOT_CONVERGED)` ohne Overlay.
-3. **Einfachheit.** Ist der ausgeglichene Umriss nicht einfacher oder hat er einen Kantenabstand unter `MIN_FEATURE_MM`, folgt `CONFLICT(NO_SIMPLE_SHAPE)`.
-4. **Rang.** `analyze` an der ausgeglichenen Form ergibt `ρ_L`, `missing = v − ρ_L` und die Redundanz `r = m − ρ_L`.
-5. **Konflikttest.** Bei `r ≥ 1`, `S > T` **und** `q² > χ²(r; 0,99)` folgt `CONFLICT(MEASUREMENTS_INCONSISTENT)` unter Angabe von `worstObservation`.
-6. **Drehrichtungen.** Bei `missing = 0` und verletzter deklarierter oder gemessener Drehrichtung folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`.
-7. `missing > 0` ergibt `PROPOSED` mit der ausgeglichenen Form. Eine verletzte Drehrichtung ist hier zulässig, weil die Form nur ein Vorschlag ist.
-8. `maxCorrectionMm ≤ EXACT_CLOSURE_MM` ergibt `CONFIRMED`. Eine stimmige Zusatzmessung verschlechtert den Status also nicht.
-9. Sonst folgt `NEEDS_ADJUSTMENT` mit Vorschau. Die **ausdrückliche Bestätigung** ist genau bei `r ≥ 1`, `S > T` und `χ²(r; 0,95) < q² ≤ χ²(r; 0,99)` nötig, sonst genügt die einfache. `S`, die größte Einzelkorrektur und die betroffene Messung stehen immer im Ergebnis.
+- **B1 Startform.** Bei `v = 0` sind die Beobachtungen der Start. Sonst läuft der Solver auf `I`. `NoSimpleShape` führt zu **B2 mit Start bei den Sollwinkeln**.
+- **B2 Ausgleich** aus §6 im Modus `SHAPE_DEVIATION`, `x_0` sind die Beobachtungen, die Startform ist nur der erste Linearisierungspunkt. Beim Start bei den Sollwinkeln ist die Drehung der freien Schlussecke `τ_0,abgeleitet`. `NotConverged` ergibt `CONFLICT(ADJUSTMENT_NOT_CONVERGED)` ohne Overlay.
+- **B3 Einfachheit.** Ist der ausgeglichene Umriss nicht einfach oder hat er einen Kantenabstand unter `MIN_FEATURE_MM`, folgt `CONFLICT(NO_SIMPLE_SHAPE)`. Nur dieser Schritt entscheidet diesen Konflikt bei `e > T`.
+- **B4 Rang.** `analyze` an der ausgeglichenen Form ergibt `ρ_L`, `missing = v − ρ_L` und die Redundanz `r = m − ρ_L`.
+- **B5 Konflikttest.** Bei `r ≥ 1`, `S > T` **und** `q² > χ²(r; 0,99)` folgt `CONFLICT(MEASUREMENTS_INCONSISTENT)` unter Angabe von `worstObservation`.
+- **B6 Drehrichtungen.** Bei `missing = 0` und verletzter Richtung (§3) folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`.
+- **B7 Vorschlag.** `missing > 0` ergibt `PROPOSED` mit der ausgeglichenen Form und **Pflicht-Korrekturangaben**: `S`, `q²` (nur bei `r ≥ 1` definiert), größte Einzelkorrektur und betroffene Messung. Eine verletzte Drehrichtung ist hier zulässig, weil die Form nur ein Vorschlag ist.
+- **B8 Bestätigt.** `maxCorrectionMm ≤ EXACT_CLOSURE_MM` ergibt `CONFIRMED`. Eine stimmige Zusatzmessung verschlechtert den Status also nicht.
+- **B9 Ausgleich nötig.** Sonst folgt `NEEDS_ADJUSTMENT` mit Vorschau und `measurementControl`. Die **ausdrückliche Bestätigung** ist genau bei `r ≥ 1`, `S > T` und `χ²(r; 0,95) < q² ≤ χ²(r; 0,99)` nötig, sonst genügt die einfache. `S`, die größte Einzelkorrektur und die betroffene Messung stehen immer im Ergebnis.
+
+Ob eine Bedingung erst am geschlossenen Umriss abhängig wird, lässt sich ohne Lösung nicht entscheiden. Deshalb führt **jedes** `NoSimpleShape` aus A1 oder B1 zu B2. Beispiele: Trapez 5000, 3000, 3000, 3000 mit `α = 109,471°` an `V_2` und `V_3` (B1 scheitert an der Rundung, B8 bestätigt) und Fünfeck 4000, 2864, 3106, 2802, 2915 mit `α_4 = 118,918°` und Diagonale (0,3) = 4924 (A1 scheitert, B7 schlägt vor).
 
 Der Fall „alle Ecken gemessen, `e > T`“ hat `v = 0`, `ρ = 0` und `r = m`, läuft also immer durch Zweig B.
 
@@ -224,13 +246,13 @@ Methode: gewichtete kleinste Quadrate (ADR 0005). Beobachtungen und Standardabwe
 | Deklarierter rechter Winkel | 0,5° |
 | Gemessener Winkel | 1,0° |
 
-Variablen `x = (L_0…L_{n-1}, τ_0…τ_{n-1}, D_k)`. `x_0` sind immer die Beobachtungen. Eine nicht festgelegte Schlussecke hat keine Beobachtung, ihr Wert in `x_0` ist `τ_0,abgeleitet`. Der erste Linearisierungspunkt `x_1` ist `x_0` mit den Drehungen aus dem Parameter `startTurnsRad` (§5.5). Bedingungen `C(x) = 0`: Schließung, `Σ τ_i = 2π·s` und Diagonalen. Eine Diagonale zwischen benachbarten Ecken hat die lineare Bedingung `L_i − D_k = 0` mit der Wand `w_i` zwischen beiden Ecken.
+Variablen `x = (L_0…L_{n-1}, τ_0…τ_{n-1}, D_k)`. `x_0` sind immer die Beobachtungen. Eine nicht festgelegte Schlussecke hat keine Beobachtung, ihr Wert in `x_0` ist `τ_0,abgeleitet`. Der erste Linearisierungspunkt `x_1` ist `x_0` mit den Drehungen aus dem Parameter `startTurnsRad` (§5.5). Bedingungen `C(x) = 0`: Schließung, `wrap(Σ τ_i − 2π·s) = 0` und Diagonalen. Eine Diagonale zwischen benachbarten Ecken hat die lineare Bedingung `L_i − D_k = 0` mit der Wand `w_i` zwischen beiden Ecken.
 
-Iteration (Gauss-Helmert) ab `k = 1`: `x_{k+1} = x_0 − Q Aᵀ (A Q Aᵀ)⁻¹ (C(x_k) + A (x_0 − x_k))` mit `A = ∂C/∂x` an `x_k` und `Q = diag(σ²)`, Winkel in Radiant. Eine Variable ohne Beobachtung erhält ein festes großes `σ = 10 rad`. Höchstens 50 Schritte, Abbruch bei `‖C‖_∞ ≤ SOLVER_RESIDUAL_MM`. Wird die Grenze nicht erreicht, ist das Ergebnis `NotConverged`. Das führt in jedem Pfad zu `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`, es entsteht kein Overlay.
+Iteration (Gauss-Helmert) ab `k = 1`: `x_{k+1} = x̃_k − Q Aᵀ (A Q Aᵀ)⁻¹ (C(x_k) + A (x̃_k − x_k))` mit `A = ∂C/∂x` an `x_k` und `Q = diag(σ²)`, Winkel in Radiant. `x̃_k` ist `x_0` für beobachtete Variablen und `x_k` für Variablen ohne Beobachtung, die so nicht zum Sollwert zurückgezogen werden. Eine Variable ohne Beobachtung erhält ein festes großes `σ = 10 rad`. Höchstens 50 Schritte, Abbruch bei `‖C‖_∞ ≤ SOLVER_RESIDUAL_MM`. Wird die Grenze nicht erreicht, ist das Ergebnis `NotConverged`. Das führt in jedem Pfad zu `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`, es entsteht kein Overlay.
 
 **Modus (ADR 0018):** `MEASUREMENT_ERROR` gilt für `e ≤ T`, deklarierte rechte Winkel sind dort Beobachtungen. `SHAPE_DEVIATION` gilt für Zweig B aus §5.5. Deklarierte rechte Winkel sind dort nur Form-Angaben (§4) und haben keine Beobachtung.
 
-**Größte Korrektur:** `maxCorrectionMm = max(|ΔL_i|, |ΔD_k|, |wrap(Δτ_i)| · U / (2π))` über alle Beobachtungen, mit `U = Σ L_i` der Rohlängen. Ecken ohne Beobachtung, also die freie Schlussecke und im Modus `SHAPE_DEVIATION` deklarierte rechte Winkel, zählen weder hier noch in `S`, `q²`, den Redundanzzahlen oder als `worstObservation`. `largestCorrection` nennt die Beobachtung mit der größten mm-äquivalenten Korrektur, `worstObservation` die mit dem größten normierten Residuum.
+**Größte Korrektur:** `maxCorrectionMm = max(|ΔL_i|, |ΔD_k|, |wrap(Δτ_i)| · U / (2π))` über alle Beobachtungen, mit `U = Σ L_i` der Rohlängen. Ecken ohne Beobachtung, also die freie Schlussecke und im Modus `SHAPE_DEVIATION` deklarierte rechte Winkel, zählen weder hier noch in `S`, `q²`, den Redundanzzahlen oder als `worstObservation`. `largestCorrection` nennt die Beobachtung mit der größten mm-äquivalenten Korrektur, bei Gleichstand innerhalb `SOLVER_RESIDUAL_MM` die erste in der Reihenfolge Wände, Ecken, Diagonalen und nach kleinstem Index. Liegen alle Korrekturen höchstens bei `SOLVER_RESIDUAL_MM`, ist sie `null`. `worstObservation` die mit dem größten normierten Residuum.
 
 Das Ergebnis wird als Overlay gespeichert und nie in die Rohwerte geschrieben:
 
@@ -269,7 +291,7 @@ IDs und Wandstärken fließen nicht ein, weil sie die Form nicht bestimmen. Stim
 
 ## 8. Wandstärke und Bänder
 
-Die Stärke `t_i` wirkt nur nach außen (ADR 0003). Äußere Normale von `w_i`: `n_i = s · (sin φ_i, −cos φ_i)`.
+Die Stärke `t_i` wirkt nur nach außen (ADR 0003). Äußere Normale von `w_i`: `n_i = s_F · (sin φ_i, −cos φ_i)` mit dem Umlaufsinn `s_F` der Form (§3).
 
 Für die Ecke zwischen zwei Wänden werden die äußeren Offsetgeraden geschnitten:
 
