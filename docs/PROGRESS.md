@@ -18,7 +18,7 @@
 
 ## Offene Blocker
 
-Keine.
+Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein kritisch). Behebung über T-ARC-004, T-BLD-005 und T-ARC-005.
 
 ## Entscheidungslog
 

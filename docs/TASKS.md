@@ -22,6 +22,8 @@ graph LR
 | Phase 3 / F.1 | T-BLD-001 |
 | Phase 3 / F.2 | T-BLD-002, T-BLD-003, T-ARC-001, T-ARC-002 |
 | Phase 3 / F.3 | T-ARC-003, T-BLD-004 |
+| Phase 3 / F.4 (Review-Fixes) | T-ARC-004, T-BLD-005 |
+| Phase 3 / F.5 (Review-Fixes) | T-ARC-005 |
 | Welle 1 / 1.1 | T-COM-001, T-GEO-001, T-DES-001, T-DOC-001 |
 | Welle 1 / 1.2 | T-GEO-002, T-GEO-003, T-DAT-001, T-DAT-003 |
 | Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002 |
@@ -126,6 +128,43 @@ graph LR
 - **Vertrag:** WORKFLOWS §2
 - **Akzeptanzkriterien:** Ein Skript baut, installiert und startet einen instrumentierten Beispieltest über `adb.exe` und meldet den Exit-Code korrekt. Anforderungen: REQ-NFR-005
 - **Tests:** Echter Lauf auf dem Windows-Emulator
+
+### Batch F.4
+
+#### T-ARC-004 – Vertragskorrekturen aus dem Phase-3-Review
+
+- **Modul:** core/*, testing/fixtures
+- **Rolle/Modell:** architect
+- **Größe:** M
+- **Abhängigkeiten:** T-ARC-001, T-ARC-002, T-ARC-003
+- **Besitzbereich:** `core/common/`, `core/geometry/`, `core/model/`, `core/domain/`, `core/document/`, `core/drawing/`, `core/export/`, `testing/fixtures/` (nur zur Anpassung an Signaturen), `docs/DOMAIN.md`, `docs/ARCHITECTURE.md`, `docs/adr/`
+- **Vertrag:** Review-Befunde H1 bis H6, M1 bis M7, N1
+- **Akzeptanzkriterien:** Jeder Befund ist behoben und durch Test oder Vertragstext belegt. Anforderungen: REQ-NFR-003, REQ-EXP-002, REQ-UX-004, REQ-DATA-004, REQ-MOD-011, REQ-MEAS-004
+- **Tests:** Tests für neue Invarianten und Wertetypen
+
+#### T-BLD-005 – Screenshot-Infrastruktur
+
+- **Modul:** build-logic
+- **Rolle/Modell:** build-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-BLD-002
+- **Besitzbereich:** `build-logic/`, `gradle/libs.versions.toml`, `config/lint/`, `.github/`, `core/designsystem/`
+- **Vertrag:** WORKFLOWS §3, ADR 0010
+- **Akzeptanzkriterien:** Ein Beispiel-Screenshot wird aufgezeichnet, `verifyRoborazziDebug` ist grün und schlägt bei einer Bildänderung fehl. CI führt die Prüfung aus und lädt Diff-Bilder hoch. Anforderungen: REQ-NFR-006
+- **Tests:** Echter Positiv- und Negativlauf
+
+### Batch F.5
+
+#### T-ARC-005 – Fakes vertragstreu machen
+
+- **Modul:** testing/fixtures
+- **Rolle/Modell:** test-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-ARC-004
+- **Besitzbereich:** `testing/fixtures/`
+- **Vertrag:** Review-Befunde M8 und M9
+- **Akzeptanzkriterien:** Der Fake speichert nur gemeldete Raumänderungen und löscht beim Projektlöschen auch den Entwurf. Anforderungen: REQ-NFR-006
+- **Tests:** Negativtests für nicht gemeldete Änderungen
 
 ## Welle 1
 
