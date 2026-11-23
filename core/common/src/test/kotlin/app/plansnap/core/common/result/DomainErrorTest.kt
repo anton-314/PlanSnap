@@ -49,6 +49,10 @@ class DomainErrorTest {
             listOf("PROJECT", "ROOM", "WALL", "CORNER", "DIAGONAL", "OPENING"),
             EntityKind.entries.map { it.name },
         )
+    }
+
+    @Test
+    fun `given rule and problem enums when read then contract values are stable`() {
         assertEquals(
             listOf(
                 "TOO_MANY_WALLS",
@@ -62,6 +66,12 @@ class DomainErrorTest {
                 "DOCK_CYCLE",
                 "DOCK_OPENING_NOT_ON_WALL",
                 "ADJUSTMENT_NOT_AVAILABLE",
+                "DUPLICATE_ID",
+                "DOCK_TO_SELF",
+                "NO_WALL_TO_REMOVE",
+                "WALL_HAS_OPENINGS",
+                "WALL_HAS_DOCKED_ROOMS",
+                "CORNER_HAS_DIAGONALS",
             ),
             DomainRule.entries.map { it.name },
         )
@@ -71,7 +81,14 @@ class DomainErrorTest {
         )
         assertEquals(listOf("READ_FAILED", "WRITE_FAILED", "NO_SPACE"), StorageProblem.entries.map { it.name })
         assertEquals(
-            listOf("NOTHING_TO_EXPORT", "PLAN_TOO_LARGE", "WRITE_FAILED"),
+            listOf(
+                "NOTHING_TO_EXPORT",
+                "PLAN_TOO_LARGE",
+                "WRITE_FAILED",
+                "PLAN_DOES_NOT_FIT_SELECTION",
+                "ENCODING_FAILED",
+                "NO_SPACE",
+            ),
             ExportProblem.entries.map { it.name },
         )
     }

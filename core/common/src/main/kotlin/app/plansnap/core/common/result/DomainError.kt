@@ -147,6 +147,24 @@ enum class DomainRule {
 
     /** No valid closure adjustment is available. */
     ADJUSTMENT_NOT_AVAILABLE,
+
+    /** A new element uses an id that already exists. */
+    DUPLICATE_ID,
+
+    /** A room cannot dock to itself. */
+    DOCK_TO_SELF,
+
+    /** The room has no wall that could be removed. */
+    NO_WALL_TO_REMOVE,
+
+    /** The wall to remove still carries openings. */
+    WALL_HAS_OPENINGS,
+
+    /** The wall to remove is still part of a dock link. */
+    WALL_HAS_DOCKED_ROOMS,
+
+    /** The corner to remove is still used by a diagonal. */
+    CORNER_HAS_DIAGONALS,
 }
 
 /** Reason a project document was rejected. */
@@ -186,4 +204,13 @@ enum class ExportProblem {
 
     /** Writing the output failed. */
     WRITE_FAILED,
+
+    /** The plan fits automatically, but not with the selected scale or paper. */
+    PLAN_DOES_NOT_FIT_SELECTION,
+
+    /** The output could not be encoded. */
+    ENCODING_FAILED,
+
+    /** The device has no free space for the output. */
+    NO_SPACE,
 }
