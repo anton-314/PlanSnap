@@ -1,5 +1,6 @@
 package app.plansnap.core.geometry.solver
 
+import app.plansnap.core.geometry.cancellation.CancellationSignal
 import app.plansnap.core.geometry.primitives.Polygon2
 import app.plansnap.core.geometry.traverse.ShapeInput
 
@@ -51,6 +52,14 @@ sealed interface SolverOutcome {
 
 /** Deterministic equality-constrained SQP solver (DOMAIN sections 5.1 to 5.3, ADR 0004). */
 fun interface ShapeSolver {
-    /** Solves [input]. Equal input yields a bit-identical outcome. */
-    fun solve(input: ShapeInput): SolverOutcome
+    /**
+     * Solves [input], which must not be overdetermined (DOMAIN section 5.4). Equal input yields a bit-identical
+     * outcome.
+     *
+     * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
+     */
+    fun solve(
+        input: ShapeInput,
+        cancellation: CancellationSignal,
+    ): SolverOutcome
 }

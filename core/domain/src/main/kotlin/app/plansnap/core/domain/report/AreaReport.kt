@@ -3,6 +3,7 @@ package app.plansnap.core.domain.report
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.model.Project
 import app.plansnap.core.model.RoomId
+import app.plansnap.core.model.RoomTypeKey
 import app.plansnap.core.model.ShapeStatus
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -37,11 +38,13 @@ data class AreaMetrics(
 /**
  * One line of the area report.
  *
+ * @property typeKey room type template, translated at the output edge (REQ-MOD-011).
  * @property metrics metrics of the room, `null` for `OPEN` and `CONFLICT`.
  */
 data class RoomAreaEntry(
     val roomId: RoomId,
     val name: String,
+    val typeKey: RoomTypeKey?,
     val status: ShapeStatus,
     val metrics: AreaMetrics?,
 ) {

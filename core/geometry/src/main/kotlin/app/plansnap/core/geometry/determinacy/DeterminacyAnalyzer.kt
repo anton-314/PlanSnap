@@ -1,5 +1,6 @@
 package app.plansnap.core.geometry.determinacy
 
+import app.plansnap.core.geometry.cancellation.CancellationSignal
 import app.plansnap.core.geometry.solver.ShapeSolution
 import app.plansnap.core.geometry.traverse.ShapeInput
 
@@ -30,13 +31,11 @@ sealed interface MeasurementRecommendation {
  *
  * @property freeVariables `|u_frei|`, the variables left after eliminating measured corners.
  * @property rank rank `ρ_J`, between 0 and [freeVariables].
- * @property isOverdetermined whether more independent hard conditions exist than variables (DOMAIN section 5.5).
  * @property recommendation next measurement. Only permitted while [missing] is positive.
  */
 data class Determinacy(
     val freeVariables: Int,
     val rank: Int,
-    val isOverdetermined: Boolean,
     val recommendation: MeasurementRecommendation?,
 ) {
     init {
@@ -49,11 +48,60 @@ data class Determinacy(
     val missing: Int get() = freeVariables - rank
 }
 
-/** Rank analysis of the hard conditions at a solution (DOMAIN sections 5.4 and 5.5). */
-fun interface DeterminacyAnalyzer {
-    /** Analyzes [input] at [solution]. */
+/**
+ * Pre-check of the hard conditions before any solving (DOMAIN section 5.4).
+ *
+ * @property freeVariables `v = |u_frei|`, the variables left after eliminating measured corners.
+ * @property conditionCount `m`, the hard conditions: closure (2), measured closing corner and diagonals.
+ * @property independentConditions `ρ`, the rank of their Jacobian, at most `min(v, m)`.
+ */
+data class ConstraintAnalysis(
+    val freeVariables: Int,
+    val conditionCount: Int,
+    val independentConditions: Int,
+) {
+    init {
+        require(freeVariables >= 0) { "Free variables must not be negative" }
+        require(conditionCount >= CLOSURE_CONDITIONS) { "Closure alone yields $CLOSURE_CONDITIONS conditions" }
+        require(independentConditions in 0..minOf(freeVariables, conditionCount)) {
+            "Independent conditions out of range: $independentConditions"
+        }
+    }
+
+    /** Whether a hard condition is dependent, `m > ρ`. Such a shape goes to DOMAIN section 5.5, not to the solver. */
+    val isOverdetermined: Boolean get() = conditionCount > independentConditions
+
+    private companion object {
+        const val CLOSURE_CONDITIONS = 2
+    }
+}
+
+/** Rank analysis of the hard conditions (DOMAIN sections 5.4 and 5.5). */
+interface DeterminacyAnalyzer {
+    /**
+     * Determines the independent conditions without solving.
+     *
+     * The rank is taken at [turnsRad], the target turns `τ̂`. If it is below `m` there, it is taken again at the fixed
+     * probe point of DOMAIN section 5.4, and the larger rank counts, so that an accidental singularity of `τ̂` does not
+     * count as overdetermination.
+     *
+     * @param turnsRad target turns `τ̂_0 … τ̂_{n-1}`, one per wall.
+     * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
+     */
+    fun analyzeConstraints(
+        input: ShapeInput,
+        turnsRad: List<Double>,
+        cancellation: CancellationSignal,
+    ): ConstraintAnalysis
+
+    /**
+     * Analyzes [input] at [solution] of a shape that is not overdetermined.
+     *
+     * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
+     */
     fun analyze(
         input: ShapeInput,
         solution: ShapeSolution,
+        cancellation: CancellationSignal,
     ): Determinacy
 }

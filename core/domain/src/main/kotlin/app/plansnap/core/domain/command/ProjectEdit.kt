@@ -107,7 +107,12 @@ sealed interface ProjectEdit {
         val opening: Opening,
     ) : ProjectEdit
 
-    /** Replaces the opening with the id of [opening]. */
+    /**
+     * Replaces the opening with the id of [opening].
+     *
+     * Fails with `OPENING_HAS_DOCKED_ROOMS` if the wall would change while a room is docked to this opening, so that no
+     * dock link is released silently.
+     */
     data class EditOpening(
         val roomId: RoomId,
         val opening: Opening,

@@ -68,6 +68,9 @@ object GeometryTolerances {
     /** Fixed standard deviation in radians of a variable without observation. */
     const val SIGMA_FREE_RAD: Double = 10.0
 
+    /** Scale in radians of the fixed rank probe point `τ̂_i + RANK_PROBE_RAD · i / n` (DOMAIN section 5.4). */
+    const val RANK_PROBE_RAD: Double = 0.1
+
     /** Below this `|sin τ|` a corner counts as nearly collinear (DOMAIN section 8). */
     const val NEAR_COLLINEAR_SIN: Double = 1e-6
 

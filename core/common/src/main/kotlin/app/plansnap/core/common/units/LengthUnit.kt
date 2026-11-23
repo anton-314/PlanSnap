@@ -1,6 +1,7 @@
 package app.plansnap.core.common.units
 
 import app.plansnap.core.common.result.DomainResult
+import app.plansnap.core.common.result.ValueField
 import java.math.BigDecimal
 import java.util.Locale
 
@@ -42,10 +43,15 @@ enum class LengthUnit(
 
 /** Parses user-entered length text. Accepts both `,` and `.` as decimal separator. */
 fun interface LengthParser {
-    /** Parses [text] in [unit], returning a domain error for malformed or unrepresentable input. */
+    /**
+     * Parses [text] in [unit].
+     *
+     * @param field value being entered, reported in `DomainError.InvalidValue` for malformed or unrepresentable input.
+     */
     fun parse(
         text: String,
         unit: LengthUnit,
+        field: ValueField,
     ): DomainResult<Length>
 }
 

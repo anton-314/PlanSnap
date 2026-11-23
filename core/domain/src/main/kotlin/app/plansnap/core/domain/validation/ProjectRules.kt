@@ -8,7 +8,8 @@ import app.plansnap.core.model.Room
 
 /**
  * Checks what model constructors deliberately leave to the domain (DOMAIN section 11): limits of
- * `GeometryTolerances`, existence of dock targets, host openings on their host wall, and dock cycles.
+ * `GeometryTolerances`, existence of dock targets including `DockLink.ownWallId`, host openings on their host wall,
+ * dock cycles and overlapping openings per wall. Openings that merely touch do not overlap.
  *
  * `:core:data` calls it on every imported project before accepting it.
  */

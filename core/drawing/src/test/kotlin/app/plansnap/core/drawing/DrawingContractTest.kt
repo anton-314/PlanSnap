@@ -19,6 +19,7 @@ import app.plansnap.core.drawing.viewport.Viewport
 import app.plansnap.core.geometry.primitives.Polygon2
 import app.plansnap.core.geometry.primitives.Vec2
 import app.plansnap.core.model.RoomId
+import app.plansnap.core.model.RoomTypeKey
 import app.plansnap.core.model.ShapeStatus
 import kotlinx.collections.immutable.persistentListOf
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -75,6 +76,7 @@ class DrawingContractTest {
         assertEquals(1.0, LabelText.Area(1.0).mm2)
         assertEquals(270.0, LabelText.InteriorAngle(270.0).degrees)
         assertEquals("Bath", LabelText.Literal("Bath").text)
+        assertEquals(RoomTypeKey("bath"), LabelText.RoomType(RoomTypeKey("bath")).key)
         assertRejected { LabelText.Dimension(-1.0) }
         assertRejected { LabelText.Dimension(Double.NaN) }
         assertRejected { LabelText.Area(-1.0) }
@@ -159,6 +161,61 @@ class DrawingContractTest {
         assertEquals(297 to 210, landscape.pageWidthMm to landscape.pageHeightMm)
         assertNull(PlotSelection().scale)
         assertNull(PlotSelection().paper)
+    }
+
+    @Test
+    fun `given page orientations when usable area is read then margins and title block are removed`() {
+        val usable =
+            PaperSize.entries.flatMap { paper ->
+                PageOrientation.entries.map { orientation ->
+                    val plan = PlotPlan(paper, orientation, PlotScale.ONE_TO_50, bounds)
+                    plan.usableWidthMm to plan.usableHeightMm
+                }
+            }
+        assertEquals(listOf(190 to 252, 277 to 165, 277 to 375, 400 to 252), usable)
+    }
+
+    @Test
+    fun `given reference plans of domain section 12 when the order is applied then the specified page wins`() {
+        assertEquals(
+            Triple(PlotScale.ONE_TO_50, PaperSize.A3, PageOrientation.PORTRAIT),
+            specifiedChoice(13_500.0, 13_000.0),
+        )
+        assertEquals(
+            Triple(PlotScale.ONE_TO_50, PaperSize.A4, PageOrientation.PORTRAIT),
+            specifiedChoice(9_250.0, 8_500.0),
+        )
+    }
+
+    @Test
+    fun `given plans fitting both orientations when the order is applied then the plan shape decides`() {
+        val a4 = Triple(PlotScale.ONE_TO_50, PaperSize.A4, PageOrientation.LANDSCAPE)
+        assertEquals(a4, specifiedChoice(8_000.0, 5_000.0))
+        assertEquals(a4.copy(third = PageOrientation.PORTRAIT), specifiedChoice(5_000.0, 8_000.0))
+        assertEquals(a4, specifiedChoice(5_000.0, 5_000.0))
+        assertEquals(null, specifiedChoice(81_000.0, 10_000.0))
+    }
+
+    /** Executable form of the selection order in DOMAIN section 12, on the page metrics of the contract. */
+    private fun specifiedChoice(
+        widthMm: Double,
+        heightMm: Double,
+    ): Triple<PlotScale, PaperSize, PageOrientation>? {
+        val preferred = if (heightMm - widthMm > 1.0) PageOrientation.PORTRAIT else PageOrientation.LANDSCAPE
+        return PlotScale.entries
+            .asSequence()
+            .flatMap { scale -> PaperSize.entries.asSequence().map { scale to it } }
+            .mapNotNull { (scale, paper) ->
+                val fitting =
+                    PageOrientation.entries
+                        .map { PlotPlan(paper, it, scale, WorldBounds(0.0, 0.0, widthMm, heightMm)) }
+                        .filter {
+                            widthMm <= it.usableWidthMm * scale.denominator &&
+                                heightMm <= it.usableHeightMm * scale.denominator
+                        }
+                (fitting.firstOrNull { it.orientation == preferred } ?: fitting.firstOrNull())
+                    ?.let { Triple(scale, paper, it.orientation) }
+            }.firstOrNull()
     }
 
     private fun arc(

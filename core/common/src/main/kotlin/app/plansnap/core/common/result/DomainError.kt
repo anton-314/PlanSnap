@@ -165,6 +165,9 @@ enum class DomainRule {
 
     /** The corner to remove is still used by a diagonal. */
     CORNER_HAS_DIAGONALS,
+
+    /** The opening cannot move to another wall while a room is docked to it. */
+    OPENING_HAS_DOCKED_ROOMS,
 }
 
 /** Reason a project document was rejected. */

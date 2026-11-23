@@ -1,5 +1,6 @@
 package app.plansnap.core.geometry.adjustment
 
+import app.plansnap.core.geometry.cancellation.CancellationSignal
 import app.plansnap.core.geometry.traverse.ShapeInput
 
 /** Reference to one observation of the adjustment. */
@@ -26,8 +27,10 @@ sealed interface ObservationRef {
  * @property adjustedLengthsMm adjusted wall lengths, positive and finite.
  * @property adjustedTurnsRad adjusted turns `τ_0 … τ_{n-1}`, finite.
  * @property adjustedDiagonalsMm adjusted diagonals in input order, positive and finite.
- * @property maxCorrectionMm largest correction in mm, compared with `T` (DOMAIN section 5.5).
- * @property worstObservation observation with the largest normalized residual, `null` if all residuals are zero.
+ * @property maxCorrectionMm largest correction over all observations in mm: `|ΔL_i|`, `|ΔD_k|` and `|Δτ_i| · U / (2π)`.
+ * Corners without an observation do not count (DOMAIN section 6). Compared with `T` in DOMAIN section 5.5.
+ * @property worstObservation observation with the largest normalized residual, `null` if all residuals are zero. Never
+ * a corner without an observation.
  */
 data class AdjustedShape(
     val adjustedLengthsMm: List<Double>,
@@ -45,6 +48,15 @@ data class AdjustedShape(
     }
 }
 
+/** Role of declared right angles in the adjustment (DOMAIN section 6, ADR 0018). */
+enum class AdjustmentMode {
+    /** Small gap with `e ≤ T`. Declared right angles are observations with their own standard deviation. */
+    MEASUREMENT_ERROR,
+
+    /** Overdetermined shape deviation (DOMAIN section 5.5). Declared right angles carry no observation. */
+    SHAPE_DEVIATION,
+}
+
 /** Result of the closure adjustment. */
 sealed interface AdjustmentOutcome {
     /** The iteration converged. */
@@ -52,7 +64,7 @@ sealed interface AdjustmentOutcome {
         val shape: AdjustedShape,
     ) : AdjustmentOutcome
 
-    /** The iteration did not reach the residual limit within the permitted steps. */
+    /** The residual limit was not reached within the permitted steps: `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`. */
     data object NotConverged : AdjustmentOutcome
 }
 
@@ -61,6 +73,14 @@ interface ClosureAdjuster {
     /** Version recorded in the stored overlay for traceability. */
     val version: Int
 
-    /** Adjusts [input]. Equal input yields a bit-identical outcome. */
-    fun adjust(input: ShapeInput): AdjustmentOutcome
+    /**
+     * Adjusts [input] in [mode]. Equal arguments yield a bit-identical outcome.
+     *
+     * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
+     */
+    fun adjust(
+        input: ShapeInput,
+        mode: AdjustmentMode,
+        cancellation: CancellationSignal,
+    ): AdjustmentOutcome
 }

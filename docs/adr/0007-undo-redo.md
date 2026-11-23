@@ -1,6 +1,6 @@
 # ADR 0007: Undo/Redo
 
-**Status:** Angenommen, 2026-11-23
+**Status:** Angenommen, 2026-11-23, Nebenläufigkeit ergänzt durch ADR 0016
 
 ## Kontext
 

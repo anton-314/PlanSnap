@@ -2,12 +2,14 @@ package app.plansnap.core.geometry
 
 import app.plansnap.core.common.units.Angle
 import app.plansnap.core.geometry.adjustment.AdjustedShape
+import app.plansnap.core.geometry.adjustment.AdjustmentMode
 import app.plansnap.core.geometry.adjustment.AdjustmentOutcome
 import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.bands.BandLayout
 import app.plansnap.core.geometry.bands.CornerBand
 import app.plansnap.core.geometry.bands.CornerJoin
 import app.plansnap.core.geometry.bands.WallBand
+import app.plansnap.core.geometry.cancellation.CancellationSignal
 import app.plansnap.core.geometry.polygon.PolygonAnalyzer
 import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Polygon2
@@ -18,9 +20,12 @@ import app.plansnap.core.geometry.solver.SolverOutcome
 import app.plansnap.core.geometry.solver.SolverStart
 import app.plansnap.core.geometry.traverse.ClosureClass
 import app.plansnap.core.geometry.traverse.TurnTargets
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CancellationException
 
 class ContractResultsTest {
     private val triangle = Polygon2(listOf(Vec2.ZERO, Vec2(1000.0, 0.0), Vec2(0.0, 1000.0)))
@@ -74,6 +79,18 @@ class ContractResultsTest {
         assertEquals(shape, AdjustmentOutcome.Adjusted(shape).shape)
         assertEquals(worst, shape.worstObservation)
         assertNotEquals(AdjustmentOutcome.Adjusted(shape), AdjustmentOutcome.NotConverged)
+    }
+
+    @Test
+    fun `given adjustment modes when listed then both roles exist`() {
+        assertEquals(listOf("MEASUREMENT_ERROR", "SHAPE_DEVIATION"), AdjustmentMode.entries.map { it.name })
+    }
+
+    @Test
+    fun `given cancellation signals when checked then only a cancelled one throws`() {
+        assertDoesNotThrow { CancellationSignal.NONE.checkpoint() }
+        val cancelled = CancellationSignal { throw CancellationException("cancelled") }
+        assertThrows(CancellationException::class.java) { cancelled.checkpoint() }
     }
 
     @Test

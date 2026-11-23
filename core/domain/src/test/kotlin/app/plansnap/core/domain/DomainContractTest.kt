@@ -12,6 +12,7 @@ import app.plansnap.core.domain.command.ReconcileOutcome
 import app.plansnap.core.domain.command.RoomDetails
 import app.plansnap.core.domain.evaluation.EvaluatedShape
 import app.plansnap.core.domain.evaluation.RoomEvaluation
+import app.plansnap.core.domain.evaluation.currentCancellationSignal
 import app.plansnap.core.domain.evaluation.isExportable
 import app.plansnap.core.domain.evaluation.isUnconfirmed
 import app.plansnap.core.domain.report.AreaMetrics
@@ -27,6 +28,7 @@ import app.plansnap.core.domain.snap.SnapResult
 import app.plansnap.core.domain.snap.SnapSegment
 import app.plansnap.core.domain.snap.SnapTargets
 import app.plansnap.core.geometry.adjustment.ObservationRef
+import app.plansnap.core.geometry.cancellation.CancellationSignal
 import app.plansnap.core.geometry.determinacy.Determinacy
 import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.geometry.primitives.GeometryTolerances
@@ -57,6 +59,13 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -131,16 +140,34 @@ class DomainContractTest {
     }
 
     @Test
-    fun `given functional contracts when implemented then they carry the specified signatures`() {
-        val command = ProjectCommand { DomainResult.Success(it) }
-        val factory = ProjectCommandFactory { command }
-        val resolver = DockPlacementResolver { value, _ -> DomainResult.Success(value) }
-        val edit = ProjectEdit.SetProjectHeight(Length(2600))
-        assertSame(command, factory.create(edit))
-        assertEquals(DomainResult.Success(project), command.apply(project))
-        assertEquals(DomainResult.Success(project), resolver.resolve(project, ClosureTolerance()))
-        assertEquals(listOf("UNCHANGED", "PLACEMENTS_UPDATED"), ReconcileOutcome.entries.map { it.name })
-    }
+    fun `given functional contracts when implemented then they carry the specified signatures`() =
+        runBlocking<Unit> {
+            val command = ProjectCommand { DomainResult.Success(it) }
+            val factory = ProjectCommandFactory { command }
+            val resolver = DockPlacementResolver { value, _ -> DomainResult.Success(value) }
+            val edit = ProjectEdit.SetProjectHeight(Length(2600))
+            assertSame(command, factory.create(edit))
+            assertEquals(DomainResult.Success(project), command.apply(project))
+            assertEquals(DomainResult.Success(project), resolver.resolve(project, ClosureTolerance()))
+            assertEquals(listOf("UNCHANGED", "PLACEMENTS_UPDATED"), ReconcileOutcome.entries.map { it.name })
+        }
+
+    @Test
+    fun `given a running job when the signal is checked then it passes until the job is cancelled`() =
+        runBlocking<Unit> {
+            val ready = CompletableDeferred<CancellationSignal>()
+            val job =
+                launch {
+                    ready.complete(currentCancellationSignal())
+                    awaitCancellation()
+                }
+            val signal = ready.await()
+
+            assertDoesNotThrow { signal.checkpoint() }
+            job.cancelAndJoin()
+
+            assertThrows(CancellationException::class.java) { signal.checkpoint() }
+        }
 
     @Test
     fun `given history state when depths vary then flags follow and negatives are rejected`() {
@@ -180,7 +207,7 @@ class DomainContractTest {
     fun `given each evaluation variant when read then status and shape match`() {
         val adjustment = adjustmentOf(3)
         val error = ClosureError(10.0, 0.0, 0.0)
-        val determinacy = Determinacy(freeVariables = 3, rank = 2, isOverdetermined = false, recommendation = null)
+        val determinacy = Determinacy(freeVariables = 3, rank = 2, recommendation = null)
         val evaluations =
             listOf(
                 RoomEvaluation.Open(roomId, persistentListOf(Vec2.ZERO), noOpenings),
@@ -201,7 +228,7 @@ class DomainContractTest {
             RoomEvaluation.NeedsAdjustment(roomId, shape, ClosureError(1.0, 0.0, 0.0), adjustmentOf(4), noOpenings)
         }
         assertRejected {
-            RoomEvaluation.Proposed(roomId, shape, Determinacy(2, 2, false, null), noOpenings)
+            RoomEvaluation.Proposed(roomId, shape, Determinacy(2, 2, null), noOpenings)
         }
     }
 
@@ -237,11 +264,11 @@ class DomainContractTest {
         assertRejected { AreaMetrics(0.0, Double.NaN, 0.0, 0.0) }
         assertRejected { AreaMetrics(0.0, 0.0, Double.POSITIVE_INFINITY, 0.0) }
         assertRejected { AreaMetrics(0.0, 0.0, 0.0, -0.5) }
-        assertNull(RoomAreaEntry(roomId, "Bath", ShapeStatus.OPEN, null).metrics)
-        assertNull(RoomAreaEntry(roomId, "Bath", ShapeStatus.CONFLICT, null).metrics)
-        assertEquals(metrics, RoomAreaEntry(roomId, "Bath", ShapeStatus.PROPOSED, metrics).metrics)
-        assertRejected { RoomAreaEntry(roomId, "Bath", ShapeStatus.OPEN, metrics) }
-        assertRejected { RoomAreaEntry(roomId, "Bath", ShapeStatus.CONFIRMED, null) }
+        assertNull(RoomAreaEntry(roomId, "Bath", null, ShapeStatus.OPEN, null).metrics)
+        assertNull(RoomAreaEntry(roomId, "Bath", null, ShapeStatus.CONFLICT, null).metrics)
+        assertEquals(metrics, RoomAreaEntry(roomId, "Bath", null, ShapeStatus.PROPOSED, metrics).metrics)
+        assertRejected { RoomAreaEntry(roomId, "Bath", null, ShapeStatus.OPEN, metrics) }
+        assertRejected { RoomAreaEntry(roomId, "Bath", null, ShapeStatus.CONFIRMED, null) }
     }
 
     @Test
@@ -294,12 +321,13 @@ class DomainContractTest {
     @Test
     fun `given repository and report values when created then they keep their data`() {
         val draft = EditorDraft(ProjectId("p"), roomId, "34,5")
-        val entry = RoomAreaEntry(roomId, "Bath", ShapeStatus.CONFIRMED, AreaMetrics.ZERO)
+        val entry = RoomAreaEntry(roomId, "Bath", RoomTypeKey("bath"), ShapeStatus.CONFIRMED, AreaMetrics.ZERO)
         val report = AreaReport(persistentListOf(entry), AreaMetrics.ZERO)
         val segment = SnapSegment(Vec2.ZERO, Vec2(1.0, 0.0))
         val targets = SnapTargets(persistentListOf(Vec2.ZERO), persistentListOf(segment))
         assertEquals("34,5", draft.inputText)
         assertEquals(entry, report.entries.single())
+        assertEquals(RoomTypeKey("bath"), report.entries.single().typeKey)
         assertEquals(segment, targets.walls.single())
         assertEquals(SnapKind.GRID, SnapResult(Vec2.ZERO, SnapKind.GRID).kind)
     }

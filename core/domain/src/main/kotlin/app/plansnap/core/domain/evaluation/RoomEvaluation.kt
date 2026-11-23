@@ -175,14 +175,17 @@ sealed interface RoomEvaluation {
     }
 }
 
-/** Evaluates a room as specified in DOMAIN section 4. Pure, deterministic and cancellable by its caller. */
+/** Evaluates a room as specified in DOMAIN section 4. Deterministic, main-safe and cancellable (ADR 0016). */
 fun interface RoomEvaluator {
     /**
      * Evaluates [room] against [tolerance].
      *
+     * Runs on the default dispatcher and passes [currentCancellationSignal] to solver and adjustment.
+     *
      * @return the evaluation, or `DomainError.InvalidValue` if a value violates the limits of `GeometryTolerances`.
+     * @throws kotlinx.coroutines.CancellationException if cancelled.
      */
-    fun evaluate(
+    suspend fun evaluate(
         room: Room,
         tolerance: ClosureTolerance,
     ): DomainResult<RoomEvaluation>

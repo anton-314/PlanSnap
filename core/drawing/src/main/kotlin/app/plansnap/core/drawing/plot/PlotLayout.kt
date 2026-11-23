@@ -86,12 +86,23 @@ data class PlotPlan(
     /** Page height in mm for the orientation. */
     val pageHeightMm: Int
         get() = if (orientation == PageOrientation.PORTRAIT) paper.longSideMm else paper.shortSideMm
+
+    /** Usable width in mm: page width minus both margins. */
+    val usableWidthMm: Int get() = pageWidthMm - 2 * PlotPageMetrics.MARGIN_MM
+
+    /** Usable height in mm: page height minus both margins and the title block. */
+    val usableHeightMm: Int
+        get() = pageHeightMm - 2 * PlotPageMetrics.MARGIN_MM - PlotPageMetrics.TITLE_BLOCK_MM
 }
 
 /** Scale and page choice and the only conversion between world and page in exports (DOMAIN section 12). */
 interface PlotLayout {
     /**
-     * Chooses the first fitting combination, trying scales in order and A4 before A3 for each.
+     * Chooses the first fitting combination: scales 1:50, 1:100, 1:200, for each A4 then A3, for each both
+     * orientations.
+     *
+     * If both orientations of a paper fit, the one matching the plan wins: portrait if the height exceeds the width by
+     * more than `EXACT_CLOSURE_MM`, otherwise landscape, which includes a square plan (DOMAIN section 12).
      *
      * @return the plan, `PLAN_TOO_LARGE` if nothing fits at 1:200 on A3, or `PLAN_DOES_NOT_FIT_SELECTION` if the plan
      * would fit automatically but not with [selection].

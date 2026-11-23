@@ -1,9 +1,11 @@
 package app.plansnap.testing.fixtures.fakes
 
+import app.plansnap.core.common.result.DocumentProblem
 import app.plansnap.core.common.result.DomainError
 import app.plansnap.core.common.result.DomainResult
 import app.plansnap.core.common.result.DomainRule
 import app.plansnap.core.common.result.EntityKind
+import app.plansnap.core.common.result.flatMap
 import app.plansnap.core.common.runtime.EpochClock
 import app.plansnap.core.common.runtime.IdGenerator
 import app.plansnap.core.domain.repository.ProjectRepository
@@ -18,25 +20,30 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.io.InputStream
 
 /**
  * In-memory [ProjectRepository] that follows the contract, including its error paths:
  * `getProject`, `renameProject`, `deleteProject` and `duplicateProject` fail with `NotFound(PROJECT)` for an unknown
  * id, `createProject` fails with `RuleViolation(DUPLICATE_ID)` for a known id, `duplicateProject` copies with new
- * ids and all internal references redirected, and `importProject` keeps ids unless the project id or a room id is
- * already stored, in which case it stores a copy. Technical failures (`DomainError.Storage`) are triggered through
- * [failures] before any state changes.
+ * ids and all internal references redirected, and `importProject` decodes through `importDecoder` and keeps ids
+ * unless the project id or a room id is already stored, in which case it stores a copy. Technical failures
+ * (`DomainError.Storage`) are triggered through [failures] before any state changes.
  *
  * [observeProjects] lists the projects in insertion order. The contract does not define an order.
  *
  * @param ids source of ids for copies.
  * @param clock source of the creation time of copies.
  * @param initialProjects projects that are stored from the start, with unique ids.
+ * @param importDecoder replaces decoding and validation of `:core:data`. Rejects every document by default.
  */
 class FakeProjectRepository(
     private val ids: IdGenerator = SequentialIdGenerator("copy"),
     private val clock: EpochClock = FakeEpochClock(),
     initialProjects: List<Project> = emptyList(),
+    private val importDecoder: (InputStream) -> DomainResult<Project> = {
+        DomainResult.Failure(DomainError.Document(DocumentProblem.MALFORMED))
+    },
 ) : ProjectRepository {
     /** Operations of the repository that [failures] can fail. */
     enum class Operation {
@@ -121,15 +128,18 @@ class FakeProjectRepository(
             }
         }
 
-    override suspend fun importProject(project: Project): DomainResult<ProjectId> =
+    override suspend fun importProject(input: InputStream): DomainResult<ProjectId> =
         guarded(Operation.IMPORT) {
-            val takenRoomIds = stored.values.flatMapTo(mutableSetOf<RoomId>()) { other -> other.rooms.map { it.id } }
-            val collides = project.id in stored || project.rooms.any { it.id in takenRoomIds }
-            if (collides) {
-                DomainResult.Success(storeCopy(project))
-            } else {
-                stored[project.id] = project
-                DomainResult.Success(project.id)
+            importDecoder(input).flatMap { project ->
+                val takenRoomIds =
+                    stored.values.flatMapTo(mutableSetOf<RoomId>()) { other -> other.rooms.map { it.id } }
+                val collides = project.id in stored || project.rooms.any { it.id in takenRoomIds }
+                if (collides) {
+                    DomainResult.Success(storeCopy(project))
+                } else {
+                    stored[project.id] = project
+                    DomainResult.Success(project.id)
+                }
             }
         }
 

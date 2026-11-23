@@ -100,6 +100,9 @@ enum class ConflictReason {
 
     /** Overdetermined measurements cannot be reconciled within the tolerance. */
     MEASUREMENTS_INCONSISTENT,
+
+    /** The closure adjustment did not converge, so no overlay exists (DOMAIN section 6). */
+    ADJUSTMENT_NOT_CONVERGED,
 }
 
 /**

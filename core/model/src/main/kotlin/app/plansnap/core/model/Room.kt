@@ -76,7 +76,7 @@ value class AreaFactor(
  * @property walls walls `w_0 … w_{n-1}` with unique ids.
  * @property corners corners `V_0 … V_{n-1}`, one per wall. Only `V_0` may be [CornerSpec.Unspecified].
  * @property diagonals diagonals with unique ids and corner indices below `n`.
- * @property openings openings with unique ids.
+ * @property openings openings with unique ids, each on a wall of this room.
  * @property isClosed whether the outline was closed. Requires at least three walls.
  * @property adjustment confirmed overlay. Requires a closed room and one entry per wall.
  * @property placement rigid placement. A room cannot dock to itself.
@@ -105,6 +105,8 @@ data class Room(
         require(diagonals.distinctBy { it.id }.size == diagonals.size) { "Diagonal ids must be unique" }
         require(openings.distinctBy { it.id }.size == openings.size) { "Opening ids must be unique" }
         require(diagonals.all { it.fromCorner < n && it.toCorner < n }) { "Diagonal corner index out of range" }
+        val wallIds = walls.mapTo(HashSet()) { it.id }
+        require(openings.all { it.wallId in wallIds }) { "Every opening must be on a wall of this room" }
         require(heightOverride == null || heightOverride > Length.ZERO) { "Room height must be positive" }
         require(!isClosed || n >= MIN_CLOSED_WALLS) { "A closed room needs at least $MIN_CLOSED_WALLS walls" }
         require(adjustment == null || (isClosed && adjustment.adjustedLengthsMm.size == n)) {

@@ -12,6 +12,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.flow.Flow
+import java.io.InputStream
 
 /**
  * Entry of the project list.
@@ -54,10 +55,15 @@ interface ProjectRepository {
     suspend fun duplicateProject(id: ProjectId): DomainResult<ProjectId>
 
     /**
-     * Accepts a decoded project after `ProjectValidator` succeeded. Ids are kept unless the project id or a room id
-     * already exists, in which case the project is stored as with [duplicateProject]. Returns the stored id.
+     * Imports an untrusted project document (ADR 0017): decodes [input] with `DocumentCodec`, checks the result with
+     * `ProjectValidator` and only then stores it. Ids are kept unless the project id or a room id already exists, in
+     * which case the project is stored as with [duplicateProject]. Returns the stored id.
+     *
+     * [input] stays open and belongs to the caller. Any failure leaves the stored data unchanged:
+     * `DomainError.Document` for an invalid document, `DomainError.Storage(READ_FAILED)` for an unreadable stream, the
+     * violation reported by `ProjectValidator`, or a storage failure.
      */
-    suspend fun importProject(project: Project): DomainResult<ProjectId>
+    suspend fun importProject(input: InputStream): DomainResult<ProjectId>
 }
 
 /**

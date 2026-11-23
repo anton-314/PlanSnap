@@ -1,5 +1,6 @@
 package app.plansnap.testing.fixtures.fakes
 
+import app.plansnap.core.common.result.DocumentProblem
 import app.plansnap.core.common.result.DomainError
 import app.plansnap.core.common.result.DomainResult
 import app.plansnap.core.common.result.DomainRule
@@ -30,14 +31,24 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.io.ByteArrayInputStream
+
+private val malformed = DomainError.Document(DocumentProblem.MALFORMED)
 
 class FakeProjectRepositoryTest {
     private val clock = FakeEpochClock(startEpochMs = 9_000L)
-    private val repository = FakeProjectRepository(SequentialIdGenerator("copy"), clock)
+    private var decodedDocument: DomainResult<Project> = DomainResult.Failure(malformed)
+    private val repository =
+        FakeProjectRepository(SequentialIdGenerator("copy"), clock, importDecoder = { decodedDocument })
     private val project = ProjectGenerator(seed = 1L).project(roomCount = 2)
     private val storageFailure = DomainError.Storage(StorageProblem.READ_FAILED)
 
     private fun notFound(id: ProjectId) = DomainError.NotFound(EntityKind.PROJECT, id.value)
+
+    private suspend fun importDocument(decoded: Project): DomainResult<ProjectId> {
+        decodedDocument = DomainResult.Success(decoded)
+        return repository.importProject(ByteArrayInputStream(ByteArray(0)))
+    }
 
     @Test
     fun `given created project when loaded then the same project is returned`() =
@@ -193,10 +204,27 @@ class FakeProjectRepositoryTest {
     @Test
     fun `given import without collision when imported then ids are kept`() =
         runTest {
-            val result = repository.importProject(project)
+            val result = importDocument(project)
 
             assertEquals(project.id, result.getOrNull())
             assertEquals(project, repository.getProject(project.id).getOrNull())
+        }
+
+    @Test
+    fun `given document that cannot be decoded when imported then the failure is returned and nothing is stored`() =
+        runTest {
+            val result = repository.importProject(ByteArrayInputStream(ByteArray(0)))
+
+            assertEquals(malformed, result.errorOrNull())
+            assertTrue(repository.projects.isEmpty())
+        }
+
+    @Test
+    fun `given default decoder when a document is imported then it is rejected`() =
+        runTest {
+            val result = FakeProjectRepository().importProject(ByteArrayInputStream(ByteArray(0)))
+
+            assertEquals(malformed, result.errorOrNull())
         }
 
     @Test
@@ -204,7 +232,7 @@ class FakeProjectRepositoryTest {
         runTest {
             repository.createProject(project)
 
-            val importedId = repository.importProject(project).getOrNull()!!
+            val importedId = importDocument(project).getOrNull()!!
 
             assertNotEquals(project.id, importedId)
             assertEquals(2, repository.projects.size)
@@ -218,7 +246,7 @@ class FakeProjectRepositoryTest {
             val foreign = ProjectGenerator(seed = 2L).project(roomCount = 1)
             val clashing = foreign.copy(rooms = persistentListOf(foreign.rooms[0].copy(id = project.rooms[0].id)))
 
-            val importedId = repository.importProject(clashing).getOrNull()!!
+            val importedId = importDocument(clashing).getOrNull()!!
 
             assertNotEquals(clashing.id, importedId)
             val stored = repository.getProject(importedId).getOrNull()!!
@@ -249,7 +277,7 @@ class FakeProjectRepositoryTest {
             assertEquals(noSpace, repository.renameProject(project.id, "x").errorOrNull())
             assertEquals(noSpace, repository.deleteProject(project.id).errorOrNull())
             assertEquals(noSpace, repository.duplicateProject(project.id).errorOrNull())
-            assertEquals(noSpace, repository.importProject(project).errorOrNull())
+            assertEquals(noSpace, importDocument(project).errorOrNull())
             assertTrue(repository.projects.isEmpty())
 
             repository.failures.reset()

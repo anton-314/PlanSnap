@@ -24,11 +24,16 @@ fun interface ProjectCommandFactory {
  * Recomputes the placements of docked rooms in topological order (DOMAIN section 10, ADR 0015).
  *
  * The displayed outline is authoritative: target shape for `CONFIRMED`, overlay for `ADJUSTED`, preview for
- * `NEEDS_ADJUSTMENT` and proposal for `PROPOSED`. A room whose host is `OPEN` or `CONFLICT` keeps its last placement.
+ * `NEEDS_ADJUSTMENT` and proposal for `PROPOSED`. A room keeps its last placement, including its dock link, if its host
+ * or the room itself is `OPEN` or `CONFLICT`, because no outline exists to align.
  */
 fun interface DockPlacementResolver {
-    /** Returns [project] with resolved placements. Only placements may differ from the input. */
-    fun resolve(
+    /**
+     * Returns [project] with resolved placements. Only placements may differ from the input.
+     *
+     * Runs on the default dispatcher and is cancellable (ADR 0016).
+     */
+    suspend fun resolve(
         project: Project,
         tolerance: ClosureTolerance,
     ): DomainResult<Project>
@@ -68,18 +73,24 @@ enum class ReconcileOutcome {
 }
 
 /**
- * Session-long undo and redo over before and after references (ADR 0007, ADR 0015). The history is not persisted,
- * its depth is unbounded and it is confined to the caller's state-update dispatcher.
+ * Session-long undo and redo over before and after references (ADR 0007, ADR 0015, ADR 0016). The history is not
+ * persisted and its depth is unbounded.
+ *
+ * All suspending operations are main-safe and serialized in call order: evaluation runs on the default dispatcher while
+ * no other operation can change the history. Cancellation before the commit leaves project and history unchanged.
+ * The commit itself is a single atomic update.
  */
 interface CommandHistory {
-    /** Current state. */
+    /** Latest committed state, an atomic snapshot that is safe to read from any thread. */
     val state: HistoryState
 
     /**
      * Runs [ProjectCommand.apply] and then [DockPlacementResolver.resolve] as exactly one undo step and discards the
      * redo stack. If either step fails, project and history stay unchanged and the failure is returned.
+     *
+     * @throws kotlinx.coroutines.CancellationException if cancelled. Project and history then stay unchanged.
      */
-    fun execute(
+    suspend fun execute(
         command: ProjectCommand,
         tolerance: ClosureTolerance,
     ): DomainResult<Project>
@@ -89,12 +100,14 @@ interface CommandHistory {
      *
      * Creates exactly one undo step if placements change and none otherwise. On failure, project and history stay
      * unchanged.
+     *
+     * @throws kotlinx.coroutines.CancellationException if cancelled. Project and history then stay unchanged.
      */
-    fun reconcile(tolerance: ClosureTolerance): DomainResult<ReconcileOutcome>
+    suspend fun reconcile(tolerance: ClosureTolerance): DomainResult<ReconcileOutcome>
 
     /** Restores the stored previous state exactly, without recomputing. Returns `null` if there is no undo step. */
-    fun undo(): Project?
+    suspend fun undo(): Project?
 
     /** Restores the stored next state exactly, without recomputing. Returns `null` if there is no redo step. */
-    fun redo(): Project?
+    suspend fun redo(): Project?
 }

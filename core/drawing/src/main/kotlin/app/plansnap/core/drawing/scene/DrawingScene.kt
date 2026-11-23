@@ -8,6 +8,7 @@ import app.plansnap.core.model.OpeningId
 import app.plansnap.core.model.Project
 import app.plansnap.core.model.Room
 import app.plansnap.core.model.RoomId
+import app.plansnap.core.model.RoomTypeKey
 import app.plansnap.core.model.ShapeStatus
 import app.plansnap.core.model.WallId
 import kotlinx.collections.immutable.ImmutableList
@@ -153,6 +154,11 @@ sealed interface LabelText {
             require(degrees.isFinite()) { "Invalid angle: $degrees" }
         }
     }
+
+    /** Room type template, translated at the output edge (REQ-MOD-011). */
+    data class RoomType(
+        val key: RoomTypeKey,
+    ) : LabelText
 
     /** The mark "shape not confirmed" (REQ-EXP-006). */
     data object ShapeNotConfirmed : LabelText

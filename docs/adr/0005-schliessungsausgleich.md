@@ -1,6 +1,6 @@
 # ADR 0005: Schließungsausgleich
 
-**Status:** Angenommen, 2026-11-23
+**Status:** Angenommen, 2026-11-23, ergänzt durch ADR 0018
 
 ## Kontext
 

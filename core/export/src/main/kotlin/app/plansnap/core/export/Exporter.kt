@@ -1,6 +1,7 @@
 package app.plansnap.core.export
 
 import app.plansnap.core.common.result.DomainResult
+import app.plansnap.core.common.units.LengthUnit
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.drawing.plot.PlotPlan
 import app.plansnap.core.drawing.plot.PlotSelection
@@ -10,6 +11,7 @@ import app.plansnap.core.model.RoomId
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
 import java.io.OutputStream
+import java.util.Locale
 
 /** Output format (REQ-EXP-001, REQ-EXP-003, REQ-EXP-004). */
 enum class ExportFormat {
@@ -30,6 +32,8 @@ enum class ExportFormat {
  * Input of an export.
  *
  * @property evaluations evaluation of every room of [project].
+ * @property lengthUnit unit of all dimension labels (REQ-UX-004), ignored for [ExportFormat.JSON].
+ * @property locale number format and language of the labels, ignored for [ExportFormat.JSON].
  * @property selection scale and paper override, ignored for [ExportFormat.JSON].
  * @property includeNotes whether room notes are drawn (REQ-MOD-012).
  * @throws IllegalArgumentException if a room has no evaluation.
@@ -38,6 +42,8 @@ data class ExportRequest(
     val project: Project,
     val evaluations: ImmutableMap<RoomId, RoomEvaluation>,
     val format: ExportFormat,
+    val lengthUnit: LengthUnit,
+    val locale: Locale,
     val selection: PlotSelection = PlotSelection(),
     val includeNotes: Boolean = false,
 ) {
@@ -64,19 +70,25 @@ data class ExportSummary(
     }
 }
 
+/** Opening of a specific room. Opening ids are only unique within their room. */
+data class RoomOpeningRef(
+    val roomId: RoomId,
+    val openingId: OpeningId,
+)
+
 /**
  * Findings shown before an export (REQ-EXP-006, DOMAIN section 12).
  *
  * @property exportableRooms rooms drawn in PDF, PNG and SVG.
  * @property omittedRooms `OPEN` and `CONFLICT` rooms, disjoint from [exportableRooms].
  * @property unconfirmedRooms exportable rooms carrying the mark "shape not confirmed".
- * @property outOfBoundsOpenings openings that no longer fit on their wall.
+ * @property outOfBoundsOpenings openings that no longer fit on their wall, with their room.
  */
 data class ExportPreflightReport(
     val exportableRooms: ImmutableSet<RoomId>,
     val omittedRooms: ImmutableSet<RoomId>,
     val unconfirmedRooms: ImmutableSet<RoomId>,
-    val outOfBoundsOpenings: ImmutableSet<OpeningId>,
+    val outOfBoundsOpenings: ImmutableSet<RoomOpeningRef>,
 ) {
     init {
         require(exportableRooms.none { it in omittedRooms }) { "A room is either exportable or omitted" }

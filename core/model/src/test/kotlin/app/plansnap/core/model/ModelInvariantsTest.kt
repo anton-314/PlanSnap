@@ -139,10 +139,26 @@ class ModelInvariantsTest {
             ShapeStatus.entries.map { it.name },
         )
         assertEquals(
-            listOf("WALL_TOO_LONG", "DIAGONAL_IMPOSSIBLE", "NO_SIMPLE_SHAPE", "MEASUREMENTS_INCONSISTENT"),
+            listOf(
+                "WALL_TOO_LONG",
+                "DIAGONAL_IMPOSSIBLE",
+                "NO_SIMPLE_SHAPE",
+                "MEASUREMENTS_INCONSISTENT",
+                "ADJUSTMENT_NOT_CONVERGED",
+            ),
             ConflictReason.entries.map { it.name },
         )
         assertEquals(listOf("VALID", "OUT_OF_BOUNDS"), OpeningStatus.entries.map { it.name })
+    }
+
+    @Test
+    fun `given opening on a foreign wall when room is created then it is rejected`() {
+        val onOwnWall = opening()
+        val onForeignWall = onOwnWall.copy(wallId = WallId("foreign"))
+        val room = Room(RoomId("r"), walls = walls(3), corners = corners(3), openings = persistentListOf(onOwnWall))
+        assertEquals(onOwnWall, room.openings.single())
+        assertRejected { room.copy(openings = persistentListOf(onForeignWall)) }
+        assertRejected { Room(RoomId("r"), openings = persistentListOf(onOwnWall)) }
     }
 
     @Test

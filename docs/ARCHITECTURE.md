@@ -101,10 +101,11 @@ sequenceDiagram
 | Arbeit | Dispatcher | Regel |
 |---|---|---|
 | State-Updates | Main | Nur im ViewModel |
-| Solver, Szene | Default | Abbrechbar, ein neuerer Lauf ersetzt den älteren |
+| Solver, Raumauswertung, Szene | Default | Abbrechbar über `CancellationSignal`. Bei Vorschauen ersetzt ein neuerer Lauf den älteren |
+| `CommandHistory` | Default für die Auswertung | Alle Zugriffe serialisiert in Aufrufreihenfolge, Befehle werden nie verworfen. Abbruch vor dem Commit ändert nichts (ADR 0016) |
 | Datenbank, Dateien | IO | `ProjectSaver` arbeitet Schreibvorgänge seriell ab |
 
-Dispatcher werden immer injiziert. Eine bestätigte Wand gilt erst als gespeichert, wenn die Transaktion abgeschlossen ist. `ProjectSaver` läuft im Application-Scope und überlebt das ViewModel.
+Dispatcher werden immer injiziert. `:core:geometry` bleibt frei von Coroutines und sieht nur die JVM-Abstraktion `CancellationSignal`, die `:core:domain` an den laufenden Job bindet. Eine bestätigte Wand gilt erst als gespeichert, wenn die Transaktion abgeschlossen ist. `ProjectSaver` läuft im Application-Scope und überlebt das ViewModel.
 
 ## 6. Fehlerbehandlung
 
@@ -168,4 +169,4 @@ AGP 9 enthält die Kotlin-Integration. Das Plugin `org.jetbrains.kotlin.android`
 
 ## 10. Sicherheit und Datenschutz
 
-Das Manifest deklariert weder `INTERNET` noch eine andere gefährliche Berechtigung. Dateien werden über den Dateidialog (SAF) oder `FileProvider` weitergegeben. Es gibt keine Telemetrie. Importdateien gelten als nicht vertrauenswürdig: Größe, Wertebereiche und Formatversion werden vor der Übernahme geprüft (maximal 20 MB).
+Das Manifest deklariert weder `INTERNET` noch eine andere gefährliche Berechtigung. Dateien werden über den Dateidialog (SAF) oder `FileProvider` weitergegeben. Es gibt keine Telemetrie. Importdateien gelten als nicht vertrauenswürdig: `:core:data` prüft Größe, Wertebereiche und Formatversion beim Decodieren und danach das Projekt mit `ProjectValidator`, bevor es gespeichert wird (maximal 20 MB, ADR 0017).

@@ -21,7 +21,7 @@ data class TurnTargets(
  *
  * @property gapMm closure gap `g`.
  * @property maxDiagonalResidualMm largest diagonal residual `max r_k`, zero without diagonals.
- * @property closingAngleResidualMm closing-corner term `a`, zero unless the closing corner is measured.
+ * @property closingAngleResidualMm closing-corner term `a`, zero only if the closing corner is free or agrees.
  */
 data class ClosureError(
     val gapMm: Double,
@@ -58,12 +58,12 @@ interface Traverse {
     /**
      * Walks a possibly open chain from `V_0` at the origin along +x.
      *
-     * @param lengthsMm wall lengths.
+     * @param lengthsMm wall lengths, raw or from an overlay, used without rounding.
      * @param turnsRad turns `τ_i`, same size as [lengthsMm]. The entry at index 0 is ignored.
      * @return `lengthsMm.size + 1` points, the last being the end of the final wall.
      */
     fun walk(
-        lengthsMm: List<Long>,
+        lengthsMm: List<Double>,
         turnsRad: List<Double>,
     ): List<Vec2>
 

@@ -6,6 +6,7 @@ import app.plansnap.core.geometry.adjustment.AdjustedShape
 import app.plansnap.core.geometry.bands.BandInput
 import app.plansnap.core.geometry.bands.CornerBand
 import app.plansnap.core.geometry.bands.CornerJoin
+import app.plansnap.core.geometry.determinacy.ConstraintAnalysis
 import app.plansnap.core.geometry.determinacy.Determinacy
 import app.plansnap.core.geometry.determinacy.MeasurementRecommendation
 import app.plansnap.core.geometry.primitives.GeometryTolerances
@@ -136,17 +137,35 @@ class ContractTypesTest {
 
     @Test
     fun `given quadrilateral without extra measures when determinacy is read then one is missing`() {
-        val determinacy = Determinacy(3, 2, false, MeasurementRecommendation.DiagonalBetween(0, 2))
+        val determinacy = Determinacy(3, 2, MeasurementRecommendation.DiagonalBetween(0, 2))
         assertEquals(1, determinacy.missing)
     }
 
     @Test
     fun `given invalid determinacy when created then it is rejected`() {
-        assertRejected { Determinacy(-1, 0, false, null) }
-        assertRejected { Determinacy(2, 3, false, null) }
-        assertRejected { Determinacy(2, -1, false, null) }
-        assertRejected { Determinacy(2, 2, false, MeasurementRecommendation.CornerAngle(1)) }
-        assertEquals(0, Determinacy(2, 2, true, null).missing)
+        assertRejected { Determinacy(-1, 0, null) }
+        assertRejected { Determinacy(2, 3, null) }
+        assertRejected { Determinacy(2, -1, null) }
+        assertRejected { Determinacy(2, 2, MeasurementRecommendation.CornerAngle(1)) }
+        assertEquals(0, Determinacy(2, 2, null).missing)
+    }
+
+    @Test
+    fun `given constraint counts when analyzed then overdetermination follows domain section 5_4`() {
+        assertEquals(false, ConstraintAnalysis(3, 2, 2).isOverdetermined)
+        assertEquals(false, ConstraintAnalysis(3, 3, 3).isOverdetermined)
+        assertEquals(true, ConstraintAnalysis(3, 4, 3).isOverdetermined)
+        assertEquals(true, ConstraintAnalysis(0, 2, 0).isOverdetermined)
+        assertEquals(true, ConstraintAnalysis(0, 3, 0).isOverdetermined)
+    }
+
+    @Test
+    fun `given invalid constraint analysis when created then it is rejected`() {
+        assertRejected { ConstraintAnalysis(-1, 2, 0) }
+        assertRejected { ConstraintAnalysis(3, 1, 1) }
+        assertRejected { ConstraintAnalysis(3, 2, 3) }
+        assertRejected { ConstraintAnalysis(1, 2, 2) }
+        assertRejected { ConstraintAnalysis(3, 2, -1) }
     }
 
     @Test

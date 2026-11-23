@@ -18,6 +18,7 @@ Rohlängen sind `Length(mm: Long)`, Rohwinkel `Angle(milliDegrees: Int)`, berech
 | `SOLVER_GRADIENT` | 1e-9 | Abbruch des projizierten Gradienten |
 | `SOLVER_MAX_ITERATIONS` | 200 | Iterationen je Startwert |
 | `RANK_TOLERANCE` | 1e-9 | Relative Pivot-Schwelle der Rangbestimmung |
+| `RANK_PROBE_RAD` | 0,1 | Skala des festen Prüfpunkts der Rangbestimmung (§5.4) |
 | `MIN_FEATURE_MM` | 1,0 | Mindestabstand nicht benachbarter Kanten |
 | `COST_TIE` | 1e-9 | Kostengleichheit bei der Lösungsauswahl |
 | `DEFAULT_TOLERANCE_ABS_MM` | 50 | Grenze Messfehler, absolut |
@@ -85,13 +86,13 @@ enum class ShapeStatus { OPEN, CONFIRMED, NEEDS_ADJUSTMENT, ADJUSTED, PROPOSED, 
 3. **Sollform prüfen.** Mit allen Sollwinkeln `τ̂` den Zug ablaufen. Berechne:
    - `g = |Σ L_i (cos φ̂_i, sin φ̂_i)|`
    - `r_k = |d_k(τ̂) − D_k|` für alle Diagonalen
-   - `a = |wrap(τ̂_0,gemessen − τ_0,abgeleitet)| · U / (2π)`, falls die Schlussecke gemessen ist, sonst 0
+   - `a = |wrap(τ̂_0,fest − τ_0,abgeleitet)| · U / (2π)` mit `τ_0,abgeleitet = 2π·s − Σ_{i≥1} τ̂_i`, falls die Schlussecke festgelegt ist (`Measured` oder `DeclaredRight`), sonst 0
    - `e = max(g, max r_k, a)`
 4. **Grenzwert:** `T = max(T_abs, T_rel · U)` mit `U = Σ L_i`.
 5. **Verzweigung:**
    - `e ≤ EXACT_CLOSURE_MM` ergibt `CONFIRMED` mit der Sollform.
    - `e ≤ T` ist ein **Messfehler**. Stimmt ein gespeicherter Ausgleich (§6), folgt `ADJUSTED`, sonst `NEEDS_ADJUSTMENT` mit Vorschau.
-   - `e > T` ist eine **Formabweichung**. Weiter mit §5.
+   - `e > T` ist eine **Formabweichung**. Zuerst läuft die Vorabprüfung aus §5.4 an den Sollwinkeln. Ist die Eingabe überbestimmt, folgt §5.5, sonst der Solver (§5.1 bis §5.3) und danach die Bestimmtheit an der Lösung.
 
 Deklarierte 90°-Ecken zählen als Form-Angabe, solange die Sollform innerhalb der Toleranz schließt. Bei einer Formabweichung werden sie zu weichen Sollwerten.
 
@@ -143,7 +144,17 @@ Ohne gültiges Ergebnis folgt `CONFLICT(NO_SIMPLE_SHAPE)`.
 
 ### 5.4 Bestimmtheit
 
-Sei `u_frei` der Vektor der nach der Elimination gemessener Ecken verbleibenden Variablen und `J` die Jacobi-Matrix der verbleibenden harten Bedingungen (Schließung, gemessene Schlussecke, Diagonalen) nach `u_frei`. Der Rang `ρ_J` wird an der Lösung per Gauß-Elimination mit vollständiger Pivotisierung und relativer Schwelle `RANK_TOLERANCE` bestimmt. Die Zahl fehlender Angaben ist `missing = |u_frei| − ρ_J`. Für ein Viereck ohne Zusatzmaße gilt `missing = 3 − 2 = 1`.
+Sei `u_frei` der Vektor der nach der Elimination gemessener Ecken verbleibenden Variablen, `v = |u_frei|`, und `J` die Jacobi-Matrix der verbleibenden harten Bedingungen (Schließung, gemessene Schlussecke, Diagonalen) nach `u_frei`. Ihre Anzahl ist `m = 2 + [Schlussecke gemessen] + Anzahl der Diagonalen`. Ränge werden per Gauß-Elimination mit vollständiger Pivotisierung und relativer Schwelle `RANK_TOLERANCE` bestimmt.
+
+**Vorabprüfung ohne Lösung (`analyzeConstraints`).** Sie läuft bei `e > T` vor dem Solver:
+
+1. `ρ` ist der Rang von `J` an den Sollwinkeln `τ̂`.
+2. Ist `ρ < m`, wird der Rang zusätzlich am festen Prüfpunkt bestimmt: `τ_i = τ̂_i + RANK_PROBE_RAD · i / n` für die Ecken aus `u_frei`, gemessene Ecken bleiben fest. Es zählt der größere Rang. So gilt eine zufällige Singularität von `τ̂` nicht als Überbestimmung, strukturell abhängige Bedingungen bleiben aber erkannt.
+3. Die Eingabe ist **überbestimmt**, wenn `m > ρ`. `v`, `m` und `ρ` werden getrennt ausgewiesen.
+
+Beispiele: Viereck ohne Zusatzmaße `v = 3, m = 2, ρ = 2`, mit einer Diagonale `3, 3, 3`, jeweils nicht überbestimmt. Viereck mit zwei Diagonalen `3, 4, 3` und Raum mit lauter gemessenen Ecken `0, m ≥ 2, 0` sind überbestimmt.
+
+**Bestimmtheit an der Lösung (`analyze`).** Nur für nicht überbestimmte Eingaben wird der Rang `ρ_J` an der Lösung bestimmt. Die Zahl fehlender Angaben ist `missing = v − ρ_J`. Für ein Viereck ohne Zusatzmaße gilt `missing = 3 − 2 = 1`.
 
 - `missing = 0`: Die Form ist bis auf diskrete Spiegelungen eindeutig. Die Drehrichtungen wählen die Lösung. Status `CONFIRMED`.
 - `missing > 0`: Status `PROPOSED`.
@@ -152,7 +163,13 @@ Sei `u_frei` der Vektor der nach der Elimination gemessener Ecken verbleibenden 
 
 ### 5.5 Überbestimmte Messungen
 
-Gibt es mehr unabhängige harte Bedingungen als Variablen, wird der Solver nicht direkt angewendet. Die Raumauswertung führt stattdessen den Ausgleich aus §6 aus. Ist die größte Korrektur kleiner oder gleich `T`, gilt der Fall als Messfehler. Sonst folgt `CONFLICT(MEASUREMENTS_INCONSISTENT)` unter Angabe der Messung mit dem größten normierten Residuum.
+Ist die Eingabe laut Vorabprüfung (§5.4) überbestimmt, wird der Solver nicht angewendet. Die Raumauswertung führt stattdessen den Ausgleich aus §6 im Modus `SHAPE_DEVIATION` aus (ADR 0018) und entscheidet in dieser Reihenfolge:
+
+1. `NotConverged` ergibt `CONFLICT(ADJUSTMENT_NOT_CONVERGED)` ohne Overlay.
+2. `maxCorrectionMm > T` ergibt `CONFLICT(MEASUREMENTS_INCONSISTENT)` unter Angabe der Messung mit dem größten normierten Residuum.
+3. Sonst gilt der Fall als Messfehler: Stimmt ein gespeicherter Ausgleich, folgt `ADJUSTED`, sonst `NEEDS_ADJUSTMENT` mit Vorschau.
+
+Der Fall „alle Ecken gemessen, `e > T`“ hat `v = 0` und `ρ = 0`, ist also immer überbestimmt und läuft deterministisch über diese Schritte. Eine große Lücke endet in Schritt 2.
 
 ## 6. Schließungsausgleich
 
@@ -167,7 +184,11 @@ Methode: gewichtete kleinste Quadrate (ADR 0005). Beobachtungen und Standardabwe
 
 Variablen `x = (L_0…L_{n-1}, τ_0…τ_{n-1}, D_k)`, Startwert sind die Beobachtungen. Eine nicht festgelegte Schlussecke hat keine Beobachtung. Bedingungen `C(x) = 0`: Schließung, `Σ τ_i = 2π·s` und Diagonalen.
 
-Iteration (Gauss-Helmert): `x_{k+1} = x_0 − Q Aᵀ (A Q Aᵀ)⁻¹ (C(x_k) + A (x_0 − x_k))` mit `A = ∂C/∂x` an `x_k` und `Q = diag(σ²)`, Winkel in Radiant. Eine Variable ohne Beobachtung erhält ein festes großes `σ = 10 rad`. Höchstens 50 Schritte, Abbruch bei `‖C‖_∞ ≤ SOLVER_RESIDUAL_MM`.
+Iteration (Gauss-Helmert): `x_{k+1} = x_0 − Q Aᵀ (A Q Aᵀ)⁻¹ (C(x_k) + A (x_0 − x_k))` mit `A = ∂C/∂x` an `x_k` und `Q = diag(σ²)`, Winkel in Radiant. Eine Variable ohne Beobachtung erhält ein festes großes `σ = 10 rad`. Höchstens 50 Schritte, Abbruch bei `‖C‖_∞ ≤ SOLVER_RESIDUAL_MM`. Wird die Grenze nicht erreicht, ist das Ergebnis `NotConverged`. Das führt in jedem Pfad zu `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`, es entsteht kein Overlay.
+
+**Modus (ADR 0018):** `MEASUREMENT_ERROR` gilt für `e ≤ T`, deklarierte rechte Winkel sind dort Beobachtungen. `SHAPE_DEVIATION` gilt für §5.5. Deklarierte rechte Winkel sind dort nur Form-Angaben (§4) und haben keine Beobachtung.
+
+**Größte Korrektur:** `maxCorrectionMm = max(|ΔL_i|, |ΔD_k|, |wrap(Δτ_i)| · U / (2π))` über alle Beobachtungen, mit `U = Σ L_i` der Rohlängen. Ecken ohne Beobachtung, also die freie Schlussecke und im Modus `SHAPE_DEVIATION` deklarierte rechte Winkel, zählen weder hier noch als `worstObservation`.
 
 Das Ergebnis wird als Overlay gespeichert und nie in die Rohwerte geschrieben:
 
@@ -246,7 +267,7 @@ data class DockLink(
 
 **Andocken an eine Tür oder Öffnung:** Ist `hostOpeningId` gesetzt, muss die Öffnung auf `hostWallId` liegen, und `hostOffset` zählt ab dem Beginn der Öffnung statt ab `V_i`. Der Raum folgt damit einer verschobenen Öffnung. Wird die Öffnung gelöscht, bleibt die Weltposition erhalten: `hostOpeningId` wird `null` und `hostOffset` wird auf den entsprechenden Abstand ab `V_i` umgerechnet.
 
-- Ändert sich der Wirtsraum, berechnet `DockPlacementResolver` die Platzierung abhängiger Räume in topologischer Reihenfolge neu (ADR 0015). Maßgeblich ist der angezeigte Umriss, bei `OPEN` und `CONFLICT` bleibt die letzte Platzierung erhalten.
+- Ändert sich der Wirtsraum, berechnet `DockPlacementResolver` die Platzierung abhängiger Räume in topologischer Reihenfolge neu (ADR 0015). Maßgeblich ist der angezeigte Umriss. Ist der Wirtsraum oder der eigene Raum `OPEN` oder `CONFLICT`, bleibt die letzte Platzierung des Raums einschließlich Dock-Link erhalten.
 - Andockungen dürfen keinen Zyklus bilden. Ein solcher Befehl wird abgelehnt.
 - Freies Verschieben oder Drehen entfernt den Dock-Link. Raummaße bleiben unverändert.
 - Wird der Wirtsraum gelöscht, behalten abhängige Räume ihre Weltposition und verlieren den Link.
@@ -265,7 +286,9 @@ Weitere Festlegungen:
 
 - **`RemoveLastWall`:** Auf einem geschlossenen Raum öffnet der Befehl den Raum und verwirft das Overlay, das per Undo zurückkommt. Hängen an der entfernten Wand oder Ecke Öffnungen, Diagonalen oder Dock-Links, wird er mit einer eigenen `DomainRule` abgelehnt, damit nichts still gelöscht wird.
 - **`RoomEvaluator.evaluate`** liefert `DomainResult<RoomEvaluation>`. Verstöße gegen Wertebereiche ergeben `InvalidValue`.
-- **Import:** `DocumentCodec` übersetzt `IllegalArgumentException` in `DomainError.Document(INVALID_VALUES)`. `ProjectValidator` in `:core:domain` prüft Wandgrenzen, Dock-Ziele und Zyklen. `:core:data` ruft ihn vor der Übernahme auf.
+- **Nebenläufigkeit (ADR 0016):** `CommandHistory.execute`, `reconcile`, `undo`, `redo`, `DockPlacementResolver.resolve` und `RoomEvaluator.evaluate` sind `suspend`. Die Auswertung läuft auf dem Default-Dispatcher, Zugriffe auf die Historie sind in Aufrufreihenfolge serialisiert. Ein `CancellationSignal` reicht bis in Solver, Ausgleich und Rangbestimmung. Abbruch lässt Projekt und Historie unverändert.
+- **`EditOpening`:** Soll eine Öffnung mit angedocktem Raum die Wand wechseln, wird der Befehl mit `OPENING_HAS_DOCKED_ROOMS` abgelehnt. Der Dock-Link wird nicht still gelöst.
+- **Import (ADR 0017):** `importProject(input: InputStream)` liest ein nicht vertrauenswürdiges Dokument. `:core:data` decodiert es, prüft es mit `ProjectValidator` und speichert es erst danach. Der Aufrufer besitzt den Stream und schließt ihn. `DocumentCodec` übersetzt `IllegalArgumentException` in `DomainError.Document(INVALID_VALUES)`. `ProjectValidator` in `:core:domain` prüft Wandgrenzen, Dock-Ziele einschließlich `DockLink.ownWallId`, Zyklen und überlappende Öffnungen je Wand. Berührende Öffnungen überlappen nicht.
 - **`updatedAtEpochMs`** wird nicht von Befehlen geändert, sondern von `ProjectSaver` beim Speichern über `EpochClock` gesetzt.
 - **`reconcile`** verwirft den Redo-Stapel nur, wenn ein neuer Undo-Schritt entsteht.
 - **`importProject`** behält die IDs. Bei einer Kollision entsteht eine Kopie wie beim Duplizieren. `decodeProject` meldet `IOException` als `Storage(READ_FAILED)`.
@@ -273,7 +296,17 @@ Weitere Festlegungen:
 
 ## 12. Maßstab im Export
 
-`PlotLayout` prüft die Maßstäbe `1:50`, `1:100`, `1:200` in dieser Reihenfolge und je Maßstab A4, dann A3. Die Ausrichtung folgt dem Seitenverhältnis des Plans. Der nutzbare Bereich ist die Seite minus 10 mm Rand und 25 mm Titelblock. Gewählt wird die erste passende Kombination, also der größte Maßstab. Passt der Plan auch bei 1:200 auf A3 nicht, wird der Export mit einer Fehlermeldung abgelehnt.
+`PlotLayout` prüft die Maßstäbe `1:50`, `1:100`, `1:200` in dieser Reihenfolge, je Maßstab A4, dann A3, und je Papier beide Ausrichtungen. Der nutzbare Bereich ist die Seite minus 10 mm Rand an allen Seiten und 25 mm Titelblock in der Höhe. Ein Plan passt, wenn `Breite ≤ nutzbare Breite · M` und `Höhe ≤ nutzbare Höhe · M`. Gewählt wird die erste passende Kombination, also der größte Maßstab. Passen auf einem Papier beide Ausrichtungen, gewinnt die zum Plan passende: Hochformat, wenn die Höhe die Breite um mehr als `EXACT_CLOSURE_MM` übersteigt, sonst Querformat. Ein quadratischer Plan liegt also quer. Passt der Plan auch bei 1:200 auf A3 nicht, wird der Export mit einer Fehlermeldung abgelehnt.
+
+| Papier | Hochformat nutzbar (mm) | Querformat nutzbar (mm) |
+|---|---|---|
+| A4 | 190 × 252 | 277 × 165 |
+| A3 | 277 × 375 | 400 × 252 |
+
+**Referenzfälle** (Breite × Höhe):
+
+- 13,5 × 13,0 m: Bei 1:50 fasst A4 hoch 9,5 × 12,6 m und A4 quer 13,85 × 8,25 m, beide zu klein. A3 hoch fasst 13,85 × 18,75 m und passt, A3 quer mit 20,0 × 12,6 m nicht. Ergebnis: **1:50, A3 hoch**.
+- 9,25 × 8,5 m: Bei 1:50 passt A4 hoch (9,5 × 12,6 m), A4 quer nicht (Höhe 8,5 > 8,25 m). Ergebnis: **1:50, A4 hoch**.
 
 Umrechnung: `pt = mm_welt / M · 72 / 25,4`. Jeder Plan enthält einen Maßstabsbalken mit Nennlänge. Der Titelblock liegt am unteren Rand des Bereichs innerhalb der 10-mm-Ränder, über die volle Breite und 25 mm hoch. PNG wird mit 200 dpi auf der gewählten Seite gerendert.
 
