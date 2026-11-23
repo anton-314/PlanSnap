@@ -58,6 +58,8 @@ Android-Unit-Tests nutzen JUnit 4 mit Robolectric, reine JVM-Module JUnit 6. Fak
 
 Roborazzi für Projektliste, Editor (leer, laufend, Vorschlag, Ausgleich, Konflikt), Export und Einstellungen. Varianten: Hell, Dunkel, DE, EN und Schriftgröße 200 %.
 
+Screenshot-Baselines liegen je Modul unter `src/test/screenshots`, Diff-Bilder unter `build/outputs/roborazzi`. Tests rufen `captureRoboImage("name.png")` mit `changeThreshold = 0f` auf, sofern keine Toleranz vereinbart ist. Baselines gelten nur für Linux (lokal WSL, CI Ubuntu).
+
 ## 7. Pflicht-E2E-Szenarien (Gate Phase 5)
 
 | Nr. | Szenario |
