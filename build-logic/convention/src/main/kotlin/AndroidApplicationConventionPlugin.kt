@@ -23,6 +23,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     targetSdk = TARGET_SDK
                     versionCode = 1
                     versionName = "0.1.0"
+                    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
                 buildTypes {
                     release {
@@ -57,6 +58,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             dependencies {
                 add("testImplementation", libs.findLibrary("junit4").get())
+                add("androidTestImplementation", libs.findLibrary("androidx-test-runner").get())
+                add("androidTestImplementation", libs.findLibrary("androidx-test-ext-junit").get())
             }
         }
 }
