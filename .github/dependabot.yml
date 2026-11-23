@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    ignore:
+      # ADR 0012: compileSdk/targetSdk stay at 36. Newer AndroidX releases (Compose BOM and
+      # others) require compileSdk 37 and must not be proposed automatically. Versions follow
+      # docs/ARCHITECTURE.md section 9; AndroidX moves only via a deliberate backlog item.
+      - dependency-name: "androidx.*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
