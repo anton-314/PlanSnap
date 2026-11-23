@@ -57,7 +57,7 @@ Nur ein Agent nutzt den Emulator gleichzeitig, und zwar der vom Orchestrator ben
 "$A" emu kill
 ```
 
-Das Ergebnis gilt nur als bestanden, wenn die Ausgabe `OK (` enthält. In Phase 3 wird geprüft, ob `connectedCheck` aus WSL direkt funktioniert. Bis dahin ist dieser Ablauf verbindlich.
+Verbindlich ist `scripts/run-instrumented-tests.sh`, das diesen Ablauf kapselt. Exit 0 bedeutet mindestens ein bestandener Test, Exit 1 fehlgeschlagene Tests, Exit 2 ein Umgebungsfehler. `connectedDebugAndroidTest` funktioniert aus WSL nicht (`No connected devices`), weil das Linux-`adb` den Windows-Emulator nicht sieht. In GitHub Actions bleibt der Task nutzbar.
 
 ## 3. Taktung
 

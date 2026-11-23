@@ -21,7 +21,7 @@
 
 - Gradle läuft in WSL mit dem Linux-SDK. Dafür braucht das Projekt eine lokale `local.properties` mit `sdk.dir` oder die Variable `ANDROID_HOME=$HOME/Android/Sdk`.
 - `/dev/kvm` ist für den WSL-Benutzer nicht beschreibbar, und `sudo` braucht ein Passwort. Emulator-Tests laufen deshalb über den Windows-Emulator und `adb.exe`.
-- Noch nicht verifiziert: ob Gradle-`connectedCheck` aus WSL den Windows-Emulator erreicht. Rückfallweg ist, Test-APKs in WSL zu bauen und mit `adb.exe` zu installieren und auszuführen.
+- Geprüft: Gradle-`connectedDebugAndroidTest` erreicht den Windows-Emulator aus WSL nicht (`No connected devices`). Instrumentierte Tests laufen lokal über `scripts/run-instrumented-tests.sh`, das Test-APKs in WSL baut und per `adb.exe` ausführt.
 - Gradle Managed Devices sind lokal nicht nutzbar, solange KVM in WSL nicht freigegeben ist. In GitHub Actions bleiben sie möglich.
 - Bei maximal 4 parallelen Agenten müssen Gradle-Heap und Worker begrenzt werden, damit 23 GB RAM reichen.
 - Echtgerät-Tests (Kaltstart, Bedienung) kann nur der Auftraggeber auf dem eigenen Handy ausführen.

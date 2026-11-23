@@ -175,8 +175,8 @@ Das Ergebnis wird als Overlay gespeichert und nie in die Rohwerte geschrieben:
 data class ClosureAdjustment(
     val inputFingerprint: Long,
     val solverVersion: Int,
-    val adjustedLengthsMm: List<Double>,
-    val adjustedTurnsRad: List<Double>,
+    val adjustedLengthsMm: ImmutableList<Double>,
+    val adjustedTurnsRad: ImmutableList<Double>,
 )
 ```
 
