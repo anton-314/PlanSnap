@@ -259,17 +259,22 @@ data class DockLink(
 
 Ein fehlgeschlagener Befehl ändert weder Projekt noch Historie. Ein neuer Befehl nach Undo verwirft den Redo-Stapel. Jeder `execute(command, tolerance)` erzeugt genau einen Undo-Schritt, einschließlich der Neuberechnung der Platzierungen (ADR 0015). IDs werden beim Erzeugen des Befehls vergeben, damit Redo identische Objekte herstellt.
 
+Befehle werden als Daten (`ProjectEdit`) beschrieben. `ProjectCommandFactory.create(edit)` erzeugt daraus den ausführbaren `ProjectCommand`. Der Aufruf lautet `history.execute(factory.create(edit), tolerance)`.
+
 Weitere Festlegungen:
 
 - **`RemoveLastWall`:** Auf einem geschlossenen Raum öffnet der Befehl den Raum und verwirft das Overlay, das per Undo zurückkommt. Hängen an der entfernten Wand oder Ecke Öffnungen, Diagonalen oder Dock-Links, wird er mit einer eigenen `DomainRule` abgelehnt, damit nichts still gelöscht wird.
 - **`RoomEvaluator.evaluate`** liefert `DomainResult<RoomEvaluation>`. Verstöße gegen Wertebereiche ergeben `InvalidValue`.
 - **Import:** `DocumentCodec` übersetzt `IllegalArgumentException` in `DomainError.Document(INVALID_VALUES)`. `ProjectValidator` in `:core:domain` prüft Wandgrenzen, Dock-Ziele und Zyklen. `:core:data` ruft ihn vor der Übernahme auf.
 - **`updatedAtEpochMs`** wird nicht von Befehlen geändert, sondern von `ProjectSaver` beim Speichern über `EpochClock` gesetzt.
+- **`reconcile`** verwirft den Redo-Stapel nur, wenn ein neuer Undo-Schritt entsteht.
+- **`importProject`** behält die IDs. Bei einer Kollision entsteht eine Kopie wie beim Duplizieren. `decodeProject` meldet `IOException` als `Storage(READ_FAILED)`.
+- **Trefferpriorität (`HitTester`):** Öffnung vor Ecke vor Wand vor Rauminnerem. Innerhalb einer Klasse gewinnt der kleinste Abstand, bei Gleichstand beim Rauminneren die kleinere Fläche, danach die kleinste ID.
 
 ## 12. Maßstab im Export
 
 `PlotLayout` prüft die Maßstäbe `1:50`, `1:100`, `1:200` in dieser Reihenfolge und je Maßstab A4, dann A3. Die Ausrichtung folgt dem Seitenverhältnis des Plans. Der nutzbare Bereich ist die Seite minus 10 mm Rand und 25 mm Titelblock. Gewählt wird die erste passende Kombination, also der größte Maßstab. Passt der Plan auch bei 1:200 auf A3 nicht, wird der Export mit einer Fehlermeldung abgelehnt.
 
-Umrechnung: `pt = mm_welt / M · 72 / 25,4`. Jeder Plan enthält einen Maßstabsbalken mit Nennlänge.
+Umrechnung: `pt = mm_welt / M · 72 / 25,4`. Jeder Plan enthält einen Maßstabsbalken mit Nennlänge. Der Titelblock liegt am unteren Rand des Bereichs innerhalb der 10-mm-Ränder, über die volle Breite und 25 mm hoch. PNG wird mit 200 dpi auf der gewählten Seite gerendert.
 
 Räume mit `OPEN` oder `CONFLICT` werden in PDF, PNG und SVG weggelassen und in der Vorprüfung gemeldet. Bleibt kein Raum übrig, wird der Export mit `NOTHING_TO_EXPORT` abgelehnt. JSON enthält immer alle Räume.
