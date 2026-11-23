@@ -1,0 +1,10 @@
+# ktlint configuration for Spotless (docs/WORKFLOWS.md section 1, REQ-NFR-006).
+# Style: ktlint_official, the ktlint default. Deviations are listed and justified below.
+root = true
+
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
+indent_size = 4
+insert_final_newline = true
+# 120 columns instead of the ktlint_official default of 140: fits a side-by-side diff on a laptop screen.
+max_line_length = 120

@@ -5,13 +5,16 @@ import org.gradle.kotlin.dsl.configure
 
 /** Android test module (`com.android.test`) that targets `:app`, used by `:benchmark`. */
 class AndroidTestConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        pluginManager.apply("com.android.test")
+    override fun apply(target: Project) =
+        with(target) {
+            pluginManager.apply("com.android.test")
 
-        extensions.configure<TestExtension> {
-            configureAndroid(this, minSdkVersion = 28)
-            defaultConfig.targetSdk = TARGET_SDK
-            targetProjectPath = ":app"
+            extensions.configure<TestExtension> {
+                configureAndroid(this, minSdkVersion = 28)
+                defaultConfig.targetSdk = TARGET_SDK
+                targetProjectPath = ":app"
+            }
+            pluginManager.apply(ArchitectureConventionPlugin::class.java)
+            pluginManager.apply(QualityConventionPlugin::class.java)
         }
-    }
 }

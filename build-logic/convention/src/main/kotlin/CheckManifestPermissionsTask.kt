@@ -16,7 +16,6 @@ import javax.xml.parsers.DocumentBuilderFactory
  */
 @CacheableTask
 abstract class CheckManifestPermissionsTask : DefaultTask() {
-
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val mergedManifest: RegularFileProperty

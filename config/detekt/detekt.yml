@@ -1,0 +1,17 @@
+# detekt configuration. It builds upon the detekt default configuration (buildUponDefaultConfig = true),
+# so only deviations from the defaults are listed here. Every deviation carries a reason.
+# No rule is disabled to make the build green; no baseline file exists.
+
+naming:
+  FunctionNaming:
+    # Jetpack Compose requires PascalCase for Composable functions that return Unit.
+    ignoreAnnotated:
+      - 'Composable'
+
+style:
+  MagicNumber:
+    # Test code uses literal expected values, e.g. analytical reference areas in docs/TESTING.md section 3.
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/*.kts'

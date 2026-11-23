@@ -23,13 +23,20 @@ internal fun Project.namespaceFor(): String =
     if (path == ":app") NAMESPACE_BASE else NAMESPACE_BASE + path.replace(':', '.')
 
 /** Applies the shared Android settings (SDK levels, Java target). */
-internal fun Project.configureAndroid(extension: CommonExtension, minSdkVersion: Int = MIN_SDK) {
+internal fun Project.configureAndroid(
+    extension: CommonExtension,
+    minSdkVersion: Int = MIN_SDK,
+) {
     extension.apply {
         namespace = namespaceFor()
         compileSdk = COMPILE_SDK
         defaultConfig.minSdk = minSdkVersion
         compileOptions.sourceCompatibility = JAVA_TARGET
         compileOptions.targetCompatibility = JAVA_TARGET
+        // Every lint finding fails the build; the few disabled checks are justified in config/lint/lint.xml.
+        lint.warningsAsErrors = true
+        lint.abortOnError = true
+        lint.lintConfig = rootProject.file("config/lint/lint.xml")
     }
 }
 

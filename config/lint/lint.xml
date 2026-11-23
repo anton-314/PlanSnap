@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android Lint configuration. Lint warnings fail the build (warningsAsErrors in build-logic).
+  Every deviation from the lint defaults is listed here with its reason.
+-->
+<lint>
+    <!--
+      Version policy: dependency versions are pinned by docs/adr/0012-versionsmatrix.md (compileSdk 36).
+      "A newer version exists" is not a defect of the code; updates go through the ADR process.
+    -->
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+
+    <!--
+      androidx.lifecycle ships two lint checks (UnsafeLifecycleWhenUsage, RepeatOnLifecycleWrongUsage) that
+      were built against a lint API older than the one in AGP 9.5.2, so lint skips them and reports this
+      message. The pinned AndroidX versions are fixed by ADR 0012. Nothing is lost compared with the
+      current state, because the checks cannot run either way. Re-enable when AndroidX is updated.
+    -->
+    <issue id="ObsoleteLintCustomCheck" severity="ignore" />
+
+    <!--
+      Temporary and limited to the app manifest: the scaffold (T-BLD-001) has no launcher icon yet, and
+      app/src is outside the build-engineer's ownership. The exception must be removed as soon as the
+      icon exists (reported as a change request; see the T-BLD-002 report).
+    -->
+    <issue id="MissingApplicationIcon">
+        <ignore path="**/app/src/main/AndroidManifest.xml" />
+    </issue>
+</lint>

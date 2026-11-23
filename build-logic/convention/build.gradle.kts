@@ -20,6 +20,22 @@ dependencies {
     implementation(libs.agp.gradle.plugin)
     implementation(libs.kotlin.gradle.plugin)
     implementation(libs.compose.compiler.gradle.plugin)
+    implementation(libs.spotless.gradle.plugin)
+    implementation(libs.detekt.gradle.plugin)
+    implementation(libs.kover.gradle.plugin)
+    implementation(libs.pitest.gradle.plugin)
+
+    testImplementation(gradleTestKit())
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.test {
+    useJUnitPlatform()
+    maxHeapSize = "1g"
+    maxParallelForks = 2
+    systemProperty("plansnap.catalog", rootProject.file("../gradle/libs.versions.toml").absolutePath)
 }
 
 gradlePlugin {
@@ -39,6 +55,18 @@ gradlePlugin {
         register("androidApplication") {
             id = "plansnap.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
+        }
+        register("quality") {
+            id = "plansnap.quality"
+            implementationClass = "QualityConventionPlugin"
+        }
+        register("architecture") {
+            id = "plansnap.architecture"
+            implementationClass = "ArchitectureConventionPlugin"
+        }
+        register("root") {
+            id = "plansnap.root"
+            implementationClass = "RootConventionPlugin"
         }
         register("androidTest") {
             id = "plansnap.android.test"
