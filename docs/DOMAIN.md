@@ -22,6 +22,16 @@ Rohlängen sind `Length(mm: Long)`, Rohwinkel `Angle(milliDegrees: Int)`, berech
 | `COST_TIE` | 1e-9 | Kostengleichheit bei der Lösungsauswahl |
 | `DEFAULT_TOLERANCE_ABS_MM` | 50 | Grenze Messfehler, absolut |
 | `DEFAULT_TOLERANCE_REL` | 0,01 | Grenze Messfehler, relativ zum Umfang |
+| `SOLVER_REGULARIZATION` | 1e-8 | Regularisierung `μ` der Hesse-Matrix (§5.2) |
+| `SOLUTION_ROUNDING_RAD` | 1e-6 | Rundung für den lexikografischen Vergleich (§5.3) |
+| `ADJUSTMENT_MAX_ITERATIONS` | 50 | Schritte des Ausgleichs (§6) |
+| `SIGMA_LENGTH_MM` | 5,0 | Standardabweichung Wandlänge (§6) |
+| `SIGMA_DIAGONAL_MM` | 5,0 | Standardabweichung Diagonale (§6) |
+| `SIGMA_RIGHT_ANGLE_DEG` | 0,5 | Standardabweichung deklarierter rechter Winkel (§6) |
+| `SIGMA_MEASURED_ANGLE_DEG` | 1,0 | Standardabweichung gemessener Winkel (§6) |
+| `SIGMA_FREE_RAD` | 10,0 | Festes σ einer Variable ohne Beobachtung (§6) |
+| `NEAR_COLLINEAR_SIN` | 1e-6 | Grenze für fast kollineare Ecken (§8) |
+| `MITER_LIMIT_FACTOR` | 4,0 | Gehrungsgrenze als Vielfaches der Wandstärke (§8) |
 
 ## 2. Koordinaten
 
@@ -49,9 +59,9 @@ Heading: `φ_0 = 0`, `φ_i = φ_{i-1} + τ_i` für `i = 1 … n−1`. Die Schlus
 
 **Umlaufsinn:** `s = +1`, wenn `Σ_{i≥1} τ̂_i ≥ 0`, sonst `s = −1`. Dabei ist `τ̂_i` der Sollwert aus der Eingabe.
 
-Die Schlussecke ist standardmäßig `Unspecified` und darf als `Measured` erfasst werden. `DeclaredRight` ist an ihr ebenfalls erlaubt.
+Die Schlussecke ist standardmäßig `Unspecified` und darf als `Measured` erfasst werden. `DeclaredRight` ist an ihr ebenfalls erlaubt. **Invariante von `Room`:** `Unspecified` ist nur an `V_0` zulässig. Jede Ecke `i ≥ 1` ist `DeclaredRight` oder `Measured`, sodass `τ̂_i` immer definiert ist.
 
-**Sollwert der Schlussecke:** Ist sie `Unspecified`, sei `r = 2π·s − Σ_{i≥1} τ̂_i`, normiert auf `(−π, π]`. `τ̂_0` ist der nächstliegende Wert aus `{−90°, 0°, +90°}`. Bei Gleichstand gewinnt der Wert mit dem größeren Betrag und dem Vorzeichen von `s`.
+**Sollwert der Schlussecke:** Ist sie `Unspecified`, sei `r = 2π·s − Σ_{i≥1} τ̂_i`, normiert auf `(−π, π]`. `τ̂_0` ist der Wert aus `{−90°, 0°, +90°}` mit dem kleinsten zyklischen Abstand zu `r`. Bei Gleichstand gewinnt der Kandidat mit dem größten `s · τ̂_0`. Beispiele: `r = −45°`, `s = +1` ergibt 0°, `r = 180°` ergibt `s · 90°`. Die Rechnung erfolgt ganzzahlig in Milligrad, damit Gleichstände exakt erkannt werden.
 
 ## 4. Raumstatus
 
@@ -133,7 +143,7 @@ Ohne gültiges Ergebnis folgt `CONFLICT(NO_SIMPLE_SHAPE)`.
 
 ### 5.4 Bestimmtheit
 
-Der Rang `ρ_J` von `J` der harten Bedingungen wird an der Lösung per Gauß-Elimination mit vollständiger Pivotisierung und relativer Schwelle `RANK_TOLERANCE` bestimmt. Die Zahl fehlender Angaben ist `missing = (n − 1) − ρ_J`.
+Sei `u_frei` der Vektor der nach der Elimination gemessener Ecken verbleibenden Variablen und `J` die Jacobi-Matrix der verbleibenden harten Bedingungen (Schließung, gemessene Schlussecke, Diagonalen) nach `u_frei`. Der Rang `ρ_J` wird an der Lösung per Gauß-Elimination mit vollständiger Pivotisierung und relativer Schwelle `RANK_TOLERANCE` bestimmt. Die Zahl fehlender Angaben ist `missing = |u_frei| − ρ_J`. Für ein Viereck ohne Zusatzmaße gilt `missing = 3 − 2 = 1`.
 
 - `missing = 0`: Die Form ist bis auf diskrete Spiegelungen eindeutig. Die Drehrichtungen wählen die Lösung. Status `CONFIRMED`.
 - `missing > 0`: Status `PROPOSED`.
@@ -170,7 +180,17 @@ data class ClosureAdjustment(
 )
 ```
 
-`inputFingerprint` ist ein stabiler FNV-1a-64-Hash über alle Rohlängen, Eckangaben und Diagonalen in Indexreihenfolge. Stimmt er nicht mehr, ist das Overlay ungültig und der Status wird zu `NEEDS_ADJUSTMENT` oder neu ausgewertet. Das Zurücknehmen entfernt nur das Overlay.
+`inputFingerprint` ist ein stabiler FNV-1a-64-Hash (Offset `0xcbf29ce484222325`, Primzahl `0x100000001b3`) über diese Bytefolge, alle Zahlen Big-Endian:
+
+1. `n` als Int
+2. je Wand in Indexreihenfolge `mm` als Long
+3. je Ecke in Indexreihenfolge: Tag als Byte (0 = `Unspecified`, 1 = `DeclaredRight`, 2 = `Measured`), Richtung als Byte (0 = keine, 1 = links, 2 = rechts), bei `Measured` zusätzlich `milliDegrees` als Int
+4. Anzahl der Diagonalen als Int
+5. je Diagonale `min(from, to)` und `max(from, to)` als Int und `mm` als Long, sortiert nach diesen drei Werten
+
+IDs und Wandstärken fließen nicht ein, weil sie die Form nicht bestimmen. Stimmt der Hash nicht mehr, ist das Overlay ungültig und der Status wird zu `NEEDS_ADJUSTMENT` oder neu ausgewertet. Das Zurücknehmen entfernt nur das Overlay.
+
+`solverVersion` dient der Nachvollziehbarkeit. Ein Overlay mit passendem Fingerabdruck bleibt auch bei abweichender Version gültig, damit ein App-Update eine bestätigte Geometrie nicht still verändert.
 
 ## 7. Einfache Polygone und Metriken
 
@@ -209,16 +229,22 @@ data class Opening(
 - Gültig, wenn `offset ≥ 0`, `width > 0` und `offset + width ≤ L_wirksam + EXACT_CLOSURE_MM`.
 - Öffnungen derselben Wand dürfen sich nicht überlappen.
 - `sillHeight` nur für Fenster, `swing` nur für Türen.
+- `DoorSwing` hat die Werte `HINGE_LEFT_INWARD`, `HINGE_LEFT_OUTWARD`, `HINGE_RIGHT_INWARD`, `HINGE_RIGHT_OUTWARD`. Links und rechts gelten in Wandrichtung `V_i → V_{i+1}`, `INWARD` öffnet in den Raum hinein.
 - Wird eine Wand so geändert, dass eine Öffnung ungültig ist, bleibt die Öffnung gespeichert. Sie erhält den abgeleiteten Status `OUT_OF_BOUNDS`, wird rot markiert und vor dem Export gemeldet. Es wird nichts still gelöscht oder verschoben.
 
 ## 10. Mehrere Räume
 
 ```kotlin
 data class RoomPlacement(val originX: Double, val originY: Double, val rotationRad: Double, val dock: DockLink?)
-data class DockLink(val hostRoomId: RoomId, val hostWallId: WallId, val ownWallId: WallId, val hostOffset: Length)
+data class DockLink(
+    val hostRoomId: RoomId, val hostWallId: WallId, val ownWallId: WallId,
+    val hostOffset: Length, val hostOpeningId: OpeningId? = null,
+)
 ```
 
 **Andocken:** Die eigene Wand wird antiparallel zur Wirtswand ausgerichtet. Ihr Startpunkt wird so gelegt, dass der Abstand zwischen den Innenkonturen genau der Stärke der Wirtswand entspricht. `hostOffset` verschiebt den Raum entlang der Wand.
+
+**Andocken an eine Tür oder Öffnung:** Ist `hostOpeningId` gesetzt, muss die Öffnung auf `hostWallId` liegen, und `hostOffset` zählt ab dem Beginn der Öffnung statt ab `V_i`. Der Raum folgt damit einer verschobenen Öffnung. Wird die Öffnung gelöscht, bleibt die Weltposition erhalten: `hostOpeningId` wird `null` und `hostOffset` wird auf den entsprechenden Abstand ab `V_i` umgerechnet.
 
 - Ändert sich der Wirtsraum, wird die Platzierung abhängiger Räume in topologischer Reihenfolge neu berechnet.
 - Andockungen dürfen keinen Zyklus bilden. Ein solcher Befehl wird abgelehnt.
