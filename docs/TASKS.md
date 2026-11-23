@@ -177,7 +177,7 @@ graph LR
 - **Größe:** S
 - **Abhängigkeiten:** T-ARC-001
 - **Besitzbereich:** `core/common/…/units/`
-- **Vertrag:** `LengthParser`, `LengthFormatter`, `AngleFormatter`
+- **Vertrag:** `LengthParser` (mit Parameter `field`), `AngleParser` (vorhandene `DecimalAngleParser` wiederverwenden), `LengthFormatter`, `AngleFormatter`
 - **Akzeptanzkriterien:** `345` cm, `3,45` m und `3450` mm ergeben 3450 mm. Komma und Punkt werden akzeptiert, Überlauf wird abgelehnt. Anforderungen: REQ-MEAS-002, REQ-NFR-003
 - **Tests:** Tabellentests, Roundtrip-Property
 
@@ -281,7 +281,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-002
 - **Besitzbereich:** `core/geometry/…/adjustment/`
 - **Vertrag:** DOMAIN §6, ADR 0005
-- **Akzeptanzkriterien:** Nach dem Ausgleich ist die Lücke höchstens 0,01 mm. Rohwerte bleiben unverändert. Anforderungen: REQ-MEAS-009, REQ-MEAS-010
+- **Akzeptanzkriterien:** Nach dem Ausgleich ist die Lücke höchstens 0,01 mm. Rohwerte bleiben unverändert. Beide `AdjustmentMode`-Pfade sind umgesetzt (ADR 0018). Die Konvergenz im Modus `SHAPE_DEVIATION` ist am Trapez 3/3/3/5 m mit zwei Diagonalen nachgewiesen. Anforderungen: REQ-MEAS-009, REQ-MEAS-010
 - **Tests:** Analytisch, Property
 
 #### T-DAT-002 – Repositories und ProjectSaver
@@ -305,7 +305,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-004
 - **Besitzbereich:** `core/geometry/…/determinacy/`
 - **Vertrag:** DOMAIN §5.4 und §5.5
-- **Akzeptanzkriterien:** `missing = n − 1 − Rang` stimmt, die empfohlene Diagonale erhöht den Rang, Überbestimmung wird erkannt. Anforderungen: REQ-MEAS-008
+- **Akzeptanzkriterien:** `analyzeConstraints` ist umgesetzt, `missing = v − ρ_J` stimmt, die empfohlene Diagonale erhöht den Rang, Überbestimmung wird ohne vorherige Lösung erkannt (ADR 0018). Anforderungen: REQ-MEAS-008
 - **Tests:** Analytisch, Property
 
 #### T-GEO-007 – Referenz-Suite und Mutationstests
