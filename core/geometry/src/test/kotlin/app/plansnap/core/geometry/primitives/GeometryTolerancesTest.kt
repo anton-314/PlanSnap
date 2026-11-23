@@ -44,6 +44,18 @@ class GeometryTolerancesTest {
     }
 
     @Test
+    fun `given domain table when statistical constants are read then values match`() {
+        assertEquals(10.0, GeometryTolerances.RANK_SOLUTION_RESIDUAL_FACTOR, 0.0)
+        assertEquals(0.99, GeometryTolerances.CONFLICT_CONFIDENCE, 0.0)
+        assertEquals(0.95, GeometryTolerances.EXPLICIT_CONFIRMATION_CONFIDENCE, 0.0)
+        assertEquals(0.95, GeometryTolerances.CONTROL_POWER, 0.0)
+        assertEquals(3.0, GeometryTolerances.CONTROL_ERROR_FACTOR, 0.0)
+        assertEquals(30, GeometryTolerances.CHI_SQUARE_TABLE_MAX_REDUNDANCY)
+        assertEquals(1.6448536269514722, GeometryTolerances.NORMAL_QUANTILE_95, 0.0)
+        assertEquals(2.3263478740408408, GeometryTolerances.NORMAL_QUANTILE_99, 0.0)
+    }
+
+    @Test
     fun `given values when compared then tolerance is inclusive`() {
         assertTrue(1.0.isCloseTo(1.5, 0.5))
         assertFalse(1.0.isCloseTo(1.5000001, 0.5))

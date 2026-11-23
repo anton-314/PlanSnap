@@ -3,6 +3,7 @@ package app.plansnap.core.domain.evaluation
 import app.plansnap.core.common.result.DomainResult
 import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.determinacy.Determinacy
+import app.plansnap.core.geometry.determinacy.MeasurementControl
 import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.geometry.primitives.Polygon2
 import app.plansnap.core.geometry.primitives.Vec2
@@ -26,6 +27,43 @@ val ShapeStatus.isExportable: Boolean
 /** Whether a room with this status carries the mark "shape not confirmed" (REQ-EXP-006). */
 val ShapeStatus.isUnconfirmed: Boolean
     get() = this == ShapeStatus.NEEDS_ADJUSTMENT || this == ShapeStatus.PROPOSED
+
+/** Confirmation level of an adjustment (DOMAIN section 5.5, ADR 0018). */
+enum class AdjustmentConfirmation {
+    /** Ordinary confirmation of the preview. */
+    SIMPLE,
+
+    /** Separate, deliberate confirmation of a large correction. A single tap must not produce it. */
+    EXPLICIT,
+}
+
+/**
+ * Adjustment offered for confirmation.
+ *
+ * @property adjustment overlay to store, one entry per wall.
+ * @property correctionSumMm sum norm `S` of the corrections.
+ * @property maxCorrectionMm largest single correction, at most [correctionSumMm].
+ * @property largestCorrection affected measurement of [maxCorrectionMm], `null` if all corrections are zero.
+ * @property requiredConfirmation confirmation level that `AcceptAdjustment` must state.
+ */
+data class AdjustmentProposal(
+    val adjustment: ClosureAdjustment,
+    val correctionSumMm: Double,
+    val maxCorrectionMm: Double,
+    val largestCorrection: ObservationRef?,
+    val requiredConfirmation: AdjustmentConfirmation,
+) {
+    init {
+        require(maxCorrectionMm.isFinite() && maxCorrectionMm >= 0.0) { "Invalid correction: $maxCorrectionMm" }
+        require(correctionSumMm.isFinite() && correctionSumMm >= maxCorrectionMm) {
+            "Correction sum must be at least the largest correction: $correctionSumMm"
+        }
+    }
+
+    /** Whether [given] satisfies [requiredConfirmation]. */
+    fun isConfirmedBy(given: AdjustmentConfirmation): Boolean =
+        requiredConfirmation == AdjustmentConfirmation.SIMPLE || given == AdjustmentConfirmation.EXPLICIT
+}
 
 /**
  * Displayed closed shape in room-local coordinates.
@@ -88,31 +126,39 @@ sealed interface RoomEvaluation {
         override val shape: EvaluatedShape? get() = null
     }
 
-    /** Shape is unique and exactly closed. */
+    /**
+     * Shape is unique and closed exactly or with corrections up to `EXACT_CLOSURE_MM`.
+     *
+     * @property measurementControl controllability of the measurements, `null` if the exact target shape needed no
+     * rank analysis (DOMAIN section 4).
+     */
     data class Confirmed(
         override val roomId: RoomId,
         override val shape: EvaluatedShape,
         override val openingStatuses: ImmutableMap<OpeningId, OpeningStatus>,
+        val measurementControl: MeasurementControl? = null,
     ) : RoomEvaluation {
         override val status: ShapeStatus get() = ShapeStatus.CONFIRMED
     }
 
     /**
-     * Small gap whose adjustment awaits confirmation.
+     * Correction of the measurements that awaits confirmation.
      *
      * @property shape adjustment preview.
      * @property closureError error components of the target shape.
-     * @property proposedAdjustment overlay to pass to `AcceptAdjustment`, one entry per wall.
+     * @property proposal adjustment to pass to `AcceptAdjustment` with its required confirmation.
+     * @property measurementControl controllability of the measurements (DOMAIN section 5.5).
      */
     data class NeedsAdjustment(
         override val roomId: RoomId,
         override val shape: EvaluatedShape,
         val closureError: ClosureError,
-        val proposedAdjustment: ClosureAdjustment,
+        val proposal: AdjustmentProposal,
         override val openingStatuses: ImmutableMap<OpeningId, OpeningStatus>,
+        val measurementControl: MeasurementControl? = null,
     ) : RoomEvaluation {
         init {
-            require(proposedAdjustment.adjustedLengthsMm.size == shape.outline.vertices.size) {
+            require(proposal.adjustment.adjustedLengthsMm.size == shape.outline.vertices.size) {
                 "Expected one adjusted length per wall"
             }
         }
@@ -120,7 +166,7 @@ sealed interface RoomEvaluation {
         override val status: ShapeStatus get() = ShapeStatus.NEEDS_ADJUSTMENT
     }
 
-    /** Confirmed overlay that matches the raw values. */
+    /** Confirmed overlay that matches the raw values. It is checked before any recomputation (DOMAIN section 4). */
     data class Adjusted(
         override val roomId: RoomId,
         override val shape: EvaluatedShape,

@@ -279,7 +279,12 @@ interface SceneBuilder {
         options: SceneOptions,
     ): RoomScene
 
-    /** Builds the scene of [project]. [evaluations] must contain every room. */
+    /**
+     * Builds the scene of [project]. [evaluations] must contain every room.
+     *
+     * Not cancellable while running. A caller that must be cancellable calls [buildRoom] per room and checks for
+     * cancellation between the calls (ARCHITECTURE section 5).
+     */
     fun build(
         project: Project,
         evaluations: ImmutableMap<RoomId, RoomEvaluation>,

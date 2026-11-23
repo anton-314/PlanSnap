@@ -22,15 +22,34 @@ sealed interface ObservationRef {
 }
 
 /**
+ * Redundancy number of one observation (DOMAIN section 5.5).
+ *
+ * @property redundancy share `r_i` of an error that shows up in the residuals, in `[0, 1]`.
+ */
+data class ObservationRedundancy(
+    val observation: ObservationRef,
+    val redundancy: Double,
+) {
+    init {
+        require(redundancy.isFinite() && redundancy in 0.0..1.0) { "Redundancy out of range: $redundancy" }
+    }
+}
+
+/**
  * Result of a weighted least-squares adjustment (DOMAIN section 6).
  *
  * @property adjustedLengthsMm adjusted wall lengths, positive and finite.
  * @property adjustedTurnsRad adjusted turns `τ_0 … τ_{n-1}`, finite.
  * @property adjustedDiagonalsMm adjusted diagonals in input order, positive and finite.
  * @property maxCorrectionMm largest correction over all observations in mm: `|ΔL_i|`, `|ΔD_k|` and `|Δτ_i| · U / (2π)`.
- * Corners without an observation do not count (DOMAIN section 6). Compared with `T` in DOMAIN section 5.5.
+ * Corners without an observation do not count (DOMAIN section 6). Compared with `EXACT_CLOSURE_MM` in DOMAIN
+ * section 5.5.
  * @property worstObservation observation with the largest normalized residual, `null` if all residuals are zero. Never
  * a corner without an observation.
+ * @property correctionSumMm sum norm `S` over the same mm-equivalent corrections as [maxCorrectionMm].
+ * @property normalizedSquareSum `q² = Σ (v_i / σ_i)²` over all observations.
+ * @property largestCorrection observation with the largest mm-equivalent correction, `null` if all are zero.
+ * @property redundancies redundancy numbers of all observations: walls, observed corners, then diagonals.
  */
 data class AdjustedShape(
     val adjustedLengthsMm: List<Double>,
@@ -38,6 +57,10 @@ data class AdjustedShape(
     val adjustedDiagonalsMm: List<Double>,
     val maxCorrectionMm: Double,
     val worstObservation: ObservationRef?,
+    val correctionSumMm: Double,
+    val normalizedSquareSum: Double,
+    val largestCorrection: ObservationRef?,
+    val redundancies: List<ObservationRedundancy>,
 ) {
     init {
         require(adjustedLengthsMm.size == adjustedTurnsRad.size) { "Expected one turn per wall" }
@@ -45,6 +68,15 @@ data class AdjustedShape(
         require(adjustedTurnsRad.all { it.isFinite() }) { "Adjusted turns must be finite" }
         require(adjustedDiagonalsMm.all { it.isFinite() && it > 0.0 }) { "Adjusted diagonals must be positive" }
         require(maxCorrectionMm.isFinite() && maxCorrectionMm >= 0.0) { "Invalid correction: $maxCorrectionMm" }
+        require(correctionSumMm.isFinite() && correctionSumMm >= maxCorrectionMm) {
+            "Correction sum must be at least the largest correction: $correctionSumMm"
+        }
+        require(normalizedSquareSum.isFinite() && normalizedSquareSum >= 0.0) {
+            "Invalid normalized square sum: $normalizedSquareSum"
+        }
+        require(redundancies.distinctBy { it.observation }.size == redundancies.size) {
+            "Expected at most one redundancy per observation"
+        }
     }
 }
 
@@ -76,11 +108,17 @@ interface ClosureAdjuster {
     /**
      * Adjusts [input] in [mode]. Equal arguments yield a bit-identical outcome.
      *
+     * The observations stay the reference `x_0` of the correction. [startTurnsRad] is only the first linearization
+     * point `x_1` of the turns (DOMAIN section 6).
+     *
+     * @param startTurnsRad finite turns `τ_0 … τ_{n-1}`, one per wall.
+     * @throws IllegalArgumentException if [startTurnsRad] has the wrong size or a non-finite value.
      * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
      */
     fun adjust(
         input: ShapeInput,
         mode: AdjustmentMode,
+        startTurnsRad: List<Double>,
         cancellation: CancellationSignal,
     ): AdjustmentOutcome
 }

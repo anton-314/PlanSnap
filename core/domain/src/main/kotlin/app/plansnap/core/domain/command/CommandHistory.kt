@@ -76,9 +76,13 @@ enum class ReconcileOutcome {
  * Session-long undo and redo over before and after references (ADR 0007, ADR 0015, ADR 0016). The history is not
  * persisted and its depth is unbounded.
  *
- * All suspending operations are main-safe and serialized in call order: evaluation runs on the default dispatcher while
- * no other operation can change the history. Cancellation before the commit leaves project and history unchanged.
- * The commit itself is a single atomic update.
+ * All suspending operations are main-safe and serialized in call order by one fair mutex. An operation takes the mutex,
+ * computes inside `withContext` on the default dispatcher while still holding it, returns to the caller context and
+ * commits only then, under the same mutex, as a single atomic update (ADR 0016). Cancellation before the commit leaves
+ * project and history unchanged.
+ *
+ * Confirmed commands run in the application scope, so that leaving the editor does not cancel them. Only previews and
+ * evaluations without a commit are cancellable by the screen.
  */
 interface CommandHistory {
     /** Latest committed state, an atomic snapshot that is safe to read from any thread. */

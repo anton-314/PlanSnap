@@ -101,11 +101,12 @@ sequenceDiagram
 | Arbeit | Dispatcher | Regel |
 |---|---|---|
 | State-Updates | Main | Nur im ViewModel |
-| Solver, Raumauswertung, Szene | Default | Abbrechbar über `CancellationSignal`. Bei Vorschauen ersetzt ein neuerer Lauf den älteren |
-| `CommandHistory` | Default für die Auswertung | Alle Zugriffe serialisiert in Aufrufreihenfolge, Befehle werden nie verworfen. Abbruch vor dem Commit ändert nichts (ADR 0016) |
+| Solver, Raumauswertung | Default | Abbrechbar über `CancellationSignal`. Bei Vorschauen ersetzt ein neuerer Lauf den älteren |
+| Szene | Default | `SceneBuilder` ist rein und kennt kein Signal. Abbrechbare Aufrufer bauen raumweise mit `buildRoom` und prüfen den Abbruch zwischen den Aufrufen |
+| `CommandHistory` | Default für die Auswertung | Mutex nehmen, unter ihm per `withContext` rechnen, danach unter demselben Mutex committen. Bestätigte Befehle laufen im Application-Scope und werden nie verworfen. Abbruch vor dem Commit ändert nichts (ADR 0016) |
 | Datenbank, Dateien | IO | `ProjectSaver` arbeitet Schreibvorgänge seriell ab |
 
-Dispatcher werden immer injiziert. `:core:geometry` bleibt frei von Coroutines und sieht nur die JVM-Abstraktion `CancellationSignal`, die `:core:domain` an den laufenden Job bindet. Eine bestätigte Wand gilt erst als gespeichert, wenn die Transaktion abgeschlossen ist. `ProjectSaver` läuft im Application-Scope und überlebt das ViewModel.
+Dispatcher werden immer injiziert. `:core:geometry` bleibt frei von Coroutines und sieht nur die JVM-Abstraktion `CancellationSignal`, die `:core:domain` an den laufenden Job bindet. Eine bestätigte Wand gilt erst als gespeichert, wenn die Transaktion abgeschlossen ist. Bestätigte Befehle und `ProjectSaver` laufen im Application-Scope und überleben das ViewModel. Nur Vorschauen und Auswertungen ohne Commit hängen am Bildschirm und sind abbrechbar.
 
 ## 6. Fehlerbehandlung
 

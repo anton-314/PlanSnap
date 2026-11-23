@@ -75,7 +75,18 @@ class ContractResultsTest {
     @Test
     fun `given adjustment outcomes when compared then payload decides`() {
         val worst = ObservationRef.DiagonalLength(0)
-        val shape = AdjustedShape(listOf(1.0, 1.0, 1.0), listOf(1.0, 1.0, 1.0), listOf(2.0), 0.25, worst)
+        val shape =
+            AdjustedShape(
+                listOf(1.0, 1.0, 1.0),
+                listOf(1.0, 1.0, 1.0),
+                listOf(2.0),
+                0.25,
+                worst,
+                0.5,
+                0.1,
+                worst,
+                emptyList(),
+            )
         assertEquals(shape, AdjustmentOutcome.Adjusted(shape).shape)
         assertEquals(worst, shape.worstObservation)
         assertNotEquals(AdjustmentOutcome.Adjusted(shape), AdjustmentOutcome.NotConverged)

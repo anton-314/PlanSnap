@@ -168,6 +168,9 @@ enum class DomainRule {
 
     /** The opening cannot move to another wall while a room is docked to it. */
     OPENING_HAS_DOCKED_ROOMS,
+
+    /** The proposed adjustment is a large correction and was accepted without an explicit confirmation. */
+    EXPLICIT_CONFIRMATION_REQUIRED,
 }
 
 /** Reason a project document was rejected. */

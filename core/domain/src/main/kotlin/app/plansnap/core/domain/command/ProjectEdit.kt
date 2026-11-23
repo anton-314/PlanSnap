@@ -1,8 +1,9 @@
 package app.plansnap.core.domain.command
 
 import app.plansnap.core.common.units.Length
+import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
+import app.plansnap.core.domain.evaluation.AdjustmentProposal
 import app.plansnap.core.model.AreaFactor
-import app.plansnap.core.model.ClosureAdjustment
 import app.plansnap.core.model.CornerSpec
 import app.plansnap.core.model.Diagonal
 import app.plansnap.core.model.DiagonalId
@@ -83,10 +84,18 @@ sealed interface ProjectEdit {
         val roomId: RoomId,
     ) : ProjectEdit
 
-    /** Stores [adjustment] as overlay. Fails with `ADJUSTMENT_NOT_AVAILABLE` if its fingerprint is not current. */
+    /**
+     * Stores the adjustment of [proposal] as overlay.
+     *
+     * Fails with `ADJUSTMENT_NOT_AVAILABLE` if its fingerprint is not current, and then with
+     * `EXPLICIT_CONFIRMATION_REQUIRED` if [confirmation] does not satisfy `proposal.requiredConfirmation`.
+     *
+     * @property confirmation confirmation the user actually gave. It has no default on purpose.
+     */
     data class AcceptAdjustment(
         val roomId: RoomId,
-        val adjustment: ClosureAdjustment,
+        val proposal: AdjustmentProposal,
+        val confirmation: AdjustmentConfirmation,
     ) : ProjectEdit
 
     /** Removes only the overlay. Raw values stay bit-identical. */

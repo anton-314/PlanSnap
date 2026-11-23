@@ -1,7 +1,9 @@
 package app.plansnap.core.geometry.determinacy
 
+import app.plansnap.core.geometry.adjustment.AdjustedShape
+import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.cancellation.CancellationSignal
-import app.plansnap.core.geometry.solver.ShapeSolution
+import app.plansnap.core.geometry.solver.HardCondition
 import app.plansnap.core.geometry.traverse.ShapeInput
 
 /** Additional measurement recommended to determine a shape (DOMAIN section 5.4). */
@@ -53,22 +55,33 @@ data class Determinacy(
  *
  * @property freeVariables `v = |u_frei|`, the variables left after eliminating measured corners.
  * @property conditionCount `m`, the hard conditions: closure (2), measured closing corner and diagonals.
- * @property independentConditions `ρ`, the rank of their Jacobian, at most `min(v, m)`.
+ * @property independentSelection deterministic independent subset of size `ρ` (DOMAIN section 5.4), in pivot order:
+ * closure, measured closing corner, then diagonals sorted by `(min, max, length, input index)`. A diagonal between
+ * adjacent corners repeats a wall and is never selected.
  */
 data class ConstraintAnalysis(
     val freeVariables: Int,
     val conditionCount: Int,
-    val independentConditions: Int,
+    val independentSelection: List<HardCondition>,
 ) {
     init {
         require(freeVariables >= 0) { "Free variables must not be negative" }
         require(conditionCount >= CLOSURE_CONDITIONS) { "Closure alone yields $CLOSURE_CONDITIONS conditions" }
-        require(independentConditions in 0..minOf(freeVariables, conditionCount)) {
-            "Independent conditions out of range: $independentConditions"
+        require(independentSelection.size <= minOf(freeVariables, conditionCount)) {
+            "Independent conditions out of range: ${independentSelection.size}"
+        }
+        require(independentSelection.distinct().size == independentSelection.size) {
+            "Independent conditions must be distinct"
         }
     }
 
-    /** Whether a hard condition is dependent, `m > ρ`. Such a shape goes to DOMAIN section 5.5, not to the solver. */
+    /** `ρ`, the rank of the Jacobian at the routing point. */
+    val independentConditions: Int get() = independentSelection.size
+
+    /** Missing measurements at the routing point, `v − ρ`. The rank at the solution is authoritative. */
+    val missing: Int get() = freeVariables - independentConditions
+
+    /** Whether a hard condition is dependent, `m > ρ`. Such a shape takes branch B of DOMAIN section 5.5. */
     val isOverdetermined: Boolean get() = conditionCount > independentConditions
 
     private companion object {
@@ -76,14 +89,49 @@ data class ConstraintAnalysis(
     }
 }
 
+/**
+ * Measurement without a sufficient cross-check, `λ(3T) < λ₀(r)` (DOMAIN section 5.5). Information only.
+ *
+ * @property noncentrality `λ(3T) = (3T)² · r_i / σ_i²`, finite and not negative.
+ * @property recommendation additional measurement that makes [observation] controllable, `null` if none exists.
+ */
+data class UncontrolledMeasurement(
+    val observation: ObservationRef,
+    val noncentrality: Double,
+    val recommendation: MeasurementRecommendation?,
+) {
+    init {
+        require(noncentrality.isFinite() && noncentrality >= 0.0) { "Invalid noncentrality: $noncentrality" }
+    }
+}
+
+/**
+ * Controllability of the measurements of a determined room (DOMAIN section 5.5). Never changes the status.
+ *
+ * @property redundancy `r`, not negative. With `r = 0` no measurement has a cross-check and [uncontrolled] is empty.
+ * @property uncontrolled measurements below the control threshold, without repetition.
+ */
+data class MeasurementControl(
+    val redundancy: Int,
+    val uncontrolled: List<UncontrolledMeasurement>,
+) {
+    init {
+        require(redundancy >= 0) { "Redundancy must not be negative: $redundancy" }
+        require(redundancy > 0 || uncontrolled.isEmpty()) { "Without redundancy no single measurement is listed" }
+        require(uncontrolled.distinctBy { it.observation }.size == uncontrolled.size) {
+            "Expected each measurement at most once"
+        }
+    }
+}
+
 /** Rank analysis of the hard conditions (DOMAIN sections 5.4 and 5.5). */
 interface DeterminacyAnalyzer {
     /**
-     * Determines the independent conditions without solving.
+     * Determines the independent conditions without solving. The result only routes the evaluation.
      *
      * The rank is taken at [turnsRad], the target turns `τ̂`. If it is below `m` there, it is taken again at the fixed
      * probe point of DOMAIN section 5.4, and the larger rank counts, so that an accidental singularity of `τ̂` does not
-     * count as overdetermination.
+     * count as overdetermination. The independent selection is made at the point with the larger rank, `τ̂` on a tie.
      *
      * @param turnsRad target turns `τ̂_0 … τ̂_{n-1}`, one per wall.
      * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
@@ -95,13 +143,34 @@ interface DeterminacyAnalyzer {
     ): ConstraintAnalysis
 
     /**
-     * Analyzes [input] at [solution] of a shape that is not overdetermined.
+     * Determines the authoritative rank at a closed shape, from the solver or the adjustment (DOMAIN section 5.4).
      *
+     * The pivot threshold is `max(RANK_TOLERANCE, RANK_SOLUTION_RESIDUAL_FACTOR · SOLVER_RESIDUAL_MM / U)`.
+     *
+     * @param lengthsMm effective wall lengths of the shape.
+     * @param turnsRad effective turns of the shape.
      * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
      */
     fun analyze(
         input: ShapeInput,
-        solution: ShapeSolution,
+        lengthsMm: List<Double>,
+        turnsRad: List<Double>,
         cancellation: CancellationSignal,
     ): Determinacy
+
+    /**
+     * Lists the measurements of a determined room that are not controllable (DOMAIN section 5.5).
+     *
+     * @param shape adjusted shape with its redundancy numbers.
+     * @param redundancy `r`, not negative.
+     * @param limitMm limit `T` of this room.
+     * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
+     */
+    fun analyzeControl(
+        input: ShapeInput,
+        shape: AdjustedShape,
+        redundancy: Int,
+        limitMm: Double,
+        cancellation: CancellationSignal,
+    ): MeasurementControl
 }

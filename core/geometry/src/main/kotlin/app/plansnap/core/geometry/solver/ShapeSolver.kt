@@ -16,6 +16,27 @@ enum class SolverStart {
     CHORD_POLYGON,
 }
 
+/** One hard condition of DOMAIN section 5.1, used to select an independent set (DOMAIN section 5.4). */
+sealed interface HardCondition {
+    /** Closure in x. */
+    data object ClosureX : HardCondition
+
+    /** Closure in y. */
+    data object ClosureY : HardCondition
+
+    /** Measured closing corner. */
+    data object ClosingCorner : HardCondition
+
+    /** Diagonal at [index] in the input order. */
+    data class DiagonalLength(
+        val index: Int,
+    ) : HardCondition {
+        init {
+            require(index >= 0) { "Diagonal index must not be negative: $index" }
+        }
+    }
+}
+
 /**
  * Selected solution of the shape solver.
  *
@@ -53,13 +74,16 @@ sealed interface SolverOutcome {
 /** Deterministic equality-constrained SQP solver (DOMAIN sections 5.1 to 5.3, ADR 0004). */
 fun interface ShapeSolver {
     /**
-     * Solves [input], which must not be overdetermined (DOMAIN section 5.4). Equal input yields a bit-identical
-     * outcome.
+     * Solves [input] under exactly the hard [conditions], normally `ConstraintAnalysis.independentSelection`
+     * (DOMAIN sections 5.4 and 5.5). Conditions outside [conditions] are ignored. If a closure row is not selected, the
+     * result is only a linearization start for the adjustment and is never displayed. Equal arguments yield a
+     * bit-identical outcome.
      *
      * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
      */
     fun solve(
         input: ShapeInput,
+        conditions: List<HardCondition>,
         cancellation: CancellationSignal,
     ): SolverOutcome
 }

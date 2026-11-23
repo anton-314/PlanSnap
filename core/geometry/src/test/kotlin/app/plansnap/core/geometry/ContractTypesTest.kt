@@ -3,16 +3,21 @@ package app.plansnap.core.geometry
 import app.plansnap.core.common.units.Angle
 import app.plansnap.core.common.units.TurnDirection
 import app.plansnap.core.geometry.adjustment.AdjustedShape
+import app.plansnap.core.geometry.adjustment.ObservationRedundancy
+import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.bands.BandInput
 import app.plansnap.core.geometry.bands.CornerBand
 import app.plansnap.core.geometry.bands.CornerJoin
 import app.plansnap.core.geometry.determinacy.ConstraintAnalysis
 import app.plansnap.core.geometry.determinacy.Determinacy
+import app.plansnap.core.geometry.determinacy.MeasurementControl
 import app.plansnap.core.geometry.determinacy.MeasurementRecommendation
+import app.plansnap.core.geometry.determinacy.UncontrolledMeasurement
 import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Polygon2
 import app.plansnap.core.geometry.primitives.Vec2
 import app.plansnap.core.geometry.primitives.Winding
+import app.plansnap.core.geometry.solver.HardCondition
 import app.plansnap.core.geometry.solver.ShapeSolution
 import app.plansnap.core.geometry.solver.SolverStart
 import app.plansnap.core.geometry.traverse.ClosureError
@@ -151,21 +156,75 @@ class ContractTypesTest {
     }
 
     @Test
-    fun `given constraint counts when analyzed then overdetermination follows domain section 5_4`() {
-        assertEquals(false, ConstraintAnalysis(3, 2, 2).isOverdetermined)
-        assertEquals(false, ConstraintAnalysis(3, 3, 3).isOverdetermined)
-        assertEquals(true, ConstraintAnalysis(3, 4, 3).isOverdetermined)
-        assertEquals(true, ConstraintAnalysis(0, 2, 0).isOverdetermined)
-        assertEquals(true, ConstraintAnalysis(0, 3, 0).isOverdetermined)
+    fun `given constraint counts when analyzed then overdetermination and missing follow domain section 5_4`() {
+        val closure = listOf(HardCondition.ClosureX, HardCondition.ClosureY)
+        val closureAndDiagonal = closure + HardCondition.DiagonalLength(0)
+        assertEquals(false, ConstraintAnalysis(3, 2, closure).isOverdetermined)
+        assertEquals(1, ConstraintAnalysis(3, 2, closure).missing)
+        assertEquals(false, ConstraintAnalysis(3, 3, closureAndDiagonal).isOverdetermined)
+        assertEquals(0, ConstraintAnalysis(3, 3, closureAndDiagonal).missing)
+        assertEquals(true, ConstraintAnalysis(3, 4, closureAndDiagonal).isOverdetermined)
+        assertEquals(3, ConstraintAnalysis(3, 4, closureAndDiagonal).independentConditions)
+        assertEquals(true, ConstraintAnalysis(0, 2, emptyList()).isOverdetermined)
+        assertEquals(true, ConstraintAnalysis(0, 3, emptyList()).isOverdetermined)
+    }
+
+    @Test
+    fun `given pentagon with repeated diagonal when analyzed then one measurement stays missing`() {
+        val selection = listOf(HardCondition.ClosureX, HardCondition.ClosureY, HardCondition.DiagonalLength(0))
+        val analysis = ConstraintAnalysis(freeVariables = 4, conditionCount = 4, independentSelection = selection)
+        assertEquals(true, analysis.isOverdetermined)
+        assertEquals(1, analysis.missing)
     }
 
     @Test
     fun `given invalid constraint analysis when created then it is rejected`() {
-        assertRejected { ConstraintAnalysis(-1, 2, 0) }
-        assertRejected { ConstraintAnalysis(3, 1, 1) }
-        assertRejected { ConstraintAnalysis(3, 2, 3) }
-        assertRejected { ConstraintAnalysis(1, 2, 2) }
-        assertRejected { ConstraintAnalysis(3, 2, -1) }
+        val closure = listOf(HardCondition.ClosureX, HardCondition.ClosureY)
+        assertRejected { ConstraintAnalysis(-1, 2, emptyList()) }
+        assertRejected { ConstraintAnalysis(3, 1, listOf(HardCondition.ClosureX)) }
+        assertRejected { ConstraintAnalysis(3, 2, closure + HardCondition.ClosingCorner) }
+        assertRejected { ConstraintAnalysis(1, 2, closure) }
+        assertRejected { ConstraintAnalysis(3, 3, listOf(HardCondition.ClosureX, HardCondition.ClosureX)) }
+        assertRejected { HardCondition.DiagonalLength(-1) }
+    }
+
+    @Test
+    fun `given measurement control when created then its invariants hold`() {
+        val wall = ObservationRef.WallLength(3)
+        val entry = UncontrolledMeasurement(wall, 0.0, MeasurementRecommendation.DiagonalBetween(2, 5))
+        assertEquals(listOf(entry), MeasurementControl(1, listOf(entry)).uncontrolled)
+        assertDoesNotThrow { MeasurementControl(0, emptyList()) }
+        assertRejected { MeasurementControl(-1, emptyList()) }
+        assertRejected { MeasurementControl(0, listOf(entry)) }
+        assertRejected { MeasurementControl(2, listOf(entry, entry)) }
+        assertRejected { UncontrolledMeasurement(wall, -1.0, null) }
+        assertRejected { UncontrolledMeasurement(wall, Double.NaN, null) }
+    }
+
+    @Test
+    fun `given redundancy number when created then only the unit interval passes`() {
+        val wall = ObservationRef.WallLength(0)
+        assertDoesNotThrow { ObservationRedundancy(wall, 0.0) }
+        assertDoesNotThrow { ObservationRedundancy(wall, 1.0) }
+        assertRejected { ObservationRedundancy(wall, -0.1) }
+        assertRejected { ObservationRedundancy(wall, 1.1) }
+        assertRejected { ObservationRedundancy(wall, Double.NaN) }
+    }
+
+    @Test
+    fun `given adjusted shape when statistics are invalid then it is rejected`() {
+        val ok = listOf(1.0, 1.0, 1.0)
+        val wall = ObservationRef.WallLength(0)
+        val redundancy = ObservationRedundancy(wall, 0.5)
+        val valid = AdjustedShape(ok, ok, emptyList(), 2.0, wall, 3.0, 4.0, wall, listOf(redundancy))
+        assertEquals(3.0, valid.correctionSumMm, 0.0)
+        assertEquals(4.0, valid.normalizedSquareSum, 0.0)
+        assertEquals(wall, valid.largestCorrection)
+        assertRejected { valid.copy(correctionSumMm = 1.0) }
+        assertRejected { valid.copy(correctionSumMm = Double.NaN) }
+        assertRejected { valid.copy(normalizedSquareSum = -1.0) }
+        assertRejected { valid.copy(normalizedSquareSum = Double.POSITIVE_INFINITY) }
+        assertRejected { valid.copy(redundancies = listOf(redundancy, redundancy)) }
     }
 
     @Test
@@ -179,14 +238,38 @@ class ContractTypesTest {
     @Test
     fun `given invalid adjusted shape when created then it is rejected`() {
         val ok = listOf(1.0, 1.0, 1.0)
-        assertDoesNotThrow { AdjustedShape(ok, ok, listOf(1.0), 0.0, null) }
-        assertRejected { AdjustedShape(ok, listOf(1.0), emptyList(), 0.0, null) }
-        assertRejected { AdjustedShape(listOf(1.0, 0.0, 1.0), ok, emptyList(), 0.0, null) }
-        assertRejected { AdjustedShape(listOf(1.0, Double.NaN, 1.0), ok, emptyList(), 0.0, null) }
-        assertRejected { AdjustedShape(ok, listOf(1.0, Double.NaN, 1.0), emptyList(), 0.0, null) }
-        assertRejected { AdjustedShape(ok, ok, listOf(0.0), 0.0, null) }
-        assertRejected { AdjustedShape(ok, ok, emptyList(), -1.0, null) }
-        assertRejected { AdjustedShape(ok, ok, emptyList(), Double.NaN, null) }
+        assertDoesNotThrow { AdjustedShape(ok, ok, listOf(1.0), 0.0, null, 0.0, 0.0, null, emptyList()) }
+        assertRejected { AdjustedShape(ok, listOf(1.0), emptyList(), 0.0, null, 0.0, 0.0, null, emptyList()) }
+        assertRejected { AdjustedShape(listOf(1.0, 0.0, 1.0), ok, emptyList(), 0.0, null, 0.0, 0.0, null, emptyList()) }
+        assertRejected {
+            AdjustedShape(
+                listOf(1.0, Double.NaN, 1.0),
+                ok,
+                emptyList(),
+                0.0,
+                null,
+                0.0,
+                0.0,
+                null,
+                emptyList(),
+            )
+        }
+        assertRejected {
+            AdjustedShape(
+                ok,
+                listOf(1.0, Double.NaN, 1.0),
+                emptyList(),
+                0.0,
+                null,
+                0.0,
+                0.0,
+                null,
+                emptyList(),
+            )
+        }
+        assertRejected { AdjustedShape(ok, ok, listOf(0.0), 0.0, null, 0.0, 0.0, null, emptyList()) }
+        assertRejected { AdjustedShape(ok, ok, emptyList(), -1.0, null, 0.0, 0.0, null, emptyList()) }
+        assertRejected { AdjustedShape(ok, ok, emptyList(), Double.NaN, null, 0.0, 0.0, null, emptyList()) }
     }
 
     @Test

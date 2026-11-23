@@ -74,6 +74,10 @@ fun interface ProjectSaver {
     /**
      * Writes project metadata and [changedRooms] in one transaction. An id that is no longer in [project] deletes the
      * stored room. Sets `updatedAtEpochMs` through `EpochClock` and returns the stored value.
+     *
+     * The stored order always follows `project.rooms`, also for rooms outside [changedRooms], whose content stays as
+     * stored. A room of [project] that is neither stored nor reported is not added. A stored room that is missing from
+     * [project] and not reported stays stored, after the rooms of [project] in its previous relative order.
      */
     suspend fun save(
         project: Project,

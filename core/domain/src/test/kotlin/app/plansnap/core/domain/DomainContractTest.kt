@@ -10,6 +10,8 @@ import app.plansnap.core.domain.command.ProjectCommandFactory
 import app.plansnap.core.domain.command.ProjectEdit
 import app.plansnap.core.domain.command.ReconcileOutcome
 import app.plansnap.core.domain.command.RoomDetails
+import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
+import app.plansnap.core.domain.evaluation.AdjustmentProposal
 import app.plansnap.core.domain.evaluation.EvaluatedShape
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.domain.evaluation.currentCancellationSignal
@@ -212,7 +214,7 @@ class DomainContractTest {
             listOf(
                 RoomEvaluation.Open(roomId, persistentListOf(Vec2.ZERO), noOpenings),
                 RoomEvaluation.Confirmed(roomId, shape, noOpenings),
-                RoomEvaluation.NeedsAdjustment(roomId, shape, error, adjustment, noOpenings),
+                RoomEvaluation.NeedsAdjustment(roomId, shape, error, proposalOf(adjustment), noOpenings),
                 RoomEvaluation.Adjusted(roomId, shape, noOpenings),
                 RoomEvaluation.Proposed(roomId, shape, determinacy, noOpenings),
                 RoomEvaluation.Conflict(roomId, ConflictReason.WALL_TOO_LONG, null, null, noOpenings),
@@ -222,10 +224,38 @@ class DomainContractTest {
     }
 
     @Test
+    fun `given proposal when confirmation is compared then explicit is required only where demanded`() {
+        val simple = proposalOf(adjustmentOf(3))
+        val explicit = simple.copy(requiredConfirmation = AdjustmentConfirmation.EXPLICIT)
+        assertEquals(true, simple.isConfirmedBy(AdjustmentConfirmation.SIMPLE))
+        assertEquals(true, simple.isConfirmedBy(AdjustmentConfirmation.EXPLICIT))
+        assertEquals(false, explicit.isConfirmedBy(AdjustmentConfirmation.SIMPLE))
+        assertEquals(true, explicit.isConfirmedBy(AdjustmentConfirmation.EXPLICIT))
+    }
+
+    @Test
+    fun `given proposal when correction values are invalid then it is rejected`() {
+        val valid = proposalOf(adjustmentOf(3))
+        assertRejected { valid.copy(maxCorrectionMm = -1.0) }
+        assertRejected { valid.copy(maxCorrectionMm = Double.NaN) }
+        assertRejected { valid.copy(correctionSumMm = 0.5) }
+        assertRejected { valid.copy(correctionSumMm = Double.POSITIVE_INFINITY) }
+    }
+
+    private fun proposalOf(adjustment: ClosureAdjustment): AdjustmentProposal =
+        AdjustmentProposal(adjustment, 2.0, 1.0, ObservationRef.WallLength(0), AdjustmentConfirmation.SIMPLE)
+
+    @Test
     fun `given evaluation variants when invariants are violated then they are rejected`() {
         assertRejected { RoomEvaluation.Open(roomId, persistentListOf(), noOpenings) }
         assertRejected {
-            RoomEvaluation.NeedsAdjustment(roomId, shape, ClosureError(1.0, 0.0, 0.0), adjustmentOf(4), noOpenings)
+            RoomEvaluation.NeedsAdjustment(
+                roomId,
+                shape,
+                ClosureError(1.0, 0.0, 0.0),
+                proposalOf(adjustmentOf(4)),
+                noOpenings,
+            )
         }
         assertRejected {
             RoomEvaluation.Proposed(roomId, shape, Determinacy(2, 2, null), noOpenings)
@@ -349,7 +379,7 @@ class DomainContractTest {
             ProjectEdit.AddDiagonal(roomId, diagonal),
             ProjectEdit.RemoveDiagonal(roomId, diagonal.id),
             ProjectEdit.CloseRoom(roomId),
-            ProjectEdit.AcceptAdjustment(roomId, adjustmentOf(3)),
+            ProjectEdit.AcceptAdjustment(roomId, proposalOf(adjustmentOf(3)), AdjustmentConfirmation.SIMPLE),
             ProjectEdit.RevertAdjustment(roomId),
             ProjectEdit.SetThickness(roomId, wallId, Length(240)),
             ProjectEdit.AddOpening(roomId, opening),

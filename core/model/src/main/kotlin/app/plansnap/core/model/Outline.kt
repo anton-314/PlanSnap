@@ -71,10 +71,10 @@ enum class ShapeStatus {
     /** Fewer than three walls or not closed. Not exportable. */
     OPEN,
 
-    /** Shape is unique and exactly closed. */
+    /** Shape is unique and closed exactly or with corrections up to `EXACT_CLOSURE_MM`. */
     CONFIRMED,
 
-    /** Small gap, adjustment awaits confirmation. */
+    /** Correction of the measurements awaits confirmation. */
     NEEDS_ADJUSTMENT,
 
     /** Adjustment is confirmed and matches the raw values. */
@@ -98,11 +98,14 @@ enum class ConflictReason {
     /** No start value yields a valid simple outline. */
     NO_SIMPLE_SHAPE,
 
-    /** Overdetermined measurements cannot be reconciled within the tolerance. */
+    /** Corrections exceed the limit `T` and the chi-square test at level 0.99 (DOMAIN section 5.5). */
     MEASUREMENTS_INCONSISTENT,
 
     /** The closure adjustment did not converge, so no overlay exists (DOMAIN section 6). */
     ADJUSTMENT_NOT_CONVERGED,
+
+    /** The only valid shape of a determined room violates a declared or measured turn direction. */
+    TURN_DIRECTION_VIOLATED,
 }
 
 /**

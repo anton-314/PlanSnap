@@ -159,10 +159,10 @@ class FakeProjectRepository(
 
     /**
      * Stores [project] as seen by `ProjectSaver`: metadata comes from [project]. Only ids in [changedRooms] are
-     * applied: an id that is in [project] replaces the stored room or adds it (after the stored rooms, in project
-     * order), an id that is no longer in [project] deletes the stored room. Rooms that are not reported keep their
-     * stored version, a new unreported room is not stored and an unreported removed room stays stored. A reported id
-     * that is neither in [project] nor stored changes nothing.
+     * applied: an id that is in [project] replaces the stored room or adds it, an id that is no longer in [project]
+     * deletes the stored room. Rooms that are not reported keep their stored version, a new unreported room is not
+     * stored and an unreported removed room stays stored, after the rooms of [project]. The stored order follows
+     * `project.rooms`. A reported id that is neither in [project] nor stored changes nothing.
      */
     internal fun saveChanges(
         project: Project,
@@ -174,15 +174,18 @@ class FakeProjectRepository(
             if (existing == null) {
                 notFound(project.id)
             } else {
-                val submitted = project.rooms.associateBy { it.id }
-                val storedIds = existing.rooms.map { it.id }.toSet()
-                val kept =
-                    existing.rooms.mapNotNull { room ->
-                        if (room.id in changedRooms) submitted[room.id] else room
+                val storedById = existing.rooms.associateBy { it.id }
+                val projectIds = project.rooms.mapTo(HashSet()) { it.id }
+                val inProjectOrder =
+                    project.rooms.mapNotNull { room ->
+                        if (room.id in changedRooms) room else storedById[room.id]
                     }
-                val added = project.rooms.filter { it.id in changedRooms && it.id !in storedIds }
+                val retained = existing.rooms.filter { it.id !in projectIds && it.id !in changedRooms }
                 stored[project.id] =
-                    project.copy(rooms = (kept + added).toImmutableList(), updatedAtEpochMs = updatedAtEpochMs)
+                    project.copy(
+                        rooms = (inProjectOrder + retained).toImmutableList(),
+                        updatedAtEpochMs = updatedAtEpochMs,
+                    )
                 summaries.value = summariesOf(stored.values)
                 DomainResult.Success(updatedAtEpochMs)
             }

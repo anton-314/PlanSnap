@@ -95,6 +95,49 @@ class FakeProjectSaverTest {
         }
 
     @Test
+    fun `given middle room deleted and restored by undo when saved then stored order follows the project`() =
+        runTest {
+            repository.createProject(project)
+            val (a, b, c) = project.rooms
+
+            saver.save(project.copy(rooms = persistentListOf(a, c)), setOf(b.id))
+            assertEquals(listOf(a.id, c.id), storedRoomIds())
+
+            saver.save(project, setOf(b.id))
+
+            assertEquals(listOf(a.id, b.id, c.id), storedRoomIds())
+        }
+
+    @Test
+    fun `given rooms reordered when saved without changes then stored order follows the project`() =
+        runTest {
+            repository.createProject(project)
+            val (a, b, c) = project.rooms
+
+            saver.save(project.copy(rooms = persistentListOf(c, a, b)), emptySet())
+
+            assertEquals(listOf(c.id, a.id, b.id), storedRoomIds())
+        }
+
+    @Test
+    fun `given stored room missing and unreported when saved then it stays after the project rooms`() =
+        runTest {
+            repository.createProject(project)
+            val (a, b, c) = project.rooms
+
+            saver.save(project.copy(rooms = persistentListOf(c, a)), emptySet())
+
+            assertEquals(listOf(c.id, a.id, b.id), storedRoomIds())
+        }
+
+    private suspend fun storedRoomIds(): List<RoomId> =
+        repository
+            .getProject(project.id)
+            .getOrNull()!!
+            .rooms
+            .map { it.id }
+
+    @Test
     fun `given new room not reported as changed when saved then it is not stored`() =
         runTest {
             repository.createProject(project.copy(rooms = persistentListOf(project.rooms[0])))
@@ -119,7 +162,7 @@ class FakeProjectSaverTest {
             saver.save(project.copy(rooms = persistentListOf(*remaining.toTypedArray())), emptySet())
 
             val stored = repository.getProject(project.id).getOrNull()!!
-            assertEquals(project.rooms, stored.rooms)
+            assertEquals(remaining + project.rooms.first(), stored.rooms)
         }
 
     @Test

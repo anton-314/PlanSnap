@@ -73,6 +73,7 @@ class DomainErrorTest {
                 "WALL_HAS_DOCKED_ROOMS",
                 "CORNER_HAS_DIAGONALS",
                 "OPENING_HAS_DOCKED_ROOMS",
+                "EXPLICIT_CONFIRMATION_REQUIRED",
             ),
             DomainRule.entries.map { it.name },
         )

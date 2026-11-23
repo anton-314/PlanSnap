@@ -145,6 +145,7 @@ class ModelInvariantsTest {
                 "NO_SIMPLE_SHAPE",
                 "MEASUREMENTS_INCONSISTENT",
                 "ADJUSTMENT_NOT_CONVERGED",
+                "TURN_DIRECTION_VIOLATED",
             ),
             ConflictReason.entries.map { it.name },
         )

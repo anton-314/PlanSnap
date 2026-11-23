@@ -31,6 +31,14 @@ Rohlängen sind `Length(mm: Long)`, Rohwinkel `Angle(milliDegrees: Int)`, berech
 | `SIGMA_RIGHT_ANGLE_DEG` | 0,5 | Standardabweichung deklarierter rechter Winkel (§6) |
 | `SIGMA_MEASURED_ANGLE_DEG` | 1,0 | Standardabweichung gemessener Winkel (§6) |
 | `SIGMA_FREE_RAD` | 10,0 | Festes σ einer Variable ohne Beobachtung (§6) |
+| `RANK_SOLUTION_RESIDUAL_FACTOR` | 10,0 | Faktor der Rangschwelle an einer Lösung (§5.4) |
+| `CONFLICT_CONFIDENCE` | 0,99 | Niveau des χ²-Tests für `CONFLICT` (§5.5) |
+| `EXPLICIT_CONFIRMATION_CONFIDENCE` | 0,95 | Niveau des χ²-Tests für die ausdrückliche Bestätigung (§5.5) |
+| `CONTROL_POWER` | 0,95 | Trennschärfe einer kontrollierbaren Messung (§5.5) |
+| `CONTROL_ERROR_FACTOR` | 3,0 | Fehler in Vielfachen von `T` für die Kontrollierbarkeit (§5.5) |
+| `CHI_SQUARE_TABLE_MAX_REDUNDANCY` | 30 | Größte Redundanz der festen Tabellen (§5.5) |
+| `NORMAL_QUANTILE_95` | 1,6448536269514722 | Normalquantil zu 0,95 (§5.5) |
+| `NORMAL_QUANTILE_99` | 2,3263478740408408 | Normalquantil zu 0,99 (§5.5) |
 | `NEAR_COLLINEAR_SIN` | 1e-6 | Grenze für fast kollineare Ecken (§8) |
 | `MITER_LIMIT_FACTOR` | 4,0 | Gehrungsgrenze als Vielfaches der Wandstärke (§8) |
 
@@ -73,26 +81,29 @@ enum class ShapeStatus { OPEN, CONFIRMED, NEEDS_ADJUSTMENT, ADJUSTED, PROPOSED, 
 | Status | Bedeutung | Im Export |
 |---|---|---|
 | `OPEN` | Weniger als 3 Wände oder nicht abgeschlossen | Nicht exportierbar, Warnung |
-| `CONFIRMED` | Form eindeutig, exakt geschlossen | Normal |
-| `NEEDS_ADJUSTMENT` | Kleine Lücke, Ausgleich wartet auf Bestätigung | „Form nicht bestätigt“ |
+| `CONFIRMED` | Form eindeutig, exakt oder mit Korrekturen bis `EXACT_CLOSURE_MM` geschlossen | Normal |
+| `NEEDS_ADJUSTMENT` | Korrektur der Messwerte wartet auf Bestätigung | „Form nicht bestätigt“ |
 | `ADJUSTED` | Ausgleich bestätigt und zu den Rohwerten passend | Normal |
 | `PROPOSED` | Form aus Vorschlag, Zusatzmaße fehlen | „Form nicht bestätigt“ |
-| `CONFLICT` | Maße sind geometrisch unmöglich | Nicht exportierbar, Warnung |
+| `CONFLICT` | Maße sind unmöglich oder widersprechen sich signifikant | Nicht exportierbar, Warnung |
 
 ### Auswertung `evaluate(room, tolerance)`
 
-1. **Validieren.** Wertebereiche prüfen. Weniger als 3 Wände oder nicht abgeschlossen ergibt `OPEN`.
-2. **Notwendige Bedingungen.** Ist `L_max ≥ Σ L_i − L_max − MIN_FEATURE_MM`, folgt `CONFLICT(WALL_TOO_LONG)`. Für jede Diagonale zwischen `a` und `b` teilt sich der Umriss in zwei Ketten. Für jede Kette mit Länge `C` und längstem Glied `M` muss `D ≤ C` und `D ≥ 2M − C` gelten, sonst `CONFLICT(DIAGONAL_IMPOSSIBLE)` mit der betroffenen Diagonale.
-3. **Sollform prüfen.** Mit allen Sollwinkeln `τ̂` den Zug ablaufen. Berechne:
+Die Schritte laufen in dieser Reihenfolge. Der erste zutreffende Schritt legt das Ergebnis fest, jeder Pfad endet in genau einem Status.
+
+1. **Validieren.** Wertebereiche prüfen, ein Verstoß ergibt `InvalidValue`. Weniger als 3 Wände oder nicht abgeschlossen ergibt `OPEN`.
+2. **Gespeichertes Overlay.** Hat der Raum ein Overlay mit passendem Fingerabdruck, das strukturell gültig ist (§6), folgt sofort `ADJUSTED` mit der Overlay-Form. Es wird nichts neu berechnet, `solverVersion` und Toleranz spielen keine Rolle. So macht ein App-Update aus `ADJUSTED` nie `CONFLICT`. Ein anderes Overlay wird ignoriert.
+3. **Notwendige Bedingungen.** Ist `L_max ≥ Σ L_i − L_max − MIN_FEATURE_MM`, folgt `CONFLICT(WALL_TOO_LONG)`. Für jede Diagonale zwischen **nicht benachbarten** Ecken `a` und `b` teilt sich der Umriss in zwei Ketten. Für jede Kette mit Länge `C` und längstem Glied `M` muss `D ≤ C` und `D ≥ 2M − C` gelten, sonst `CONFLICT(DIAGONAL_IMPOSSIBLE)` mit der betroffenen Diagonale. Eine Diagonale zwischen benachbarten Ecken ist eine Wiederholungsmessung der Wand und wird über §5.5 und §6 geprüft.
+4. **Sollform prüfen.** Mit allen Sollwinkeln `τ̂` den Zug ablaufen. Berechne:
    - `g = |Σ L_i (cos φ̂_i, sin φ̂_i)|`
    - `r_k = |d_k(τ̂) − D_k|` für alle Diagonalen
    - `a = |wrap(τ̂_0,fest − τ_0,abgeleitet)| · U / (2π)` mit `τ_0,abgeleitet = 2π·s − Σ_{i≥1} τ̂_i`, falls die Schlussecke festgelegt ist (`Measured` oder `DeclaredRight`), sonst 0
    - `e = max(g, max r_k, a)`
-4. **Grenzwert:** `T = max(T_abs, T_rel · U)` mit `U = Σ L_i`.
-5. **Verzweigung:**
+5. **Grenzwert:** `T = max(T_abs, T_rel · U)` mit `U = Σ L_i`.
+6. **Verzweigung:**
    - `e ≤ EXACT_CLOSURE_MM` ergibt `CONFIRMED` mit der Sollform.
-   - `e ≤ T` ist ein **Messfehler**. Stimmt ein gespeicherter Ausgleich (§6), folgt `ADJUSTED`, sonst `NEEDS_ADJUSTMENT` mit Vorschau.
-   - `e > T` ist eine **Formabweichung**. Zuerst läuft die Vorabprüfung aus §5.4 an den Sollwinkeln. Ist die Eingabe überbestimmt, folgt §5.5, sonst der Solver (§5.1 bis §5.3) und danach die Bestimmtheit an der Lösung.
+   - `e ≤ T` ist ein **Messfehler**. Der Ausgleich aus §6 läuft im Modus `MEASUREMENT_ERROR` mit Start bei den Beobachtungen. `NotConverged` ergibt `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`, ein nicht einfacher Umriss `CONFLICT(NO_SIMPLE_SHAPE)`, sonst folgt `NEEDS_ADJUSTMENT` mit Vorschau und einfacher Bestätigung. Die Redundanz für die Kontrollierbarkeit (§5.5) ist hier `r = 2 + [Schlussecke festgelegt] + Anzahl der Diagonalen`.
+   - `e > T` ist eine **Formabweichung** und läuft nach §5.5.
 
 Deklarierte 90°-Ecken zählen als Form-Angabe, solange die Sollform innerhalb der Toleranz schließt. Bei einer Formabweichung werden sie zu weichen Sollwerten.
 
@@ -144,32 +155,63 @@ Ohne gültiges Ergebnis folgt `CONFLICT(NO_SIMPLE_SHAPE)`.
 
 ### 5.4 Bestimmtheit
 
-Sei `u_frei` der Vektor der nach der Elimination gemessener Ecken verbleibenden Variablen, `v = |u_frei|`, und `J` die Jacobi-Matrix der verbleibenden harten Bedingungen (Schließung, gemessene Schlussecke, Diagonalen) nach `u_frei`. Ihre Anzahl ist `m = 2 + [Schlussecke gemessen] + Anzahl der Diagonalen`. Ränge werden per Gauß-Elimination mit vollständiger Pivotisierung und relativer Schwelle `RANK_TOLERANCE` bestimmt.
+Sei `u_frei` der Vektor der nach der Elimination gemessener Ecken verbleibenden Variablen, `v = |u_frei|`, und `J` die Jacobi-Matrix der verbleibenden harten Bedingungen (Schließung, gemessene Schlussecke, Diagonalen) nach `u_frei`. Ihre Anzahl ist `m = 2 + [Schlussecke gemessen] + Anzahl der Diagonalen`. Ränge werden per Gauß-Elimination mit vollständiger Pivotisierung bestimmt. Eine Diagonale zwischen benachbarten Ecken zählt in `m`, ihre Zeile aber nie in einen Rang, weil sie auf dem geschlossenen Umriss nur die Wand wiederholt.
 
-**Vorabprüfung ohne Lösung (`analyzeConstraints`).** Sie läuft bei `e > T` vor dem Solver:
+**Vorabprüfung ohne Lösung (`analyzeConstraints`).** Sie läuft bei `e > T` vor dem Solver und dient **nur dem Routing**:
 
-1. `ρ` ist der Rang von `J` an den Sollwinkeln `τ̂`.
-2. Ist `ρ < m`, wird der Rang zusätzlich am festen Prüfpunkt bestimmt: `τ_i = τ̂_i + RANK_PROBE_RAD · i / n` für die Ecken aus `u_frei`, gemessene Ecken bleiben fest. Es zählt der größere Rang. So gilt eine zufällige Singularität von `τ̂` nicht als Überbestimmung, strukturell abhängige Bedingungen bleiben aber erkannt.
-3. Die Eingabe ist **überbestimmt**, wenn `m > ρ`. `v`, `m` und `ρ` werden getrennt ausgewiesen.
+1. `ρ` ist der Rang von `J` an den Sollwinkeln `τ̂` mit der relativen Schwelle `RANK_TOLERANCE`.
+2. Ist `ρ < m`, wird der Rang zusätzlich am festen Prüfpunkt bestimmt: `τ_i = τ̂_i + RANK_PROBE_RAD · i / n` für die Ecken aus `u_frei`, gemessene Ecken bleiben fest. Es zählt der größere Rang, bei Gleichstand `τ̂`. So gilt eine zufällige Singularität von `τ̂` nicht als Überbestimmung, strukturell abhängige Bedingungen bleiben aber erkannt.
+3. Die **unabhängige Bedingungsmenge** `I` mit `|I| = ρ` entsteht an diesem Punkt durch Aufnahme in fester Reihenfolge, solange der Rang steigt: `c_x`, `c_y`, gemessene Schlussecke, dann die Diagonalen sortiert nach `(min(a,b), max(a,b), Länge, Eingabeindex)`.
+4. Die Eingabe ist **überbestimmt**, wenn `m > ρ`. `ConstraintAnalysis` weist `v`, `m`, `I`, `ρ = |I|` und `missing = v − ρ` immer aus.
 
-Beispiele: Viereck ohne Zusatzmaße `v = 3, m = 2, ρ = 2`, mit einer Diagonale `3, 3, 3`, jeweils nicht überbestimmt. Viereck mit zwei Diagonalen `3, 4, 3` und Raum mit lauter gemessenen Ecken `0, m ≥ 2, 0` sind überbestimmt.
+Beispiele: Viereck ohne Zusatzmaße `v = 3, m = 2, ρ = 2`, mit einer Diagonale `3, 3, 3`, jeweils nicht überbestimmt. Viereck mit zwei Diagonalen `3, 4, 3` und Raum mit lauter gemessenen Ecken `0, m ≥ 2, 0` sind überbestimmt. Fünfeck mit derselben Diagonale doppelt: `4, 4, 3`, also überbestimmt und trotzdem `missing = 1`.
 
-**Bestimmtheit an der Lösung (`analyze`).** Nur für nicht überbestimmte Eingaben wird der Rang `ρ_J` an der Lösung bestimmt. Die Zahl fehlender Angaben ist `missing = v − ρ_J`. Für ein Viereck ohne Zusatzmaße gilt `missing = 3 − 2 = 1`.
+**Bestimmtheit an der Lösung (`analyze`).** Nach dem Lösen oder Ausgleichen wird der Rang `ρ_L` an der geschlossenen Form erneut bestimmt, mit den wirksamen Längen und Drehungen und der Schwelle `max(RANK_TOLERANCE, RANK_SOLUTION_RESIDUAL_FACTOR · SOLVER_RESIDUAL_MM / U)`. **Nur dieser Rang ist maßgeblich.** Die Zahl fehlender Angaben ist `missing = v − ρ_L`. Für ein Viereck ohne Zusatzmaße gilt `missing = 3 − 2 = 1`.
 
-- `missing = 0`: Die Form ist bis auf diskrete Spiegelungen eindeutig. Die Drehrichtungen wählen die Lösung. Status `CONFIRMED`.
+- `missing = 0`: Die Form ist bis auf diskrete Spiegelungen eindeutig. Die Drehrichtungen wählen die Lösung.
 - `missing > 0`: Status `PROPOSED`.
 
 **Empfehlung des Zusatzmaßes:** Unter allen Diagonalen zwischen nicht benachbarten Ecken, die den Rang erhöhen, wird die längste empfohlen. Gleichstand wird durch den kleinsten Index `(a, b)` entschieden. Für eine Ecke wird nur dann ein Winkel empfohlen, wenn keine Diagonale den Rang erhöht.
 
-### 5.5 Überbestimmte Messungen
+### 5.5 Entscheidungsablauf bei Formabweichung
 
-Ist die Eingabe laut Vorabprüfung (§5.4) überbestimmt, wird der Solver nicht angewendet. Die Raumauswertung führt stattdessen den Ausgleich aus §6 im Modus `SHAPE_DEVIATION` aus (ADR 0018) und entscheidet in dieser Reihenfolge:
+Für `e > T` gilt dieser Ablauf (ADR 0018). `v`, `m`, `I` stammen aus `analyzeConstraints`.
 
-1. `NotConverged` ergibt `CONFLICT(ADJUSTMENT_NOT_CONVERGED)` ohne Overlay.
-2. `maxCorrectionMm > T` ergibt `CONFLICT(MEASUREMENTS_INCONSISTENT)` unter Angabe der Messung mit dem größten normierten Residuum.
-3. Sonst gilt der Fall als Messfehler: Stimmt ein gespeicherter Ausgleich, folgt `ADJUSTED`, sonst `NEEDS_ADJUSTMENT` mit Vorschau.
+**Zweig A, nicht überbestimmt (`m = ρ`):**
 
-Der Fall „alle Ecken gemessen, `e > T`“ hat `v = 0` und `ρ = 0`, ist also immer überbestimmt und läuft deterministisch über diese Schritte. Eine große Lücke endet in Schritt 2.
+1. Solver auf allen Bedingungen. `NoSimpleShape` ergibt `CONFLICT(NO_SIMPLE_SHAPE)`.
+2. `analyze` an der Lösung. `missing > 0` ergibt `PROPOSED`.
+3. Bei `missing = 0`: Verletzt die Lösung eine deklarierte oder gemessene Drehrichtung, folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`, sonst `CONFIRMED` mit `r = 0`.
+
+**Zweig B, überbestimmt (`m > ρ`):**
+
+1. **Startform.** Bei `v = 0` sind die Beobachtungen der Start. Sonst läuft der Solver auf `I`. `NoSimpleShape` ergibt `CONFLICT(NO_SIMPLE_SHAPE)`.
+2. **Ausgleich** aus §6 im Modus `SHAPE_DEVIATION`, `x_0` sind die Beobachtungen, die Startform ist nur der erste Linearisierungspunkt. `NotConverged` ergibt `CONFLICT(ADJUSTMENT_NOT_CONVERGED)` ohne Overlay.
+3. **Einfachheit.** Ist der ausgeglichene Umriss nicht einfacher oder hat er einen Kantenabstand unter `MIN_FEATURE_MM`, folgt `CONFLICT(NO_SIMPLE_SHAPE)`.
+4. **Rang.** `analyze` an der ausgeglichenen Form ergibt `ρ_L`, `missing = v − ρ_L` und die Redundanz `r = m − ρ_L`.
+5. **Konflikttest.** Bei `r ≥ 1`, `S > T` **und** `q² > χ²(r; 0,99)` folgt `CONFLICT(MEASUREMENTS_INCONSISTENT)` unter Angabe von `worstObservation`.
+6. **Drehrichtungen.** Bei `missing = 0` und verletzter deklarierter oder gemessener Drehrichtung folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`.
+7. `missing > 0` ergibt `PROPOSED` mit der ausgeglichenen Form. Eine verletzte Drehrichtung ist hier zulässig, weil die Form nur ein Vorschlag ist.
+8. `maxCorrectionMm ≤ EXACT_CLOSURE_MM` ergibt `CONFIRMED`. Eine stimmige Zusatzmessung verschlechtert den Status also nicht.
+9. Sonst folgt `NEEDS_ADJUSTMENT` mit Vorschau. Die **ausdrückliche Bestätigung** ist genau bei `r ≥ 1`, `S > T` und `χ²(r; 0,95) < q² ≤ χ²(r; 0,99)` nötig, sonst genügt die einfache. `S`, die größte Einzelkorrektur und die betroffene Messung stehen immer im Ergebnis.
+
+Der Fall „alle Ecken gemessen, `e > T`“ hat `v = 0`, `ρ = 0` und `r = m`, läuft also immer durch Zweig B.
+
+**Kenngrößen:**
+
+- `S` ist die Summennorm der Korrekturen: `S = Σ |ΔL_i| + Σ |ΔD_k| + Σ |wrap(Δτ_i)| · U / (2π)` über alle Beobachtungen.
+- `q² = Σ (v_i / σ_i)²` über dieselben Beobachtungen, mit `σ_i` aus §6.
+- `χ²(r; p)` liefert `ChiSquareLimits.quantile`: feste Tabelle für `r = 1 … 30`, darüber Wilson-Hilferty `r · (1 − 2/(9r) + z_p · √(2/(9r)))³`.
+
+**Bestätigung:** `AcceptAdjustment` nennt die tatsächlich gegebene Bestätigung. Verlangt der Vorschlag `EXPLICIT` und liegt nur `SIMPLE` vor, wird der Befehl mit `EXPLICIT_CONFIRMATION_REQUIRED` abgelehnt.
+
+**Kontrollierbarkeit (`analyzeControl`).** Sie läuft bei jedem bestimmten Raum (`missing = 0`) mit Ausgleich und **ändert nie den Status**:
+
+- `r_i` ist die Redundanzzahl der Beobachtung, `r_i = (Q Aᵀ (A Q Aᵀ)⁻¹ A Q)_ii / σ_i²` an der Lösung.
+- `λ_i(3T) = (CONTROL_ERROR_FACTOR · T)² · r_i / σ_i²`. Für Winkel ist `σ_i` das mm-Äquivalent `σ · U / (2π)`.
+- Eine Messung ist **nicht kontrollierbar**, wenn `λ_i(3T) < λ₀(r)`. `λ₀(r)` ist die Nichtzentralität, bei der der Konflikttest die Trennschärfe `CONTROL_POWER` erreicht: feste, aufgerundete Tabelle für `r = 1 … 30`, darüber `λ₀ = c − r + 2z² + √(4z⁴ + z²(4c − 2r))` mit `c = χ²(r; 0,99)` und `z = z_0,95`.
+- **Empfohlenes Zusatzmaß je Messung:** Geprüft werden die noch nicht gemessenen Diagonalen zwischen nicht benachbarten Ecken, die längste zuerst, Gleichstand nach kleinstem `(a, b)`, danach die nicht gemessenen Ecken nach Index. Empfohlen wird das erste Maß, mit dem `λ_i(3T) ≥ λ₀(r + 1)` gilt. Gibt es keines, bleibt die Empfehlung leer.
+- Bei `r = 0` hat keine Messung eine Gegenprobe. `MeasurementControl` meldet dann `r = 0` und keine Einzelmessungen.
 
 ## 6. Schließungsausgleich
 
@@ -182,13 +224,13 @@ Methode: gewichtete kleinste Quadrate (ADR 0005). Beobachtungen und Standardabwe
 | Deklarierter rechter Winkel | 0,5° |
 | Gemessener Winkel | 1,0° |
 
-Variablen `x = (L_0…L_{n-1}, τ_0…τ_{n-1}, D_k)`, Startwert sind die Beobachtungen. Eine nicht festgelegte Schlussecke hat keine Beobachtung. Bedingungen `C(x) = 0`: Schließung, `Σ τ_i = 2π·s` und Diagonalen.
+Variablen `x = (L_0…L_{n-1}, τ_0…τ_{n-1}, D_k)`. `x_0` sind immer die Beobachtungen. Eine nicht festgelegte Schlussecke hat keine Beobachtung, ihr Wert in `x_0` ist `τ_0,abgeleitet`. Der erste Linearisierungspunkt `x_1` ist `x_0` mit den Drehungen aus dem Parameter `startTurnsRad` (§5.5). Bedingungen `C(x) = 0`: Schließung, `Σ τ_i = 2π·s` und Diagonalen. Eine Diagonale zwischen benachbarten Ecken hat die lineare Bedingung `L_i − D_k = 0` mit der Wand `w_i` zwischen beiden Ecken.
 
-Iteration (Gauss-Helmert): `x_{k+1} = x_0 − Q Aᵀ (A Q Aᵀ)⁻¹ (C(x_k) + A (x_0 − x_k))` mit `A = ∂C/∂x` an `x_k` und `Q = diag(σ²)`, Winkel in Radiant. Eine Variable ohne Beobachtung erhält ein festes großes `σ = 10 rad`. Höchstens 50 Schritte, Abbruch bei `‖C‖_∞ ≤ SOLVER_RESIDUAL_MM`. Wird die Grenze nicht erreicht, ist das Ergebnis `NotConverged`. Das führt in jedem Pfad zu `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`, es entsteht kein Overlay.
+Iteration (Gauss-Helmert) ab `k = 1`: `x_{k+1} = x_0 − Q Aᵀ (A Q Aᵀ)⁻¹ (C(x_k) + A (x_0 − x_k))` mit `A = ∂C/∂x` an `x_k` und `Q = diag(σ²)`, Winkel in Radiant. Eine Variable ohne Beobachtung erhält ein festes großes `σ = 10 rad`. Höchstens 50 Schritte, Abbruch bei `‖C‖_∞ ≤ SOLVER_RESIDUAL_MM`. Wird die Grenze nicht erreicht, ist das Ergebnis `NotConverged`. Das führt in jedem Pfad zu `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`, es entsteht kein Overlay.
 
-**Modus (ADR 0018):** `MEASUREMENT_ERROR` gilt für `e ≤ T`, deklarierte rechte Winkel sind dort Beobachtungen. `SHAPE_DEVIATION` gilt für §5.5. Deklarierte rechte Winkel sind dort nur Form-Angaben (§4) und haben keine Beobachtung.
+**Modus (ADR 0018):** `MEASUREMENT_ERROR` gilt für `e ≤ T`, deklarierte rechte Winkel sind dort Beobachtungen. `SHAPE_DEVIATION` gilt für Zweig B aus §5.5. Deklarierte rechte Winkel sind dort nur Form-Angaben (§4) und haben keine Beobachtung.
 
-**Größte Korrektur:** `maxCorrectionMm = max(|ΔL_i|, |ΔD_k|, |wrap(Δτ_i)| · U / (2π))` über alle Beobachtungen, mit `U = Σ L_i` der Rohlängen. Ecken ohne Beobachtung, also die freie Schlussecke und im Modus `SHAPE_DEVIATION` deklarierte rechte Winkel, zählen weder hier noch als `worstObservation`.
+**Größte Korrektur:** `maxCorrectionMm = max(|ΔL_i|, |ΔD_k|, |wrap(Δτ_i)| · U / (2π))` über alle Beobachtungen, mit `U = Σ L_i` der Rohlängen. Ecken ohne Beobachtung, also die freie Schlussecke und im Modus `SHAPE_DEVIATION` deklarierte rechte Winkel, zählen weder hier noch in `S`, `q²`, den Redundanzzahlen oder als `worstObservation`. `largestCorrection` nennt die Beobachtung mit der größten mm-äquivalenten Korrektur, `worstObservation` die mit dem größten normierten Residuum.
 
 Das Ergebnis wird als Overlay gespeichert und nie in die Rohwerte geschrieben:
 
@@ -209,9 +251,11 @@ data class ClosureAdjustment(
 4. Anzahl der Diagonalen als Int
 5. je Diagonale `min(from, to)` und `max(from, to)` als Int und `mm` als Long, sortiert nach diesen drei Werten
 
-IDs und Wandstärken fließen nicht ein, weil sie die Form nicht bestimmen. Stimmt der Hash nicht mehr, ist das Overlay ungültig und der Status wird zu `NEEDS_ADJUSTMENT` oder neu ausgewertet. Das Zurücknehmen entfernt nur das Overlay.
+IDs und Wandstärken fließen nicht ein, weil sie die Form nicht bestimmen. Stimmt der Hash nicht mehr, ist das Overlay ungültig und der Raum wird nach §4 neu ausgewertet. Das Zurücknehmen entfernt nur das Overlay.
 
-`solverVersion` dient der Nachvollziehbarkeit. Ein Overlay mit passendem Fingerabdruck bleibt auch bei abweichender Version gültig, damit ein App-Update eine bestätigte Geometrie nicht still verändert.
+**Strukturell gültig** ist ein Overlay, wenn es je Wand eine positive endliche Länge und eine endliche Drehung hat, sein Umriss bis `EXACT_CLOSURE_MM` schließt und einfach ist. Diese Prüfung läuft in §4 Schritt 2 vor jeder Neuberechnung.
+
+`solverVersion` dient der Nachvollziehbarkeit. Ein strukturell gültiges Overlay mit passendem Fingerabdruck bleibt auch bei abweichender Version und geänderter Toleranz gültig, damit ein App-Update eine bestätigte Geometrie nicht still verändert.
 
 ## 7. Einfache Polygone und Metriken
 
@@ -286,10 +330,11 @@ Weitere Festlegungen:
 
 - **`RemoveLastWall`:** Auf einem geschlossenen Raum öffnet der Befehl den Raum und verwirft das Overlay, das per Undo zurückkommt. Hängen an der entfernten Wand oder Ecke Öffnungen, Diagonalen oder Dock-Links, wird er mit einer eigenen `DomainRule` abgelehnt, damit nichts still gelöscht wird.
 - **`RoomEvaluator.evaluate`** liefert `DomainResult<RoomEvaluation>`. Verstöße gegen Wertebereiche ergeben `InvalidValue`.
-- **Nebenläufigkeit (ADR 0016):** `CommandHistory.execute`, `reconcile`, `undo`, `redo`, `DockPlacementResolver.resolve` und `RoomEvaluator.evaluate` sind `suspend`. Die Auswertung läuft auf dem Default-Dispatcher, Zugriffe auf die Historie sind in Aufrufreihenfolge serialisiert. Ein `CancellationSignal` reicht bis in Solver, Ausgleich und Rangbestimmung. Abbruch lässt Projekt und Historie unverändert.
+- **Nebenläufigkeit (ADR 0016):** `CommandHistory.execute`, `reconcile`, `undo`, `redo`, `DockPlacementResolver.resolve` und `RoomEvaluator.evaluate` sind `suspend`. Eine Operation nimmt den Mutex der Historie, rechnet unter ihm per `withContext` auf dem Default-Dispatcher und schreibt danach unter demselben Mutex. Bestätigte Befehle und Speichern laufen im Application-Scope und werden durch Verlassen des Editors nicht abgebrochen. Abbrechbar sind nur Vorschauen und Auswertungen ohne Commit. Ein `CancellationSignal` reicht bis in Solver, Ausgleich und Rangbestimmung. Abbruch vor dem Commit lässt Projekt und Historie unverändert.
 - **`EditOpening`:** Soll eine Öffnung mit angedocktem Raum die Wand wechseln, wird der Befehl mit `OPENING_HAS_DOCKED_ROOMS` abgelehnt. Der Dock-Link wird nicht still gelöst.
 - **Import (ADR 0017):** `importProject(input: InputStream)` liest ein nicht vertrauenswürdiges Dokument. `:core:data` decodiert es, prüft es mit `ProjectValidator` und speichert es erst danach. Der Aufrufer besitzt den Stream und schließt ihn. `DocumentCodec` übersetzt `IllegalArgumentException` in `DomainError.Document(INVALID_VALUES)`. `ProjectValidator` in `:core:domain` prüft Wandgrenzen, Dock-Ziele einschließlich `DockLink.ownWallId`, Zyklen und überlappende Öffnungen je Wand. Berührende Öffnungen überlappen nicht.
 - **`updatedAtEpochMs`** wird nicht von Befehlen geändert, sondern von `ProjectSaver` beim Speichern über `EpochClock` gesetzt.
+- **Raumreihenfolge beim Speichern:** Die gespeicherte Reihenfolge folgt `project.rooms`, auch für Räume außerhalb von `changedRooms`, deren Inhalt unverändert bleibt. Wird `[A, B, C]` ohne `B` gespeichert und `B` per Undo zurückgeholt, ergibt das Speichern von `{B}` wieder `[A, B, C]`.
 - **`reconcile`** verwirft den Redo-Stapel nur, wenn ein neuer Undo-Schritt entsteht.
 - **`importProject`** behält die IDs. Bei einer Kollision entsteht eine Kopie wie beim Duplizieren. `decodeProject` meldet `IOException` als `Storage(READ_FAILED)`.
 - **Trefferpriorität (`HitTester`):** Öffnung vor Ecke vor Wand vor Rauminnerem. Innerhalb einer Klasse gewinnt der kleinste Abstand, bei Gleichstand beim Rauminneren die kleinere Fläche, danach die kleinste ID.

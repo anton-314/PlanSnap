@@ -71,6 +71,30 @@ object GeometryTolerances {
     /** Scale in radians of the fixed rank probe point `τ̂_i + RANK_PROBE_RAD · i / n` (DOMAIN section 5.4). */
     const val RANK_PROBE_RAD: Double = 0.1
 
+    /** Factor `k` of the rank threshold at a solution, `max(RANK_TOLERANCE, k · SOLVER_RESIDUAL_MM / U)`. */
+    const val RANK_SOLUTION_RESIDUAL_FACTOR: Double = 10.0
+
+    /** Level of the chi-square test above which a large correction is a conflict (DOMAIN section 5.5). */
+    const val CONFLICT_CONFIDENCE: Double = 0.99
+
+    /** Level of the chi-square test above which a large correction needs explicit confirmation. */
+    const val EXPLICIT_CONFIRMATION_CONFIDENCE: Double = 0.95
+
+    /** Test power that makes a measurement controllable (DOMAIN section 5.5). */
+    const val CONTROL_POWER: Double = 0.95
+
+    /** Error in multiples of `T` that a controllable measurement must reveal with [CONTROL_POWER]. */
+    const val CONTROL_ERROR_FACTOR: Double = 3.0
+
+    /** Largest redundancy covered by the fixed chi-square and control tables. */
+    const val CHI_SQUARE_TABLE_MAX_REDUNDANCY: Int = 30
+
+    /** Standard normal quantile at 0.95, used above the table limit. */
+    const val NORMAL_QUANTILE_95: Double = 1.6448536269514722
+
+    /** Standard normal quantile at 0.99, used above the table limit. */
+    const val NORMAL_QUANTILE_99: Double = 2.3263478740408408
+
     /** Below this `|sin τ|` a corner counts as nearly collinear (DOMAIN section 8). */
     const val NEAR_COLLINEAR_SIN: Double = 1e-6
 
