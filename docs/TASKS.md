@@ -26,6 +26,7 @@ graph LR
 | Phase 3 / F.5 (Review-Fixes) | T-ARC-005 |
 | Phase 3 / F.6 (Nachreview-Fixes) | T-ARC-006, T-BLD-006 |
 | Phase 3 / F.7 (Review-Fixes) | T-ARC-007 |
+| Phase 3 / F.8 (Review-Fixes) | T-ARC-008 |
 | Welle 1 / 1.1 | T-COM-001, T-GEO-001, T-DES-001, T-DOC-001 |
 | Welle 1 / 1.2 | T-GEO-002, T-GEO-003, T-DAT-001, T-DAT-003 |
 | Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002 |
@@ -205,6 +206,19 @@ graph LR
 - **Akzeptanzkriterien:** Selbstüberschneidende Räume werden nie `CONFIRMED`. Rundung in stimmigen Maßen führt nicht zu `CONFLICT`. Eine Drehrichtung gilt erst bei `d·τ < −2°` als verletzt, `α = 180°` hat keine Richtung. Eine systematische Zufallsprüfung des Ablaufs gegen bekannte Wahrheit ist dokumentiert. Anforderungen: REQ-MEAS-006, REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-011
 - **Tests:** Zahlenfälle des Reviews als Referenzfälle, Vertragstests
 
+### Batch F.8
+
+#### T-ARC-008 – Mehrdeutige Formen und Prüfstand
+
+- **Modul:** core/geometry, core/domain, testing/fixtures
+- **Rolle/Modell:** architect
+- **Größe:** S
+- **Abhängigkeiten:** T-ARC-007
+- **Besitzbereich:** `core/geometry/`, `core/domain/`, `testing/fixtures/`, `docs/DOMAIN.md`, `docs/adr/`, `docs/research/`
+- **Vertrag:** Entscheidung zu diskret mehrdeutigen Formen
+- **Akzeptanzkriterien:** Findet der Solver bei `missing = 0` eine zweite gültige Form mit mehr als `T` Abweichung, folgt `PROPOSED` mit Grund und empfohlenem Zusatzmaß. Der Prüfstand liegt versioniert im Repository. Anforderungen: REQ-MEAS-006, REQ-MEAS-008
+- **Tests:** Vertragstests und Referenzfälle
+
 ## Welle 1
 
 ### Batch 1.1
@@ -320,7 +334,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-002
 - **Besitzbereich:** `core/geometry/…/adjustment/`
 - **Vertrag:** DOMAIN §6, ADR 0005
-- **Akzeptanzkriterien:** Nach dem Ausgleich ist die Lücke höchstens 0,01 mm. Rohwerte bleiben unverändert. Beide `AdjustmentMode`-Pfade sind umgesetzt (ADR 0018). Die Konvergenz im Modus `SHAPE_DEVIATION` ist am Trapez 3/3/3/5 m mit zwei Diagonalen nachgewiesen. Alle Fälle aus `OverdeterminedCases` sind am echten Code bestätigt, einschließlich `startTurnsRad`, Einfachheit und Drehrichtungen nach dem Ausgleich. Die Simulationswerte aus ADR 0018 sind am Produktionscode nachgerechnet. Anforderungen: REQ-MEAS-009, REQ-MEAS-010
+- **Akzeptanzkriterien:** Nach dem Ausgleich ist die Lücke höchstens 0,01 mm. Rohwerte bleiben unverändert. Beide `AdjustmentMode`-Pfade sind umgesetzt (ADR 0018). Die Konvergenz im Modus `SHAPE_DEVIATION` ist am Trapez 3/3/3/5 m mit zwei Diagonalen nachgewiesen. Alle Fälle aus `OverdeterminedCases` sind am echten Code bestätigt, einschließlich `startTurnsRad`, Einfachheit und Drehrichtungen nach dem Ausgleich. Die Simulationswerte aus ADR 0018 sind am Produktionscode nachgerechnet. Alle Katalogfälle aus `OverdeterminedCases` und `OverdeterminedRooms` bestehen am Produktionscode. Anforderungen: REQ-MEAS-009, REQ-MEAS-010
 - **Tests:** Analytisch, Property
 
 #### T-DAT-002 – Repositories und ProjectSaver
@@ -344,7 +358,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-004
 - **Besitzbereich:** `core/geometry/…/determinacy/`
 - **Vertrag:** DOMAIN §5.4 und §5.5
-- **Akzeptanzkriterien:** `analyzeConstraints` ist umgesetzt, `missing = v − ρ_J` stimmt, die empfohlene Diagonale erhöht den Rang, Überbestimmung wird ohne vorherige Lösung erkannt (ADR 0018). Alle Fälle aus `OverdeterminedCases` sind geprüft, ebenso `analyze` und `analyzeControl` mit den Signaturen aus T-ARC-006. Anforderungen: REQ-MEAS-008
+- **Akzeptanzkriterien:** `analyzeConstraints` ist umgesetzt, `missing = v − ρ_J` stimmt, die empfohlene Diagonale erhöht den Rang, Überbestimmung wird ohne vorherige Lösung erkannt (ADR 0018). Alle Fälle aus `OverdeterminedCases` sind geprüft, ebenso `analyze` und `analyzeControl` mit den Signaturen aus T-ARC-006. Der Prüfstand aus `docs/research/` ist als seeded Test am Produktionscode portiert, mit `SOLVER_GRADIENT = 1e-9`. Stimmige ehrliche Räume, falsche Richtungen, unterbestimmte Räume und Grenzwerte haben 0 falsche Bestätigungen. Falsche `CONFLICT` liegen je Klasse bei höchstens 1 %. Anforderungen: REQ-MEAS-008
 - **Tests:** Analytisch, Property
 
 #### T-GEO-007 – Referenz-Suite und Mutationstests

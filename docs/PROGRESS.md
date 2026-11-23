@@ -18,7 +18,7 @@
 
 ## Offene Blocker
 
-Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein kritisch). T-ARC-004, T-BLD-005 und T-ARC-005 sind gemergt. Nachreview weiter `CHANGES_REQUESTED` (3 hoch, 6 mittel, 1 niedrig, alle neu). T-ARC-006 und T-BLD-006 sind gemergt. Drittes Review weiter `CHANGES_REQUESTED` (3 hoch, 2 mittel, 1 niedrig, alle neu, Signaturen weitgehend tragfähig). Behebung über T-ARC-007.
+Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein kritisch). T-ARC-004, T-BLD-005 und T-ARC-005 sind gemergt. Nachreview weiter `CHANGES_REQUESTED` (3 hoch, 6 mittel, 1 niedrig, alle neu). T-ARC-006 und T-BLD-006 sind gemergt. Drittes Review weiter `CHANGES_REQUESTED` (3 hoch, 2 mittel, 1 niedrig, alle neu, Signaturen weitgehend tragfähig). T-ARC-007 ist gemergt. Offen: T-ARC-008 und ein abschließendes Vertragsreview.
 
 ## Entscheidungslog
 
@@ -32,6 +32,7 @@ Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein 
 - 2026-11-23: `ProjectEdit` und `ProjectCommandFactory` abgenommen, damit Verträge ohne Stubs auskommen. Trefferpriorität, Titelblock und PNG mit 200 dpi in DOMAIN festgelegt.
 - 2026-11-23: Vertragskorrekturen aus dem Review abgenommen (ADR 0016 bis 0018), darunter `suspend`-Historie, Import über `InputStream` und `AdjustmentMode`: Deklarierte 90°-Ecken zählen bei Überbestimmung nicht als Beobachtung.
 - 2026-11-23: Konfliktregel für überbestimmte Räume: `S > T` und `q² > χ²(r; 0,99)`. Die reine Summenregel hätte in der Simulation 17 bis 45 % korrekter Räume als Widerspruch gemeldet, die kombinierte Regel rund 1 %. Eine ausdrückliche Bestätigung ist nur im Band zwischen dem 95-%- und dem 99-%-Quantil nötig, weil eine Warnung allein an `S > T` in der Simulation 16 bis 44 % korrekter Räume getroffen hätte. Messungen ohne Gegenprobe sind mathematisch nicht prüfbar und werden mit empfohlenem Zusatzmaß ausgewiesen.
+- 2026-11-24: Diskret mehrdeutige Räume werden `PROPOSED`. Die numerische Qualität des Ablaufs wird ab jetzt am Produktionscode über den portierten Prüfstand abgenommen (T-GEO-005, T-GEO-006), nicht in weiteren Prototyp-Runden. Bekannte Grenze im Prototyp: 5 von 22 abweichenden Formen in einer Klasse von 2.400 Fällen blieben unerkannt.
 
 ## Nächste Schritte
 
