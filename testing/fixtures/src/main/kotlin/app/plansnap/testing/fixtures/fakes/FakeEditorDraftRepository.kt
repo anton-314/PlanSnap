@@ -1,5 +1,6 @@
 package app.plansnap.testing.fixtures.fakes
 
+import app.plansnap.core.common.result.DomainError
 import app.plansnap.core.common.result.DomainResult
 import app.plansnap.core.domain.repository.EditorDraft
 import app.plansnap.core.domain.repository.EditorDraftRepository
@@ -42,4 +43,14 @@ class FakeEditorDraftRepository : EditorDraftRepository {
     override suspend fun clearDraft(projectId: ProjectId): DomainResult<Unit> =
         failures.take(Operation.CLEAR)?.let { DomainResult.Failure(it) }
             ?: DomainResult.Success(Unit).also { synchronized(drafts) { drafts.remove(projectId) } }
+
+    /**
+     * Removes the draft as part of `ProjectRepository.deleteProject`. Honours an injected [Operation.CLEAR] failure
+     * and returns it without changing anything, otherwise removes the draft and returns `null`.
+     */
+    internal fun clearForProjectDelete(projectId: ProjectId): DomainError? =
+        failures.take(Operation.CLEAR) ?: run {
+            synchronized(drafts) { drafts.remove(projectId) }
+            null
+        }
 }

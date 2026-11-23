@@ -36,6 +36,9 @@ import java.io.InputStream
  * @param clock source of the creation time of copies.
  * @param initialProjects projects that are stored from the start, with unique ids.
  * @param importDecoder replaces decoding and validation of `:core:data`. Rejects every document by default.
+ * @param drafts if set, `deleteProject` also removes the draft of the project from it, as the contract demands. A
+ * failure of the draft removal (injected through its `failures`) fails the deletion and leaves project and draft
+ * unchanged.
  */
 class FakeProjectRepository(
     private val ids: IdGenerator = SequentialIdGenerator("copy"),
@@ -44,6 +47,7 @@ class FakeProjectRepository(
     private val importDecoder: (InputStream) -> DomainResult<Project> = {
         DomainResult.Failure(DomainError.Document(DocumentProblem.MALFORMED))
     },
+    private val drafts: FakeEditorDraftRepository? = null,
 ) : ProjectRepository {
     /** Operations of the repository that [failures] can fail. */
     enum class Operation {
@@ -115,7 +119,17 @@ class FakeProjectRepository(
 
     override suspend fun deleteProject(id: ProjectId): DomainResult<Unit> =
         guarded(Operation.DELETE) {
-            if (stored.remove(id) == null) notFound(id) else DomainResult.Success(Unit)
+            if (id !in stored) {
+                notFound(id)
+            } else {
+                val draftFailure = drafts?.clearForProjectDelete(id)
+                if (draftFailure != null) {
+                    DomainResult.Failure(draftFailure)
+                } else {
+                    stored.remove(id)
+                    DomainResult.Success(Unit)
+                }
+            }
         }
 
     override suspend fun duplicateProject(id: ProjectId): DomainResult<ProjectId> =
@@ -144,9 +158,11 @@ class FakeProjectRepository(
         }
 
     /**
-     * Stores [project] as seen by `ProjectSaver`: metadata comes from [project], a room is replaced by its version in
-     * [project] if its id is in [changedRooms] or if it was not stored yet, otherwise the stored room stays. Rooms
-     * missing from [project] are gone.
+     * Stores [project] as seen by `ProjectSaver`: metadata comes from [project]. Only ids in [changedRooms] are
+     * applied: an id that is in [project] replaces the stored room or adds it (after the stored rooms, in project
+     * order), an id that is no longer in [project] deletes the stored room. Rooms that are not reported keep their
+     * stored version, a new unreported room is not stored and an unreported removed room stays stored. A reported id
+     * that is neither in [project] nor stored changes nothing.
      */
     internal fun saveChanges(
         project: Project,
@@ -158,12 +174,15 @@ class FakeProjectRepository(
             if (existing == null) {
                 notFound(project.id)
             } else {
-                val storedRooms = existing.rooms.associateBy { it.id }
-                val rooms =
-                    project.rooms.map { room ->
-                        if (room.id in changedRooms) room else storedRooms[room.id] ?: room
+                val submitted = project.rooms.associateBy { it.id }
+                val storedIds = existing.rooms.map { it.id }.toSet()
+                val kept =
+                    existing.rooms.mapNotNull { room ->
+                        if (room.id in changedRooms) submitted[room.id] else room
                     }
-                stored[project.id] = project.copy(rooms = rooms.toImmutableList(), updatedAtEpochMs = updatedAtEpochMs)
+                val added = project.rooms.filter { it.id in changedRooms && it.id !in storedIds }
+                stored[project.id] =
+                    project.copy(rooms = (kept + added).toImmutableList(), updatedAtEpochMs = updatedAtEpochMs)
                 summaries.value = summariesOf(stored.values)
                 DomainResult.Success(updatedAtEpochMs)
             }

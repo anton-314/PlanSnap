@@ -95,6 +95,58 @@ class FakeProjectSaverTest {
         }
 
     @Test
+    fun `given new room not reported as changed when saved then it is not stored`() =
+        runTest {
+            repository.createProject(project.copy(rooms = persistentListOf(project.rooms[0])))
+
+            saver.save(project, setOf(project.rooms[1].id))
+
+            val storedIds =
+                repository
+                    .getProject(project.id)
+                    .getOrNull()!!
+                    .rooms
+                    .map { it.id }
+            assertEquals(listOf(project.rooms[0].id, project.rooms[1].id), storedIds)
+        }
+
+    @Test
+    fun `given room removed from the project when its id is not reported then it stays stored`() =
+        runTest {
+            repository.createProject(project)
+            val remaining = project.rooms.drop(1)
+
+            saver.save(project.copy(rooms = persistentListOf(*remaining.toTypedArray())), emptySet())
+
+            val stored = repository.getProject(project.id).getOrNull()!!
+            assertEquals(project.rooms, stored.rooms)
+        }
+
+    @Test
+    fun `given reported change, addition and removal together when saved then exactly those are applied`() =
+        runTest {
+            val stored = project.copy(rooms = persistentListOf(project.rooms[0], project.rooms[1]))
+            repository.createProject(stored)
+            val changed = project.rooms[0].copy(name = "Changed")
+            val submitted = project.copy(rooms = persistentListOf(changed, project.rooms[2]))
+
+            saver.save(submitted, setOf(changed.id, project.rooms[1].id, project.rooms[2].id))
+
+            val rooms = repository.getProject(project.id).getOrNull()!!.rooms
+            assertEquals(listOf(changed, project.rooms[2]), rooms)
+        }
+
+    @Test
+    fun `given reported id that is neither submitted nor stored when saved then nothing changes`() =
+        runTest {
+            repository.createProject(project)
+
+            saver.save(project, setOf(RoomId("ghost")))
+
+            assertEquals(project.rooms, repository.getProject(project.id).getOrNull()!!.rooms)
+        }
+
+    @Test
     fun `given clock advanced between saves then each save returns the current time`() =
         runTest {
             repository.createProject(project)
@@ -281,5 +333,71 @@ class FakeSettingsRepositoryTest {
             val initial = AppSettings(gridEnabled = false)
 
             assertEquals(initial, FakeSettingsRepository(initial).settings.first())
+        }
+}
+
+class FakeProjectRepositoryDraftTest {
+    private val drafts = FakeEditorDraftRepository()
+    private val repository = FakeProjectRepository(drafts = drafts)
+    private val project = ProjectGenerator(seed = 5L).project(roomCount = 1)
+    private val other = ProjectGenerator(seed = 6L).project(roomCount = 1).copy(id = ProjectId("other"))
+    private val draft = EditorDraft(project.id, null, "12")
+    private val otherDraft = EditorDraft(other.id, null, "34")
+
+    private suspend fun givenStoredWithDrafts() {
+        repository.createProject(project)
+        repository.createProject(other)
+        drafts.saveDraft(draft)
+        drafts.saveDraft(otherDraft)
+    }
+
+    @Test
+    fun `given project with draft when deleted then the draft is removed and other drafts stay`() =
+        runTest {
+            givenStoredWithDrafts()
+
+            assertEquals(DomainResult.Success(Unit), repository.deleteProject(project.id))
+
+            assertNull(drafts.getDraft(project.id).getOrNull())
+            assertEquals(otherDraft, drafts.getDraft(other.id).getOrNull())
+        }
+
+    @Test
+    fun `given draft removal fails when project is deleted then project and draft stay unchanged`() =
+        runTest {
+            givenStoredWithDrafts()
+            val failure = DomainError.Storage(StorageProblem.WRITE_FAILED)
+            drafts.failures.failNext(FakeEditorDraftRepository.Operation.CLEAR, failure)
+
+            assertEquals(failure, repository.deleteProject(project.id).errorOrNull())
+
+            assertEquals(project, repository.getProject(project.id).getOrNull())
+            assertEquals(draft, drafts.getDraft(project.id).getOrNull())
+            assertEquals(DomainResult.Success(Unit), repository.deleteProject(project.id))
+            assertNull(drafts.getDraft(project.id).getOrNull())
+        }
+
+    @Test
+    fun `given project deletion fails when deleted then the draft stays`() =
+        runTest {
+            givenStoredWithDrafts()
+            val failure = DomainError.Storage(StorageProblem.WRITE_FAILED)
+            repository.failures.failNext(FakeProjectRepository.Operation.DELETE, failure)
+
+            assertEquals(failure, repository.deleteProject(project.id).errorOrNull())
+
+            assertEquals(project, repository.getProject(project.id).getOrNull())
+            assertEquals(draft, drafts.getDraft(project.id).getOrNull())
+        }
+
+    @Test
+    fun `given unknown project when deleted then NotFound is returned and drafts are untouched`() =
+        runTest {
+            drafts.saveDraft(draft)
+
+            val result = repository.deleteProject(project.id)
+
+            assertEquals(DomainError.NotFound(EntityKind.PROJECT, project.id.value), result.errorOrNull())
+            assertEquals(draft, drafts.getDraft(project.id).getOrNull())
         }
 }
