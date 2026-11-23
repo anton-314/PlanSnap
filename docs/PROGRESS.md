@@ -18,7 +18,7 @@
 
 ## Offene Blocker
 
-Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein kritisch). T-ARC-004, T-BLD-005 und T-ARC-005 sind gemergt. Nachreview weiter `CHANGES_REQUESTED` (3 hoch, 6 mittel, 1 niedrig, alle neu). Behebung über T-ARC-006 und T-BLD-006.
+Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein kritisch). T-ARC-004, T-BLD-005 und T-ARC-005 sind gemergt. Nachreview weiter `CHANGES_REQUESTED` (3 hoch, 6 mittel, 1 niedrig, alle neu). T-ARC-006 und T-BLD-006 sind gemergt, das dritte Review steht aus.
 
 ## Entscheidungslog
 

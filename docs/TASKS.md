@@ -306,7 +306,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-002
 - **Besitzbereich:** `core/geometry/…/adjustment/`
 - **Vertrag:** DOMAIN §6, ADR 0005
-- **Akzeptanzkriterien:** Nach dem Ausgleich ist die Lücke höchstens 0,01 mm. Rohwerte bleiben unverändert. Beide `AdjustmentMode`-Pfade sind umgesetzt (ADR 0018). Die Konvergenz im Modus `SHAPE_DEVIATION` ist am Trapez 3/3/3/5 m mit zwei Diagonalen nachgewiesen. Anforderungen: REQ-MEAS-009, REQ-MEAS-010
+- **Akzeptanzkriterien:** Nach dem Ausgleich ist die Lücke höchstens 0,01 mm. Rohwerte bleiben unverändert. Beide `AdjustmentMode`-Pfade sind umgesetzt (ADR 0018). Die Konvergenz im Modus `SHAPE_DEVIATION` ist am Trapez 3/3/3/5 m mit zwei Diagonalen nachgewiesen. Alle Fälle aus `OverdeterminedCases` sind am echten Code bestätigt, einschließlich `startTurnsRad`, Einfachheit und Drehrichtungen nach dem Ausgleich. Die Simulationswerte aus ADR 0018 sind am Produktionscode nachgerechnet. Anforderungen: REQ-MEAS-009, REQ-MEAS-010
 - **Tests:** Analytisch, Property
 
 #### T-DAT-002 – Repositories und ProjectSaver
@@ -330,7 +330,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-004
 - **Besitzbereich:** `core/geometry/…/determinacy/`
 - **Vertrag:** DOMAIN §5.4 und §5.5
-- **Akzeptanzkriterien:** `analyzeConstraints` ist umgesetzt, `missing = v − ρ_J` stimmt, die empfohlene Diagonale erhöht den Rang, Überbestimmung wird ohne vorherige Lösung erkannt (ADR 0018). Anforderungen: REQ-MEAS-008
+- **Akzeptanzkriterien:** `analyzeConstraints` ist umgesetzt, `missing = v − ρ_J` stimmt, die empfohlene Diagonale erhöht den Rang, Überbestimmung wird ohne vorherige Lösung erkannt (ADR 0018). Alle Fälle aus `OverdeterminedCases` sind geprüft, ebenso `analyze` und `analyzeControl` mit den Signaturen aus T-ARC-006. Anforderungen: REQ-MEAS-008
 - **Tests:** Analytisch, Property
 
 #### T-GEO-007 – Referenz-Suite und Mutationstests
@@ -356,7 +356,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-005, T-GEO-006
 - **Besitzbereich:** `core/domain/…/evaluation/`
 - **Vertrag:** DOMAIN §4
-- **Akzeptanzkriterien:** Alle Status und Grenzfälle korrekt. Overlay wird über den Fingerprint validiert. Anforderungen: REQ-MEAS-006, REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-010, REQ-MEAS-011
+- **Akzeptanzkriterien:** Alle Status und Grenzfälle korrekt. Overlay wird über den Fingerprint validiert. Ein gespeichertes Overlay mit passendem Fingerabdruck wird vor der Neuberechnung geprüft (NM3, mit Test). Anforderungen: REQ-MEAS-006, REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-010, REQ-MEAS-011
 - **Tests:** Zustandstabelle, Property
 
 #### T-DOM-002 – Befehle und Historie
@@ -367,7 +367,7 @@ graph LR
 - **Abhängigkeiten:** T-ARC-002
 - **Besitzbereich:** `core/domain/…/command/`
 - **Vertrag:** DOMAIN §11, ADR 0007
-- **Akzeptanzkriterien:** Jeder Befehl ist rein. Fehlschlag ändert nichts, Undo und Redo sind Identitäten. Anforderungen: REQ-UX-005, REQ-MEAS-010
+- **Akzeptanzkriterien:** Jeder Befehl ist rein. Fehlschlag ändert nichts, Undo und Redo sind Identitäten. `EXPLICIT_CONFIRMATION_REQUIRED`, der Mutex-Ablauf mit Commit nach `withContext` und das Verhalten bei Abbruch sind getestet (ADR 0016). Anforderungen: REQ-UX-005, REQ-MEAS-010
 - **Tests:** Property mit zufälligen Befehlsfolgen
 
 #### T-DOM-005 – Flächenbericht
@@ -485,7 +485,7 @@ graph LR
 - **Abhängigkeiten:** T-APP-001, T-DOM-001, T-DOM-002
 - **Besitzbereich:** `feature/editor/…/state/`
 - **Vertrag:** ARCHITECTURE §3 bis §5, Handler-Schnittstelle je Teilfunktion
-- **Akzeptanzkriterien:** Live-Zustand je Eingabe. Bestätigte Wände und Entwurf überstehen Prozess-Tod. Anforderungen: REQ-UX-002, REQ-DATA-002
+- **Akzeptanzkriterien:** Live-Zustand je Eingabe. Bestätigte Wände und Entwurf überstehen Prozess-Tod. Bestätigte Befehle und Speichern laufen im Application-Scope und überleben das Verlassen des Editors. Der Ausgleichsvorschlag wird direkt vor dem Bestätigen neu ausgewertet. Anforderungen: REQ-UX-002, REQ-DATA-002
 - **Tests:** ViewModel-Tests mit Turbine, SavedState-Test
 
 #### T-PRJ-001 – Projektliste und Import
@@ -566,7 +566,7 @@ graph LR
 - **Abhängigkeiten:** T-EDT-002, T-EDT-003
 - **Besitzbereich:** `feature/editor/…/shape/`
 - **Vertrag:** UX §3
-- **Akzeptanzkriterien:** Winkel, Diagonale und Stärke sind eingebbar. Vorschlag, fehlendes Maß, Ausgleich und Rücknahme funktionieren. Unmögliche Maße werden erklärt. Anforderungen: REQ-MEAS-004, REQ-MEAS-005, REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-012
+- **Akzeptanzkriterien:** Winkel, Diagonale und Stärke sind eingebbar. Vorschlag, fehlendes Maß, Ausgleich und Rücknahme funktionieren. Unmögliche Maße werden erklärt. Große Korrekturen haben einen eigenen Dialog zur ausdrücklichen Bestätigung. Nicht kontrollierbare Messungen werden mit empfohlenem Zusatzmaß angezeigt. Anforderungen: REQ-MEAS-004, REQ-MEAS-005, REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-012
 - **Tests:** ViewModel, Compose-UI, Roborazzi
 
 #### T-FEX-001 – Exportdialog
@@ -675,7 +675,7 @@ graph LR
 - **Abhängigkeiten:** T-UX-001, T-EDT-009
 - **Besitzbereich:** `**/src/main/res/values/strings.xml`, `**/src/main/res/values-en/strings.xml`
 - **Vertrag:** UX §7
-- **Akzeptanzkriterien:** Keine hartcodierten Texte, alle Schlüssel in beiden Sprachen, Plurale korrekt. Anforderungen: REQ-UX-008
+- **Akzeptanzkriterien:** Keine hartcodierten Texte, alle Schlüssel in beiden Sprachen, Plurale korrekt. Texte für `EXPLICIT_CONFIRMATION_REQUIRED`, `TURN_DIRECTION_VIOLATED` und die Anzeige nicht kontrollierbarer Messungen liegen in DE und EN vor. Anforderungen: REQ-UX-008
 - **Tests:** Lint, Schlüsselvergleich
 
 #### T-UX-002 – Rotation und Größenwechsel
