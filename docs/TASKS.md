@@ -25,6 +25,7 @@ graph LR
 | Phase 3 / F.4 (Review-Fixes) | T-ARC-004, T-BLD-005 |
 | Phase 3 / F.5 (Review-Fixes) | T-ARC-005 |
 | Phase 3 / F.6 (Nachreview-Fixes) | T-ARC-006, T-BLD-006 |
+| Phase 3 / F.7 (Review-Fixes) | T-ARC-007 |
 | Welle 1 / 1.1 | T-COM-001, T-GEO-001, T-DES-001, T-DOC-001 |
 | Welle 1 / 1.2 | T-GEO-002, T-GEO-003, T-DAT-001, T-DAT-003 |
 | Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002 |
@@ -190,6 +191,19 @@ graph LR
 - **Vertrag:** Nachreview-Befund NM5
 - **Akzeptanzkriterien:** `:core:render` hat Robolectric und `verifyRoborazziDebug`, `:core:data` und `:core:export` haben Robolectric im Testklassenpfad. Anforderungen: REQ-NFR-006
 - **Tests:** Je Modul ein temporärer echter Robolectric-Lauf, für `:core:render` zusätzlich Positiv- und Negativlauf
+
+### Batch F.7
+
+#### T-ARC-007 – Entscheidungsablauf der Raumauswertung absichern
+
+- **Modul:** core/geometry, core/domain, testing/fixtures
+- **Rolle/Modell:** architect
+- **Größe:** M
+- **Abhängigkeiten:** T-ARC-006
+- **Besitzbereich:** `core/geometry/`, `core/domain/`, `testing/fixtures/`, `docs/DOMAIN.md`, `docs/adr/`
+- **Vertrag:** Befunde H1 bis H3, M1, M2 und N1 des dritten Reviews
+- **Akzeptanzkriterien:** Selbstüberschneidende Räume werden nie `CONFIRMED`. Rundung in stimmigen Maßen führt nicht zu `CONFLICT`. Eine Drehrichtung gilt erst bei `d·τ < −2°` als verletzt, `α = 180°` hat keine Richtung. Eine systematische Zufallsprüfung des Ablaufs gegen bekannte Wahrheit ist dokumentiert. Anforderungen: REQ-MEAS-006, REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-011
+- **Tests:** Zahlenfälle des Reviews als Referenzfälle, Vertragstests
 
 ## Welle 1
 
