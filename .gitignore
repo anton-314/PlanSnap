@@ -1,0 +1,32 @@
+# Gradle
+.gradle/
+build/
+.kotlin/
+
+# Local configuration
+local.properties
+.claude/settings.local.json
+.claude/worktrees/
+
+# IDE
+.idea/
+*.iml
+
+# Android artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing and secrets
+*.jks
+*.keystore
+keystore.properties
+.env
+
+# OS
+.DS_Store
+Thumbs.db
