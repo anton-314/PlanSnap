@@ -1,6 +1,6 @@
 # Fortschritt
 
-**Aktuelle Phase:** 2 – Spezifikation, Architektur, Workflows
+**Aktuelle Phase:** 3 – Fundament
 **Letzte Aktualisierung:** 2026-11-23
 
 ## Phasen
@@ -9,8 +9,8 @@
 |---|---|---|
 | 0 – Interview | Fertig | `docs/REQUIREMENTS.md`, vom Auftraggeber bestätigt |
 | 1 – Umgebung | Fertig | `docs/ENVIRONMENT.md`, Emulator-Boot ausgeführt |
-| 2 – Spezifikation | Offen | Freigabe durch den Auftraggeber erforderlich |
-| 3 – Fundament | Offen | |
+| 2 – Spezifikation | Fertig | Vom Auftraggeber freigegeben am 2026-11-23 |
+| 3 – Fundament | In Arbeit | |
 | 4 – Umsetzung | Offen | |
 | 5 – Härtung | Offen | |
 | 6 – Release | Offen | |
@@ -27,6 +27,5 @@ Keine.
 
 ## Nächste Schritte
 
-1. Agentendefinitionen unter `.claude/agents/` anlegen.
-2. Architektur-, Domänen-, UX-, Test-, Workflow- und Aufgabendokumente erstellen.
-3. Kompakte Zusammenfassung zur Freigabe vorlegen.
+1. Phase 3 gemäß `docs/TASKS.md` umsetzen.
+2. Gate prüfen, Tag `phase-3-foundation` setzen und pushen.
