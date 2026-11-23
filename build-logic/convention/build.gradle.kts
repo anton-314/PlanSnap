@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.detekt.gradle.plugin)
     implementation(libs.kover.gradle.plugin)
     implementation(libs.pitest.gradle.plugin)
+    implementation(libs.roborazzi.gradle.plugin)
 
     testImplementation(gradleTestKit())
     testImplementation(platform(libs.junit.bom))

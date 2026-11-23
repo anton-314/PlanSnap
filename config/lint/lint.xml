@@ -17,8 +17,12 @@
       were built against a lint API older than the one in AGP 9.5.2, so lint skips them and reports this
       message. The pinned AndroidX versions are fixed by ADR 0012. Nothing is lost compared with the
       current state, because the checks cannot run either way. Re-enable when AndroidX is updated.
+      The exception is limited to the lint.jar of the androidx.lifecycle artifacts, where lint reports the
+      problem. Obsolete lint checks of any other library still fail the build.
     -->
-    <issue id="ObsoleteLintCustomCheck" severity="ignore" />
+    <issue id="ObsoleteLintCustomCheck">
+        <ignore path="**/lifecycle-*/jars/lint.jar" />
+    </issue>
 
     <!--
       Temporary and limited to the app manifest: the scaffold (T-BLD-001) has no launcher icon yet, and
