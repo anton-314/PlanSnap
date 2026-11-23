@@ -246,7 +246,7 @@ data class DockLink(
 
 **Andocken an eine Tür oder Öffnung:** Ist `hostOpeningId` gesetzt, muss die Öffnung auf `hostWallId` liegen, und `hostOffset` zählt ab dem Beginn der Öffnung statt ab `V_i`. Der Raum folgt damit einer verschobenen Öffnung. Wird die Öffnung gelöscht, bleibt die Weltposition erhalten: `hostOpeningId` wird `null` und `hostOffset` wird auf den entsprechenden Abstand ab `V_i` umgerechnet.
 
-- Ändert sich der Wirtsraum, wird die Platzierung abhängiger Räume in topologischer Reihenfolge neu berechnet.
+- Ändert sich der Wirtsraum, berechnet `DockPlacementResolver` die Platzierung abhängiger Räume in topologischer Reihenfolge neu (ADR 0015). Maßgeblich ist der angezeigte Umriss, bei `OPEN` und `CONFLICT` bleibt die letzte Platzierung erhalten.
 - Andockungen dürfen keinen Zyklus bilden. Ein solcher Befehl wird abgelehnt.
 - Freies Verschieben oder Drehen entfernt den Dock-Link. Raummaße bleiben unverändert.
 - Wird der Wirtsraum gelöscht, behalten abhängige Räume ihre Weltposition und verlieren den Link.
@@ -257,10 +257,19 @@ data class DockLink(
 
 `ProjectCommand.apply(project): DomainResult<Project>` ist rein und deterministisch. Mindestens: `AddWall`, `EditWall`, `RemoveLastWall`, `SetCorner`, `AddDiagonal`, `RemoveDiagonal`, `CloseRoom`, `AcceptAdjustment`, `RevertAdjustment`, `SetThickness`, `Add/Edit/RemoveOpening`, `AddRoom`, `RemoveRoom`, `MoveRoom`, `DockRoom`, `UpdateRoomDetails`, `SetProjectHeight`.
 
-Ein fehlgeschlagener Befehl ändert weder Projekt noch Historie. Ein neuer Befehl nach Undo verwirft den Redo-Stapel. Jeder `execute` erzeugt genau einen Undo-Schritt. IDs werden beim Erzeugen des Befehls vergeben, damit Redo identische Objekte herstellt.
+Ein fehlgeschlagener Befehl ändert weder Projekt noch Historie. Ein neuer Befehl nach Undo verwirft den Redo-Stapel. Jeder `execute(command, tolerance)` erzeugt genau einen Undo-Schritt, einschließlich der Neuberechnung der Platzierungen (ADR 0015). IDs werden beim Erzeugen des Befehls vergeben, damit Redo identische Objekte herstellt.
+
+Weitere Festlegungen:
+
+- **`RemoveLastWall`:** Auf einem geschlossenen Raum öffnet der Befehl den Raum und verwirft das Overlay, das per Undo zurückkommt. Hängen an der entfernten Wand oder Ecke Öffnungen, Diagonalen oder Dock-Links, wird er mit einer eigenen `DomainRule` abgelehnt, damit nichts still gelöscht wird.
+- **`RoomEvaluator.evaluate`** liefert `DomainResult<RoomEvaluation>`. Verstöße gegen Wertebereiche ergeben `InvalidValue`.
+- **Import:** `DocumentCodec` übersetzt `IllegalArgumentException` in `DomainError.Document(INVALID_VALUES)`. `ProjectValidator` in `:core:domain` prüft Wandgrenzen, Dock-Ziele und Zyklen. `:core:data` ruft ihn vor der Übernahme auf.
+- **`updatedAtEpochMs`** wird nicht von Befehlen geändert, sondern von `ProjectSaver` beim Speichern über `EpochClock` gesetzt.
 
 ## 12. Maßstab im Export
 
 `PlotLayout` prüft die Maßstäbe `1:50`, `1:100`, `1:200` in dieser Reihenfolge und je Maßstab A4, dann A3. Die Ausrichtung folgt dem Seitenverhältnis des Plans. Der nutzbare Bereich ist die Seite minus 10 mm Rand und 25 mm Titelblock. Gewählt wird die erste passende Kombination, also der größte Maßstab. Passt der Plan auch bei 1:200 auf A3 nicht, wird der Export mit einer Fehlermeldung abgelehnt.
 
 Umrechnung: `pt = mm_welt / M · 72 / 25,4`. Jeder Plan enthält einen Maßstabsbalken mit Nennlänge.
+
+Räume mit `OPEN` oder `CONFLICT` werden in PDF, PNG und SVG weggelassen und in der Vorprüfung gemeldet. Bleibt kein Raum übrig, wird der Export mit `NOTHING_TO_EXPORT` abgelehnt. JSON enthält immer alle Räume.

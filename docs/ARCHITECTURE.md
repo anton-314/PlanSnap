@@ -80,7 +80,7 @@ sequenceDiagram
   participant E as RoomEvaluator
   participant S as ProjectSaver
   U->>V: Intent ConfirmWall
-  V->>H: execute(AddWall)
+  V->>H: execute(AddWall, tolerance)
   H-->>V: neues Project
   V->>E: evaluate(geänderter Raum)
   E-->>V: RoomEvaluation
