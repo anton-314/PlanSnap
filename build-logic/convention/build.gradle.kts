@@ -53,6 +53,14 @@ gradlePlugin {
             id = "plansnap.android.compose"
             implementationClass = "AndroidComposeConventionPlugin"
         }
+        register("androidRobolectric") {
+            id = "plansnap.android.robolectric"
+            implementationClass = "AndroidRobolectricConventionPlugin"
+        }
+        register("androidRoborazzi") {
+            id = "plansnap.android.roborazzi"
+            implementationClass = "AndroidRoborazziConventionPlugin"
+        }
         register("androidApplication") {
             id = "plansnap.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"

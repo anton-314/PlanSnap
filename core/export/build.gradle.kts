@@ -1,5 +1,6 @@
 plugins {
     id("plansnap.android.library")
+    id("plansnap.android.robolectric")
 }
 
 dependencies {
