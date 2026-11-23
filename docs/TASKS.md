@@ -24,6 +24,7 @@ graph LR
 | Phase 3 / F.3 | T-ARC-003, T-BLD-004 |
 | Phase 3 / F.4 (Review-Fixes) | T-ARC-004, T-BLD-005 |
 | Phase 3 / F.5 (Review-Fixes) | T-ARC-005 |
+| Phase 3 / F.6 (Nachreview-Fixes) | T-ARC-006, T-BLD-006 |
 | Welle 1 / 1.1 | T-COM-001, T-GEO-001, T-DES-001, T-DOC-001 |
 | Welle 1 / 1.2 | T-GEO-002, T-GEO-003, T-DAT-001, T-DAT-003 |
 | Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002 |
@@ -165,6 +166,30 @@ graph LR
 - **Vertrag:** Review-Befunde M8 und M9
 - **Akzeptanzkriterien:** Der Fake speichert nur gemeldete Raumänderungen und löscht beim Projektlöschen auch den Entwurf. Anforderungen: REQ-NFR-006
 - **Tests:** Negativtests für nicht gemeldete Änderungen
+
+### Batch F.6
+
+#### T-ARC-006 – Überbestimmte Räume und Nebenläufigkeit präzisieren
+
+- **Modul:** core/geometry, core/domain, testing/fixtures
+- **Rolle/Modell:** architect
+- **Größe:** M
+- **Abhängigkeiten:** T-ARC-004, T-ARC-005
+- **Besitzbereich:** `core/common/`, `core/geometry/`, `core/model/`, `core/domain/`, `core/drawing/`, `testing/fixtures/`, `docs/DOMAIN.md`, `docs/ARCHITECTURE.md`, `docs/adr/`
+- **Vertrag:** Nachreview-Befunde NH1 bis NH3, NM1 bis NM4, NM6, NN1
+- **Akzeptanzkriterien:** Unbestimmte Räume werden nie als bestätigt ausgewiesen, grobe Einzelfehler nie als Messfehler, stimmige Zusatzmaße verschlechtern den Status nicht. Die Regeln sind an den Zahlenfällen des Reviews nachgerechnet. Anforderungen: REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-011, REQ-DATA-002
+- **Tests:** Vertragstests, Referenzfälle als Fixtures für T-GEO-005 und T-GEO-006
+
+#### T-BLD-006 – Robolectric-Konvention für Nicht-Compose-Module
+
+- **Modul:** build-logic
+- **Rolle/Modell:** build-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-BLD-005
+- **Besitzbereich:** `build-logic/`, `gradle/libs.versions.toml`, `core/render/build.gradle.kts`, `core/data/build.gradle.kts`, `core/export/build.gradle.kts`
+- **Vertrag:** Nachreview-Befund NM5
+- **Akzeptanzkriterien:** `:core:render` hat Robolectric und `verifyRoborazziDebug`, `:core:data` und `:core:export` haben Robolectric im Testklassenpfad. Anforderungen: REQ-NFR-006
+- **Tests:** Je Modul ein temporärer echter Robolectric-Lauf, für `:core:render` zusätzlich Positiv- und Negativlauf
 
 ## Welle 1
 
