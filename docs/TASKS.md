@@ -177,7 +177,7 @@ graph LR
 - **Abhängigkeiten:** T-ARC-004, T-ARC-005
 - **Besitzbereich:** `core/common/`, `core/geometry/`, `core/model/`, `core/domain/`, `core/drawing/`, `testing/fixtures/`, `docs/DOMAIN.md`, `docs/ARCHITECTURE.md`, `docs/adr/`
 - **Vertrag:** Nachreview-Befunde NH1 bis NH3, NM1 bis NM4, NM6, NN1
-- **Akzeptanzkriterien:** Unbestimmte Räume werden nie als bestätigt ausgewiesen, grobe Einzelfehler nie als Messfehler, stimmige Zusatzmaße verschlechtern den Status nicht. Die Regeln sind an den Zahlenfällen des Reviews nachgerechnet. Anforderungen: REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-011, REQ-DATA-002
+- **Akzeptanzkriterien:** Unbestimmte Räume werden nie als bestätigt ausgewiesen. `CONFLICT(MEASUREMENTS_INCONSISTENT)` folgt genau bei `S > T` und `q² > χ²(r; 0,99)`. Korrekturen mit `S > T` unterhalb der Testgrenze bleiben als große Korrektur sichtbar und brauchen eine ausdrückliche Bestätigung. Stimmige Zusatzmaße verschlechtern den Status nicht. Die Regeln sind an den Zahlenfällen des Reviews nachgerechnet. Anforderungen: REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-011, REQ-DATA-002
 - **Tests:** Vertragstests, Referenzfälle als Fixtures für T-GEO-005 und T-GEO-006
 
 #### T-BLD-006 – Robolectric-Konvention für Nicht-Compose-Module
