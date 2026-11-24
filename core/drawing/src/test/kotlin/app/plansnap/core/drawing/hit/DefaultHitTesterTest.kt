@@ -12,6 +12,7 @@ import app.plansnap.core.drawing.scene.LabelText
 import app.plansnap.core.drawing.scene.SceneElement
 import app.plansnap.core.drawing.scene.SceneStyle
 import app.plansnap.core.drawing.scene.SceneTarget
+import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Vec2
 import app.plansnap.core.model.DiagonalId
 import app.plansnap.core.model.OpeningId
@@ -84,6 +85,16 @@ class DefaultHitTesterTest {
     }
 
     @Test
+    fun `given distances around the central tie tolerance when hit then only differences beyond it decide`() {
+        // Distances are about 5 mm, so the tie tolerance is HIT_TIE_RELATIVE · 5 mm; the walls differ by 2 · offset.
+        val tie = GeometryTolerances.HIT_TIE_RELATIVE * 5.0
+        val withinTie = Vec2(50.0, 5.0 - tie / 4.0)
+        val beyondTie = Vec2(50.0, 5.0 - tie)
+        assertEquals(wall("wa"), tester.hitTest(walls, withinTie, 10.0), "difference of tie / 2 ties, id decides")
+        assertEquals(wall("wb"), tester.hitTest(walls, beyondTie, 10.0), "difference of 2 · tie decides")
+    }
+
+    @Test
     fun `given empty scene when hit then nothing is found`() {
         assertNull(tester.hitTest(scene(), Vec2.ZERO, 100.0))
         assertNull(tester.hitTest(scene(room("empty", emptyList())), Vec2.ZERO, 100.0))
@@ -130,6 +141,7 @@ class DefaultHitTesterTest {
                 HitCase("far corner", base, Vec2(4_001.0, 4_001.0), 10.0, SceneTarget.Corner(R, 2)),
                 HitCase("diagonal when corner is out of reach", base, Vec2(20.0, 20.0), 10.0, diagonal),
                 HitCase("diagonal before interior", base, Vec2(2_000.0, 2_005.0), 10.0, diagonal),
+                HitCase("wall before a nearer diagonal", base, Vec2(100.0, 95.0), 100.0, wall("r-w0")),
                 HitCase("opening before wall", base, Vec2(1_500.0, 5.0), 10.0, opening),
                 HitCase("opening before a nearer wall", base, Vec2(950.0, 2.0), 60.0, opening),
                 HitCase("opening out of reach leaves wall", base, Vec2(950.0, 2.0), 40.0, wall("r-w0")),

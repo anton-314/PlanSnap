@@ -27,8 +27,12 @@ data class ZoomLimits(
     /** Defaults. */
     companion object {
         /**
-         * Default range. `1e-4` px/mm shows a plan of 10 km on 1 000 px, far beyond any project of walls of at most
-         * 100 m. `100` px/mm shows a single millimeter as 100 px, enough to tell a 10 mm wall apart from its corners.
+         * Default range, docs/UX.md section 4.
+         *
+         * - `1e-4` px/mm: a closed room of at most 128 walls of 100 m spans at most half its perimeter, 6.4 km, which
+         *   fits on 640 px. Double-tap fitting therefore shows every valid room completely on a phone.
+         * - `100` px/mm: the shortest wall of 10 mm spans 1 000 px, so its two corners are far more than one touch
+         *   target of 48 dp apart even at 4 px/dp, and the 24 dp hit radius is at most 0.96 mm in the world.
          */
         val DEFAULT: ZoomLimits = ZoomLimits(minPixelsPerMm = 1e-4, maxPixelsPerMm = 100.0)
     }

@@ -74,6 +74,10 @@ Ein Tipp auf eine Wand, Ecke oder Öffnung wählt sie aus und öffnet ihre Bearb
 
 Gesten ändern ohne Long-Press nie das Modell.
 
+**Zoom (CR-W2-01):** Der Maßstab der Ansicht liegt zwischen `1e-4` und `100` px/mm (`ZoomLimits.DEFAULT`). Bei `1e-4` px/mm passt jeder gültige Raum (höchstens 128 Wände zu 100 m, also höchstens 6,4 km Ausdehnung) auf 640 px. Bei `100` px/mm ist die kürzeste Wand von 10 mm 1 000 px lang, ihre Ecken liegen also auch bei 4 px/dp weit mehr als ein Touch-Ziel von 48 dp auseinander. Zoomen hält den Punkt unter den Fingern fest. Doppeltippen passt den ganzen Plan ein und lässt dabei 24 dp Rand an jeder Seite. Ein leerer Plan ändert die Ansicht nicht.
+
+**Treffen:** Ein Tipp trifft ein Element, wenn es höchstens 24 dp vom Finger entfernt ist, der halben Mindestgröße eines Touch-Ziels von 48 dp (§6). Der Radius bleibt auf dem Bildschirm bei jedem Zoom gleich. Bei mehreren Kandidaten gilt die Trefferpriorität aus DOMAIN §11.
+
 ## 5. Einmalige Hinweise
 
 Höchstens ein Hinweis gleichzeitig, schließbar, in den Einstellungen zurücksetzbar: Ziffernblock, Richtung, Schließen, Diagonale bei einem Vorschlag, Ausgleich bei einer Lücke.

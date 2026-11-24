@@ -50,6 +50,7 @@ Rohlängen sind `Length(mm: Long)`, Rohwinkel `Angle(milliDegrees: Int)`, berech
 | `START_REFINEMENT_GRADIENT` | 1e-13 | Abbruch der Startverfeinerung (§5.3) |
 | `NEAR_COLLINEAR_SIN` | 1e-6 | Grenze für fast kollineare Ecken (§8) |
 | `MITER_LIMIT_FACTOR` | 4,0 | Gehrungsgrenze als Vielfaches der Wandstärke (§8) |
+| `HIT_TIE_RELATIVE` | 1e-9 | Relative Gleichstandsgrenze für Abstände und Flächen im Hit-Testing (§11) |
 
 **Toleranz `ClosureTolerance(absoluteMm, relative)`:** `T_abs = absoluteMm` ist eine ganze Zahl mit `T_abs ≥ MIN_TOLERANCE_ABS_MM`, `T_rel = relative` liegt in `[0, 1]`. Ein Verstoß wirft `IllegalArgumentException` im Konstruktor. Damit gilt `T = max(T_abs, T_rel · U) ≥ 1 mm > 0` für jeden Umfang, auch bei `T_rel = 0`. Jeder Verbraucher von `T` darf sich darauf verlassen, etwa `ShapeAmbiguity.limitMm > 0` (§5.6) und die Kontrollierbarkeit mit `CONTROL_ERROR_FACTOR · T` (§5.5). Einstellungen mit kleinerem Wert sind ungültig und fallen auf den Standard zurück (`SettingsRepository`).
 
@@ -390,7 +391,7 @@ Weitere Festlegungen:
 - **Raumreihenfolge beim Speichern:** Die gespeicherte Reihenfolge folgt `project.rooms`, auch für Räume außerhalb von `changedRooms`, deren Inhalt unverändert bleibt. Wird `[A, B, C]` ohne `B` gespeichert und `B` per Undo zurückgeholt, ergibt das Speichern von `{B}` wieder `[A, B, C]`.
 - **`reconcile`** verwirft den Redo-Stapel nur, wenn ein neuer Undo-Schritt entsteht.
 - **`importProject`** behält die IDs. Bei einer Kollision entsteht eine Kopie wie beim Duplizieren. `decodeProject` meldet `IOException` als `Storage(READ_FAILED)`.
-- **Trefferpriorität (`HitTester`):** Öffnung vor Ecke vor Wand vor Rauminnerem. Innerhalb einer Klasse gewinnt der kleinste Abstand, bei Gleichstand beim Rauminneren die kleinere Fläche, danach die kleinste ID.
+- **Trefferpriorität (`HitTester`, CR-W2-01):** Kandidat ist jedes Szenenelement mit Ziel, dessen Abstand zum Punkt höchstens der Trefferradius ist (Radius einschließlich). Klassen: Öffnung vor Ecke vor Wand vor Diagonale vor Rauminnerem. Diagonalen liegen im Raum und enden in Ecken: Vor dem Rauminneren müssen sie stehen, sonst wären sie nie wählbar; hinter Ecke und Wand, damit an ihren Enden die Ecke und nahe einer Wand die Wand gewinnt. Innerhalb einer Klasse gewinnt der kleinste Abstand, bei Gleichstand beim Rauminneren die kleinere Fläche, danach die kleinste ID (Öffnungs-, Wand- oder Diagonalen-ID, dann Raum-ID, dann Eckindex, als Zeichenketten nach UTF-16-Codeeinheiten). Zwei Abstände oder Flächen `a`, `b` sind gleich, wenn `|a − b| ≤ HIT_TIE_RELATIVE · max(1, |a|, |b|)` (§1). Abstand ist 0 im Inneren einer Fläche, sonst der euklidische Abstand zum gezeichneten Umriss, Linienzug oder Bogen. Eine Beschriftung zählt als Kreisscheibe um ihren Anker mit ihrer Höhe als Durchmesser, weil die Textbreite von der Schrift abhängt. Der Trefferradius ist 24 dp auf dem Bildschirm, umgerechnet in Weltmillimeter (UX §4).
 
 ## 12. Maßstab im Export
 

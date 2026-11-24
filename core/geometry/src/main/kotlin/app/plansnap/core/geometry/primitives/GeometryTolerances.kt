@@ -127,6 +127,12 @@ object GeometryTolerances {
 
     /** Miter limit as a multiple of the larger wall thickness (DOMAIN section 8). */
     const val MITER_LIMIT_FACTOR: Double = 4.0
+
+    /**
+     * Relative tolerance under which two hit distances or two room areas tie in hit testing (DOMAIN section 11).
+     * Values `a` and `b` tie if `|a − b| ≤ HIT_TIE_RELATIVE · max(1, |a|, |b|)`.
+     */
+    const val HIT_TIE_RELATIVE: Double = 1e-9
 }
 
 /**

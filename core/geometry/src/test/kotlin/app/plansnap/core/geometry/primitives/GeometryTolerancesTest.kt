@@ -42,6 +42,7 @@ class GeometryTolerancesTest {
         assertEquals(5.0, GeometryTolerances.SIGMA_DIAGONAL_MM, 0.0)
         assertEquals(1.0, GeometryTolerances.SIGMA_MEASURED_ANGLE_DEG, 0.0)
         assertEquals(1e-6, GeometryTolerances.NEAR_COLLINEAR_SIN, 0.0)
+        assertEquals(1e-9, GeometryTolerances.HIT_TIE_RELATIVE, 0.0)
     }
 
     @Test

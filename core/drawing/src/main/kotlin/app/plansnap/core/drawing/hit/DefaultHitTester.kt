@@ -7,6 +7,7 @@ import app.plansnap.core.drawing.scene.WorldBounds
 import app.plansnap.core.drawing.viewport.HitTester
 import app.plansnap.core.geometry.polygon.DefaultPolygonAnalyzer
 import app.plansnap.core.geometry.polygon.PolygonAnalyzer
+import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Vec2
 import app.plansnap.core.geometry.primitives.isCloseTo
 import app.plansnap.core.model.RoomId
@@ -20,16 +21,16 @@ import kotlin.math.max
  * at most the radius. Elements without target are decoration and never hit. The best candidate is chosen in this
  * order:
  *
- * 1. **Class:** opening before corner before wall before diagonal before room interior. DOMAIN names no rank for
- *    diagonals; they rank behind walls, which they connect, and before the interior, which always contains them.
+ * 1. **Class:** opening before corner before wall before diagonal before room interior (DOMAIN section 11).
  * 2. **Distance:** the smallest distance of any element of the target wins.
  * 3. **Area,** only for the room interior: the room whose largest [SceneElement.Fill] with a
  *    [SceneTarget.RoomBody] target has the smaller area wins. A room without such a fill counts as infinitely large.
  * 4. **ID:** the smallest ID wins, compared as strings by UTF-16 code units: the opening, wall or diagonal ID, then
  *    the room ID, then the corner index.
  *
- * Distances and areas count as tied if they differ by at most [TIE_RELATIVE] times `max(1, |a|, |b|)`. Ties are
- * resolved against the minimum, so the result does not depend on the order of rooms or elements.
+ * Distances and areas count as tied if they differ by at most [GeometryTolerances.HIT_TIE_RELATIVE] times
+ * `max(1, |a|, |b|)`. Ties are resolved against the minimum, so the result does not depend on the order of rooms or
+ * elements.
  *
  * Distances: zero inside a filled polygon, otherwise the Euclidean distance to the drawn outline, polyline or arc.
  * A label counts as a disc around its anchor with its height as diameter, because the text width depends on the font.
@@ -97,9 +98,6 @@ class DefaultHitTester(
 
     /** Constants. */
     companion object {
-        /** Relative tolerance under which two distances or two areas count as equal. */
-        const val TIE_RELATIVE: Double = 1e-9
-
         private val ID_ORDER: Comparator<SceneTarget> =
             compareBy<SceneTarget>({ primaryId(it) }, { it.roomId.value }, { (it as? SceneTarget.Corner)?.index ?: 0 })
 
@@ -131,8 +129,16 @@ class DefaultHitTester(
             minimum: Double,
         ): Boolean =
             when {
-                minimum.isInfinite() || value.isInfinite() -> minimum.isInfinite() && value.isInfinite()
-                else -> value.isCloseTo(minimum, TIE_RELATIVE * max(1.0, max(abs(value), abs(minimum))))
+                minimum.isInfinite() || value.isInfinite() -> {
+                    minimum.isInfinite() && value.isInfinite()
+                }
+
+                else -> {
+                    value.isCloseTo(
+                        minimum,
+                        GeometryTolerances.HIT_TIE_RELATIVE * max(1.0, max(abs(value), abs(minimum))),
+                    )
+                }
             }
     }
 }

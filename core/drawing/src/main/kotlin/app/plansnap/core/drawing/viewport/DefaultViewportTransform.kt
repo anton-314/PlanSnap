@@ -99,7 +99,9 @@ class DefaultViewportTransform(
 
     /**
      * Centers [bounds] and chooses the largest zoom at which they fit completely, without margin, clamped to
-     * [zoomLimits]. A caller that wants a margin enlarges [bounds] first.
+     * [zoomLimits]. A caller that wants a screen margin of `m` px, as the editor does (docs/UX.md section 4), fits
+     * into a viewport whose width and height are reduced by `2m` and then restores the original size. The center
+     * does not depend on the size, so this keeps [bounds] centered.
      *
      * An extent of zero places no limit on the zoom along its axis, so a single point is shown at the maximum zoom.
      * On a screen without area only the center changes, the zoom stays as it is.
