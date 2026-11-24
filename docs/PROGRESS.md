@@ -45,11 +45,12 @@ Keine.
 - 2026-11-24: Gespeichertes `absoluteMm` ist nur in `MIN_TOLERANCE_ABS_MM..MAX_WALL_MM` (1 bis 100 000) gültig. Werte außerhalb fallen je Feld auf den Standard zurück. Eine Toleranz über der größten Wandlänge ist sinnlos.
 - 2026-11-24: T-DAT-003 gemergt (`f5ccf27`, 13 Tests). Werte mit falschem gespeicherten Typ fallen je Feld auf den Standard zurück. `update` mit ungültigem `absoluteMm` liefert `InvalidValue(TOLERANCE, TOO_LARGE)` und schreibt nichts.
 - 2026-11-24: T-DAT-001 gemergt (`99fba85`, 16 Tests). Schema 1 mit `projects`, `rooms`, `editor_drafts`, Fremdschlüssel mit CASCADE. `@Upsert` statt REPLACE, weil REPLACE per Cascade die Entwürfe löschen würde. Kein UNIQUE auf `(projectId, position)`, damit Umsortieren nicht kollidiert. Die DAOs speichern das Raumdokument als JSON-String, Kodierung und Formatversion übernimmt T-DAT-002 über `DocumentCodec`.
+- 2026-11-24: T-GEO-001 gemergt (`f687756`). Die Referenzfälle laufen direkt über `ReferenceRooms.ALL`, `AnalyticShapes` ist entfallen. Abstandsgrenze in `isSimple` inklusiv getestet. Pitest Geometrie 78 % (482 von 615).
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
-- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-DOC-001, T-DAT-001, T-DAT-003, Build-Vorbereitungen.
-- **In Arbeit (Batch 1.2):** T-GEO-001 (vom WIP `6800714`), T-DAT-002 (vorgezogen aus Batch 1.3, Abhängigkeit T-DAT-001 erfüllt). Agenten-Worktrees unter `.claude/worktrees/`. Die alten WIP-Worktrees `agent-a8663ab4…` wird nach der Übernahme entfernt.
+- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-DOC-001, T-DAT-001, T-DAT-003, Build-Vorbereitungen.
+- **In Arbeit (Batch 1.2):** T-GEO-002, T-GEO-003, T-DAT-002 (vorgezogen aus Batch 1.3, Abhängigkeit T-DAT-001 erfüllt). Agenten-Worktrees unter `.claude/worktrees/`.
 
 ## Nächste Schritte
 
