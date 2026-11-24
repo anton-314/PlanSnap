@@ -31,7 +31,7 @@ graph LR
 | Welle 1 / 1.1 | T-COM-001, T-GEO-001, T-DES-001, T-DOC-001 |
 | Welle 1 / 1.2 | T-GEO-002, T-GEO-003, T-DAT-001, T-DAT-003 |
 | Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002, T-GEO-008 (Fix) |
-| Welle 1 / 1.4 | T-GEO-005, T-GEO-007 |
+| Welle 1 / 1.4 | T-GEO-005, T-GEO-007, T-DAT-004 (Fix aus Gate-Review) |
 | Welle 2 / 2.1 | T-DOM-001, T-DOM-002, T-DOM-005, T-DRW-002 |
 | Welle 2 / 2.2 | T-DOM-003, T-DOM-004, T-DOM-006, T-DRW-001 |
 | Welle 2 / 2.3 | T-RND-001, T-EXP-001, T-APP-001, T-DOM-007 |
@@ -397,6 +397,17 @@ graph LR
 - **Akzeptanzkriterien:** Alle Referenzformen sind grün, Abdeckung ≥ 90/85 %, Pitest ≥ 70 %. Anforderungen: REQ-MOD-004, REQ-MOD-009, REQ-NFR-006
 - **Tests:** Referenzfälle, Pitest
 
+#### T-DAT-004 – Fix: Standardhöhe ganzzahlig speichern
+
+- **Modul:** :core:data
+- **Rolle/Modell:** feature-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-DAT-002
+- **Besitzbereich:** `core/data/…/db/`, `core/data/…/repository/`, `core/data/schemas/`
+- **Vertrag:** ADR 0002 (ganzzahlige Rohlängen), `ProjectRepository`
+- **Akzeptanzkriterien:** `projects.defaultHeightMm` ist `Long` (INTEGER), ebenso `ProjectMetadataUpdate.defaultHeightMm`. Es gibt keine Umwandlung über `Double` mehr. Schema bleibt Version 1, weil es noch nicht ausgeliefert ist, und `1.json` wird neu erzeugt. Regressionstest (WORKFLOWS §6): `createProject` und `getProject` mit `defaultHeight = 2^53 + 1` mm liefern den Wert exakt zurück, ebenso ein Roundtrip über `ProjectSaver`. Anforderungen: REQ-DATA-004
+- **Tests:** Regressionstest, bestehende Suite
+
 ## Welle 2
 
 ### Batch 2.1
@@ -531,10 +542,10 @@ graph LR
 - **Modul:** :app
 - **Rolle/Modell:** feature-engineer
 - **Größe:** M
-- **Abhängigkeiten:** T-DAT-002, T-DAT-003, T-DOM-002
+- **Abhängigkeiten:** T-DAT-002, T-DAT-003, T-DOM-002, T-DOM-007
 - **Besitzbereich:** `app/`
 - **Vertrag:** UX §1
-- **Akzeptanzkriterien:** Typsichere Navigation zwischen allen Screens, DI-Graph vollständig, Backup deaktiviert. Anforderungen: REQ-DATA-003, REQ-NFR-004
+- **Akzeptanzkriterien:** Typsichere Navigation zwischen allen Screens, DI-Graph vollständig, Backup deaktiviert. Die Produktions-DataStore der Einstellungen wird mit `ReplaceFileCorruptionHandler { emptyPreferences() }` erzeugt, sonst liefert nach einer beschädigten Datei jedes `update` dauerhaft `WRITE_FAILED` (Gate-Review Welle 1). `RoomProjectRepository` erhält die `ProjectValidator`-Implementierung aus T-DOM-007. Anforderungen: REQ-DATA-003, REQ-NFR-004
 - **Tests:** Hilt-Graph-Test, Navigationstests
 
 ## Welle 3

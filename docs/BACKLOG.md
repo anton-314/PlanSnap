@@ -21,3 +21,4 @@
 - Wechsel auf detekt 2, sobald eine stabile Version erscheint
 - Optimierte Layouts für Querformat, Tablets und Faltbare
 - `OverdeterminedCases`: Für h2a-109471 und h2a-109472 die nicht kontrollierbaren Wände w1 und w3 mit Empfehlung (1,3) bzw. (0,2) aufnehmen (aus T-GEO-005).
+- `ProjectRepository.observeProjects()`: Speicherfehler erreichen den Collector als Exception, obwohl die Schnittstelle `DomainError.Storage` verspricht. Der Flow-Vertrag hat keinen Fehlerkanal. `architect` soll entscheiden, ob die KDoc den Aufrufer zum Fangen verpflichtet oder der Vertrag einen Fehlerzustand erhält (Gate-Review Welle 1, niedrig).
