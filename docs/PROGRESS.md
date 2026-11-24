@@ -50,14 +50,16 @@ Keine.
 - 2026-11-24: T-DAT-002 gemergt (`cc75c72`, 79 Tests in `:core:data`). Schema 1 korrigiert: `editor_drafts` mit Primärschlüssel `projectId`, nullbarem `roomId` und Spalte `inputText`. Der Saver serialisiert über einen fairen Mutex, jedes `save` läuft in genau einer Transaktion. Duplizieren vergibt neue IDs für alle Elemente, der Name bleibt gleich. Import behält die IDs und speichert bei Kollision eine Kopie.
 - 2026-11-24: T-GEO-002 (`3b8d65e`) und T-GEO-003 (`d4a19d1`) gemergt. Geometrie: 242 Tests, Pitest 83 % (592 von 717). Rechtwinklige Sollformen sind ganzzahlig exakt. Ein Werttest verbietet nicht-strikte Mathematik im Paket `traverse`.
 - 2026-11-24: Planungslücke geschlossen: Keine Aufgabe implementierte `ProjectValidator`, den `RoomProjectRepository` für den Import braucht. Neue Aufgabe T-DOM-007 in Batch 2.3, nach T-DOM-003 und T-DOM-004 und vor der Verdrahtung in T-APP-001.
+- 2026-11-24: T-GEO-006 gemergt (`222f2d6`). Geometrie: 293 Tests, Pitest 85 % (873 von 1 023). Alle 30 Katalogfälle laufen am Produktionscode. Die Schließung zählt in `‖C‖_∞` als euklidische Lücke, sonst blieb eine Lücke von 0,0128 mm über dem Kriterium von 0,01 mm. Nachgerechnet am Produktionscode: Falsche Konflikte (0,87 bis 1,04 %) und ausdrückliche Bestätigungen (3,8 bis 4,1 %) entsprechen ADR 0018 und der χ²-Theorie. Zwei Werte weichen ab: große Korrekturen 19 bis 63 % (ADR 12 bis 40 %) und unerkanntes Band bis 1,72 T (ADR bis 1,57 T). Das Skript der ADR fehlt im Repository, den Abgleich übernimmt `architect` (CR-W1-01).
+- 2026-11-24: Folgepunkte aus T-GEO-006: `ShapeDistance.kt` nutzt `kotlin.math.atan2` entgegen DOMAIN §11, das wird Teil von T-GEO-005. Der Katalogtest bezieht die Startdrehungen für Zweig B1 vorläufig aus Prototyp-Läufen (`CatalogReferenceRuns.kt`). Die Umstellung auf den Produktions-Solver wird Teil von T-GEO-007.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
-- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-GEO-002, T-GEO-003, T-DOC-001, T-DAT-001, T-DAT-002, T-DAT-003, Build-Vorbereitungen.
-- **In Arbeit (Batch 1.3):** T-GEO-004, T-GEO-006. Agenten-Worktrees unter `.claude/worktrees/`.
+- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-GEO-002, T-GEO-003, T-GEO-006, T-DOC-001, T-DAT-001, T-DAT-002, T-DAT-003, Build-Vorbereitungen.
+- **In Arbeit (Batch 1.3):** T-GEO-004, dazu CR-W1-01 bei `architect` (DOMAIN §6, KDoc `worstObservation`, Abgleich der Simulationswerte aus ADR 0018). Agenten-Worktrees unter `.claude/worktrees/`.
 
 ## Nächste Schritte
 
-1. T-GEO-004 und T-GEO-006 prüfen und übernehmen.
+1. T-GEO-004 und CR-W1-01 prüfen und übernehmen.
 2. Batch 1.4: T-GEO-005 (nach T-GEO-004), T-GEO-007 (nach T-GEO-003, T-GEO-004 und T-GEO-006).
 3. Wellen-Gate 1 mit Review, Tag `wave-1` und Push.
