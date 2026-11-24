@@ -617,7 +617,7 @@ graph LR
 - **Abhängigkeiten:** T-EDT-001, T-RND-001, T-DRW-002
 - **Besitzbereich:** `feature/editor/…/canvas/`
 - **Vertrag:** UX §4, ADR 0008
-- **Akzeptanzkriterien:** Jede Wand erscheint sofort, Gesten ändern nur die Ansicht, Maße werden angezeigt. Anforderungen: REQ-UX-002, REQ-UX-003, REQ-UX-004
+- **Akzeptanzkriterien:** Jede Wand erscheint sofort, Gesten ändern nur die Ansicht, Maße werden angezeigt. Doppeltippen passt mit 24 dp Rand an jeder Seite ein (UX §4, CR-W2-01), ein leerer Plan ändert die Ansicht nicht. Anforderungen: REQ-UX-002, REQ-UX-003, REQ-UX-004
 - **Tests:** Compose-Gestentests, Roborazzi
 
 #### T-EXP-003 – PNG- und PDF-Export
