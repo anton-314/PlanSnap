@@ -20,7 +20,7 @@ import androidx.room.PrimaryKey
 data class ProjectEntity(
     @PrimaryKey val id: String,
     val name: String,
-    val defaultHeightMm: Double,
+    val defaultHeightMm: Long,
     val formatMajor: Int,
     val formatMinor: Int,
     val createdAtEpochMs: Long,

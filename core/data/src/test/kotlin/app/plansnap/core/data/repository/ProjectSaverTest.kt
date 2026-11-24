@@ -70,6 +70,17 @@ class ProjectSaverTest {
         }
 
     @Test
+    fun `save keeps a default height above the double precision limit`() =
+        runTest {
+            stores.projects.createProject(base).assertSuccess()
+            val edited = base.copy(defaultHeight = Length(BEYOND_DOUBLE_PRECISION_MM))
+
+            stores.saver.save(edited, emptySet()).assertSuccess()
+
+            assertEquals(BEYOND_DOUBLE_PRECISION_MM, stored().defaultHeight.mm)
+        }
+
+    @Test
     fun `rooms outside the changed set keep their stored content`() =
         runTest {
             stores.projects.createProject(base).assertSuccess()

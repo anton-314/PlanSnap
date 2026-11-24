@@ -43,6 +43,9 @@ internal class TickingClock(
     override fun nowEpochMillis(): Long = next.getAndIncrement()
 }
 
+/** 2^53 + 1, the smallest positive integer a Double cannot represent. */
+internal const val BEYOND_DOUBLE_PRECISION_MM = 9_007_199_254_740_993L
+
 internal val acceptAll = ProjectValidator { DomainResult.Success(Unit) }
 
 internal fun fileDatabase(name: String = "repo-test.db"): PlanSnapDatabase =

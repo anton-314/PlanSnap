@@ -21,7 +21,7 @@ data class ProjectSummaryRow(
 data class ProjectMetadataUpdate(
     val id: String,
     val name: String,
-    val defaultHeightMm: Double,
+    val defaultHeightMm: Long,
     val formatMajor: Int,
     val formatMinor: Int,
     val updatedAtEpochMs: Long,

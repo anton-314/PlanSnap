@@ -19,7 +19,7 @@ internal fun project(
 ) = ProjectEntity(
     id = id,
     name = name,
-    defaultHeightMm = 2500.0,
+    defaultHeightMm = 2500L,
     formatMajor = 1,
     formatMinor = 0,
     createdAtEpochMs = 10L,

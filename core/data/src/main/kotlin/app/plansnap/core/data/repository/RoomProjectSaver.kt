@@ -85,7 +85,7 @@ class RoomProjectSaver(
             ProjectMetadataUpdate(
                 id = projectId,
                 name = project.name,
-                defaultHeightMm = project.defaultHeight.mm.toDouble(),
+                defaultHeightMm = project.defaultHeight.mm,
                 formatMajor = FormatVersion.CURRENT.major,
                 formatMinor = FormatVersion.CURRENT.minor,
                 updatedAtEpochMs = updatedAt,

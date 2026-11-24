@@ -12,13 +12,12 @@ import app.plansnap.core.model.Project
 import app.plansnap.core.model.ProjectId
 import app.plansnap.core.model.Room
 import kotlinx.collections.immutable.toImmutableList
-import kotlin.math.roundToLong
 
 internal fun Project.toEntity(): ProjectEntity =
     ProjectEntity(
         id = id.value,
         name = name,
-        defaultHeightMm = defaultHeight.mm.toDouble(),
+        defaultHeightMm = defaultHeight.mm,
         formatMajor = FormatVersion.CURRENT.major,
         formatMinor = FormatVersion.CURRENT.minor,
         createdAtEpochMs = createdAtEpochMs,
@@ -58,7 +57,7 @@ internal fun assembleProject(
         Project(
             id = ProjectId(entity.id),
             name = entity.name,
-            defaultHeight = Length(entity.defaultHeightMm.roundToLong()),
+            defaultHeight = Length(entity.defaultHeightMm),
             rooms = rooms.toImmutableList(),
             createdAtEpochMs = entity.createdAtEpochMs,
             updatedAtEpochMs = entity.updatedAtEpochMs,

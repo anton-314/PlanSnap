@@ -8,6 +8,7 @@ import app.plansnap.core.common.result.DomainRule
 import app.plansnap.core.common.result.EntityKind
 import app.plansnap.core.common.result.StorageProblem
 import app.plansnap.core.common.result.errorOrNull
+import app.plansnap.core.common.units.Length
 import app.plansnap.core.data.db.PlanSnapDatabase
 import app.plansnap.core.domain.repository.EditorDraft
 import app.plansnap.core.domain.validation.ProjectValidator
@@ -53,6 +54,20 @@ class ProjectRepositoryTest {
             val project = sampleProject()
             stores.projects.createProject(project).assertSuccess()
             assertEquals(project, stores.projects.getProject(project.id).value())
+        }
+
+    @Test
+    fun `create then get keeps a default height above the double precision limit`() =
+        runTest {
+            val project = sampleProject().copy(defaultHeight = Length(BEYOND_DOUBLE_PRECISION_MM))
+            stores.projects.createProject(project).assertSuccess()
+            assertEquals(
+                BEYOND_DOUBLE_PRECISION_MM,
+                stores.projects
+                    .getProject(project.id)
+                    .value()
+                    .defaultHeight.mm,
+            )
         }
 
     @Test
