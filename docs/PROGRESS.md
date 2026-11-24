@@ -63,11 +63,13 @@ Keine.
 - 2026-11-24: Gate-Review Welle 1: `APPROVE`, keine kritischen oder hohen Befunde. Mittel: Die Standardhöhe wurde als `Double` gespeichert und verliert Werte über 2^53. Das wird vor der Auslieferung von Schema 1 in T-DAT-004 behoben. Niedrig: Corruption-Handler der DataStore geht in T-APP-001, die Fehlerabbildung von `observeProjects` in den Backlog. T-APP-001 hängt jetzt auch an T-DOM-007.
 - 2026-11-24: T-DAT-004 gemergt (`1a5ec6e`): Die Standardhöhe wird als INTEGER gespeichert, Schema bleibt Version 1. Regressionstests vorher rot, danach grün.
 - 2026-11-24: Wellen-Gate 1 bestanden. Pitest und instrumentierte Tests liefen auf `9507601`. Danach kamen nur Dokumentation und T-DAT-004 in `:core:data` hinzu. Darauf lief der volle Build erneut grün.
+- 2026-11-24: CI-Lauf für `wave-1` (`eced75c`) grün. Es gibt noch keine testbare APK, weil `:app` keine Activity und die Feature-Module keinen Code haben. Die erste bedienbare App folgt mit T-APP-001 (Welle 2) und den Screens aus Welle 3.
+- 2026-11-24: `:core:domain` und `:core:drawing` erhalten `:testing:fixtures` als Testabhängigkeit. Geprüft mit Test und `checkArchitecture`.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
 - **Welle 1:** fertig, Tag `wave-1`.
-- **Welle 2:** noch nicht begonnen.
+- **Welle 2:** Batch 2.1 läuft (T-DOM-001, T-DOM-002, T-DOM-005, T-DRW-002).
 
 ## Nächste Schritte
 
