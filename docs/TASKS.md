@@ -291,7 +291,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-001
 - **Besitzbereich:** `core/geometry/…/traverse/`
 - **Vertrag:** DOMAIN §3 und §4
-- **Akzeptanzkriterien:** 90°- und Winkelzug korrekt, Lücke und Grenzwert `T` korrekt inklusive Grenzfällen. Anforderungen: REQ-MEAS-003, REQ-MEAS-004, REQ-MEAS-011
+- **Akzeptanzkriterien:** 90°- und Winkelzug korrekt, Lücke und Grenzwert `T` korrekt inklusive Grenzfällen. Trigonometrie und Wurzeln nutzen durchgehend `StrictMath`, damit Auswertungen bitgleich reproduzierbar sind (DOMAIN §11, ADR 0019). Anforderungen: REQ-MEAS-003, REQ-MEAS-004, REQ-MEAS-011
 - **Tests:** Analytisch, Property
 
 #### T-GEO-003 – Wandbänder
@@ -348,7 +348,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-002
 - **Besitzbereich:** `core/geometry/…/adjustment/`
 - **Vertrag:** DOMAIN §6, ADR 0005
-- **Akzeptanzkriterien:** Nach dem Ausgleich ist die Lücke höchstens 0,01 mm. Rohwerte bleiben unverändert. Beide `AdjustmentMode`-Pfade sind umgesetzt (ADR 0018). Die Konvergenz im Modus `SHAPE_DEVIATION` ist am Trapez 3/3/3/5 m mit zwei Diagonalen nachgewiesen. Alle Fälle aus `OverdeterminedCases` sind am echten Code bestätigt, einschließlich `startTurnsRad`, Einfachheit und Drehrichtungen nach dem Ausgleich. Die Simulationswerte aus ADR 0018 sind am Produktionscode nachgerechnet. Alle Katalogfälle aus `OverdeterminedCases` und `OverdeterminedRooms` bestehen am Produktionscode. Der Katalog umfasst 30 Fälle. Anforderungen: REQ-MEAS-009, REQ-MEAS-010
+- **Akzeptanzkriterien:** Nach dem Ausgleich ist die Lücke höchstens 0,01 mm. Rohwerte bleiben unverändert. Beide `AdjustmentMode`-Pfade sind umgesetzt (ADR 0018). Die Konvergenz im Modus `SHAPE_DEVIATION` ist am Trapez 3/3/3/5 m mit zwei Diagonalen nachgewiesen. Alle Fälle aus `OverdeterminedCases` sind am echten Code bestätigt, einschließlich `startTurnsRad`, Einfachheit und Drehrichtungen nach dem Ausgleich. Die Simulationswerte aus ADR 0018 sind am Produktionscode nachgerechnet. Alle Katalogfälle aus `OverdeterminedCases` und `OverdeterminedRooms` bestehen am Produktionscode. Der Katalog umfasst 30 Fälle. Trigonometrie und Wurzeln nutzen durchgehend `StrictMath`, damit Auswertungen bitgleich reproduzierbar sind (DOMAIN §11, ADR 0019). Anforderungen: REQ-MEAS-009, REQ-MEAS-010
 - **Tests:** Analytisch, Property
 
 #### T-DAT-002 – Repositories und ProjectSaver
@@ -372,7 +372,7 @@ graph LR
 - **Abhängigkeiten:** T-GEO-004
 - **Besitzbereich:** `core/geometry/…/determinacy/`
 - **Vertrag:** DOMAIN §5.4 und §5.5
-- **Akzeptanzkriterien:** `analyzeConstraints` ist umgesetzt, `missing = v − ρ_J` stimmt, die empfohlene Diagonale erhöht den Rang, Überbestimmung wird ohne vorherige Lösung erkannt (ADR 0018). Alle Fälle aus `OverdeterminedCases` sind geprüft, ebenso `analyze` und `analyzeControl` mit den Signaturen aus T-ARC-006. Der Prüfstand aus `docs/research/` ist als seeded Test am Produktionscode portiert, mit `SOLVER_GRADIENT = 1e-9`. Stimmige ehrliche Räume, falsche Richtungen, unterbestimmte Räume und Grenzwerte haben 0 falsche Bestätigungen. Falsche `CONFLICT` liegen je Klasse bei höchstens 1 %. Maßgeblich sind DOMAIN §5.6 und die Sollwerte in `docs/research/evaluation-prototype/README.md`. Anforderungen: REQ-MEAS-008
+- **Akzeptanzkriterien:** `analyzeConstraints` ist umgesetzt, `missing = v − ρ_J` stimmt, die empfohlene Diagonale erhöht den Rang, Überbestimmung wird ohne vorherige Lösung erkannt (ADR 0018). Alle Fälle aus `OverdeterminedCases` sind geprüft, ebenso `analyze` und `analyzeControl` mit den Signaturen aus T-ARC-006. Der Prüfstand aus `docs/research/` ist als seeded Test am Produktionscode portiert, mit `SOLVER_GRADIENT = 1e-9`. Stimmige ehrliche Räume, falsche Richtungen, unterbestimmte Räume und Grenzwerte haben 0 falsche Bestätigungen. Falsche `CONFLICT` liegen je Klasse bei höchstens 1 %. Maßgeblich sind DOMAIN §5.6 und die Sollwerte in `docs/research/evaluation-prototype/README.md`. Trigonometrie und Wurzeln nutzen durchgehend `StrictMath`, damit Auswertungen bitgleich reproduzierbar sind (DOMAIN §11, ADR 0019). Anforderungen: REQ-MEAS-008
 - **Tests:** Analytisch, Property
 
 #### T-GEO-007 – Referenz-Suite und Mutationstests

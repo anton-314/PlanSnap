@@ -1,6 +1,6 @@
 # Fortschritt
 
-**Aktuelle Phase:** 3 – Fundament
+**Aktuelle Phase:** 4 – Umsetzung, Welle 1
 **Letzte Aktualisierung:** 2026-11-24
 
 ## Phasen
@@ -10,7 +10,7 @@
 | 0 – Interview | Fertig | `docs/REQUIREMENTS.md`, vom Auftraggeber bestätigt |
 | 1 – Umgebung | Fertig | `docs/ENVIRONMENT.md`, Emulator-Boot ausgeführt |
 | 2 – Spezifikation | Fertig | Vom Auftraggeber freigegeben am 2026-11-23 |
-| 3 – Fundament | In Arbeit | |
+| 3 – Fundament | Fertig | Gate 2026-11-24 auf `ebe15b1`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 381 JVM-Tests, Pitest Geometrie 82 %, 2 instrumentierte Tests, Review `APPROVE`. Vertragsfreeze, Tag `phase-3-foundation` |
 | 4 – Umsetzung | Offen | |
 | 5 – Härtung | Offen | |
 | 6 – Release | Offen | |
@@ -18,7 +18,7 @@
 
 ## Offene Blocker
 
-Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein kritisch). T-ARC-004, T-BLD-005 und T-ARC-005 sind gemergt. Nachreview weiter `CHANGES_REQUESTED` (3 hoch, 6 mittel, 1 niedrig, alle neu). T-ARC-006 und T-BLD-006 sind gemergt. Drittes Review weiter `CHANGES_REQUESTED` (3 hoch, 2 mittel, 1 niedrig, alle neu, Signaturen weitgehend tragfähig). T-ARC-007 ist gemergt. T-ARC-008 ist gemergt. Abschlussreview: alle Altbefunde behoben, noch 1 hoch und 1 mittel. T-ARC-009 ist gemergt, die Bestätigung durch den Reviewer steht aus.
+Keine.
 
 ## Entscheidungslog
 
@@ -35,23 +35,9 @@ Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein 
 - 2026-11-24: Diskret mehrdeutige Räume werden `PROPOSED`. Die numerische Qualität des Ablaufs wird ab jetzt am Produktionscode über den portierten Prüfstand abgenommen (T-GEO-005, T-GEO-006), nicht in weiteren Prototyp-Runden. Bekannte Grenze im Prototyp (ausgerichteter Formabstand, Abschlusslauf T-ARC-008): 2 von 20 abweichenden Formen in einer Klasse von 2.400 Fällen bleiben unerkannt, dafür werden 19 korrekt bestätigte Räume (0,8 %) zum Vorschlag.
 - 2026-11-24: Mehrdeutigkeitsregel gilt auch im Ausgleichspfad (B7). Im Messfehlerpfad (`e ≤ T`) läuft kein Solver, dort entfällt die Prüfung (DOMAIN §5.6 Punkt 7). `AcceptAdjustment` ist nur zulässig, wenn die aktuelle Auswertung `NeedsAdjustment` mit gleichem Vorschlag ist, sonst `ADJUSTMENT_NOT_AVAILABLE`.
 - 2026-11-24: ADR 0019: Befehle haben eine optionale `suspend`-Vorbedingung `verify`, die `CommandHistory.execute` unter dem Mutex mit der aktuellen Toleranz vor `apply` prüft. `AcceptAdjustment` lehnt damit veraltete Vorschläge ab. `ClosureTolerance` verlangt `absoluteMm ≥ 1`.
-
-## Wiedereinstieg (Stand 2026-11-24, Lauf unterbrochen)
-
-- **`main`:** T-BLD-001 bis -006 und T-ARC-001 bis -007 sind gemergt. Letzter voller Build grün auf `4ab0baa`. `main` ist 27 Commits vor `origin/main`, weil erst nach dem Phase-3-Gate gepusht wird.
-- **Gate Phase 3:** nicht bestanden. Kein Tag, kein Push, CI noch nie auf GitHub gelaufen. Welle 1 ist nicht gestartet.
-- **Unfertig:** T-ARC-008 auf Branch `wip/T-ARC-008` (`caadf81`), nicht gemergt, Kotlin-Stand ungeprüft. Der Code verweist auf DOMAIN §5.6, den es noch nicht gibt.
-- **Prototypen:** Sicherung in `~/PlanSnap-handoff/scratchpad-2026-11-24`. Der Prüfstand `docs/research/evaluation-prototype/` auf dem WIP-Branch braucht `numpy`.
+- 2026-11-24: Phase-3-Gate nach vier Review-Runden bestanden. Verträge in `:core:*` sind eingefroren, Änderungen nur per Change-Request (WORKFLOWS §5).
 
 ## Nächste Schritte
 
-1. T-ARC-008 auf `wip/T-ARC-008` fertigstellen:
-   - DOMAIN aktualisieren: §4-Tabelle, §5.4, A2 bis A5, B7/B8, neuer §5.6 (Formabstand, Alternativen, Empfehlung, Gleichstand).
-   - ADR 0018 um die Ergänzung T-ARC-008 erweitern, mit Suchgrenze und Zahlen (17/22 im Original, 18/22 mit neuem Formabstand).
-   - `docs/research/evaluation-prototype/README.md` schreiben (Zweck, Befehl, Seed 20261124, K1a bis K4, Sollwerte, Gradient 1e-7 gegenüber 1e-9, numpy).
-   - `stress.py` mit Mehrdeutigkeitsregel erneut laufen lassen und die Tabelle übernehmen.
-   - Volle DoD ausführen, WIP-Commit durch `feat(core): model ambiguous room shapes [T-ARC-008]` ersetzen.
-2. Entschieden (2026-11-24): Die Mehrdeutigkeitsregel gilt auch für den Ausgleichspfad. Ein Raum mit zweiter gültiger Form wird dort ebenfalls `PROPOSED(AMBIGUOUS_SHAPE)` und kann nicht durch Bestätigung zu `ADJUSTED` werden.
-3. T-ARC-008 mergen, voller Gate-Lauf: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug`, `:core:geometry:pitest`, `scripts/run-instrumented-tests.sh`.
-4. Abschließendes Vertragsreview durch `reviewer`. Bei `APPROVE`: Tag `phase-3-foundation`, `git push origin main --tags`, ersten CI-Lauf prüfen.
-5. Welle 1, Batch 1.1 starten.
+1. Ersten GitHub-Actions-Lauf prüfen und bei Fehlern beheben.
+2. Welle 1, Batch 1.1 starten: T-COM-001, T-GEO-001, T-DES-001, T-DOC-001.
