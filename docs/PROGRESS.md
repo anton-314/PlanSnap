@@ -47,14 +47,17 @@ Keine.
 - 2026-11-24: T-DAT-001 gemergt (`99fba85`, 16 Tests). Schema 1 mit `projects`, `rooms`, `editor_drafts`, Fremdschlüssel mit CASCADE. `@Upsert` statt REPLACE, weil REPLACE per Cascade die Entwürfe löschen würde. Kein UNIQUE auf `(projectId, position)`, damit Umsortieren nicht kollidiert. Die DAOs speichern das Raumdokument als JSON-String, Kodierung und Formatversion übernimmt T-DAT-002 über `DocumentCodec`.
 - 2026-11-24: T-GEO-001 gemergt (`f687756`). Die Referenzfälle laufen direkt über `ReferenceRooms.ALL`, `AnalyticShapes` ist entfallen. Abstandsgrenze in `isSimple` inklusiv getestet. Pitest Geometrie 78 % (482 von 615).
 - 2026-11-24: Schema 1 wird vor der Auslieferung korrigiert: `editor_drafts` erhält `projectId` als Primärschlüssel und ein nullbares `roomId`, weil der eingefrorene Vertrag einen Entwurf je Projekt mit optionalem Raum vorsieht. Die Korrektur gehört zu T-DAT-002, das den Pfad `db/` nach dem Merge von T-DAT-001 übernimmt. Eine Migration ist nicht nötig, weil Schema 1 noch nicht ausgeliefert ist.
+- 2026-11-24: T-DAT-002 gemergt (`cc75c72`, 79 Tests in `:core:data`). Schema 1 korrigiert: `editor_drafts` mit Primärschlüssel `projectId`, nullbarem `roomId` und Spalte `inputText`. Der Saver serialisiert über einen fairen Mutex, jedes `save` läuft in genau einer Transaktion. Duplizieren vergibt neue IDs für alle Elemente, der Name bleibt gleich. Import behält die IDs und speichert bei Kollision eine Kopie.
+- 2026-11-24: T-GEO-002 (`3b8d65e`) und T-GEO-003 (`d4a19d1`) gemergt. Geometrie: 242 Tests, Pitest 83 % (592 von 717). Rechtwinklige Sollformen sind ganzzahlig exakt. Ein Werttest verbietet nicht-strikte Mathematik im Paket `traverse`.
+- 2026-11-24: Planungslücke geschlossen: Keine Aufgabe implementierte `ProjectValidator`, den `RoomProjectRepository` für den Import braucht. Neue Aufgabe T-DOM-007 in Batch 2.3, nach T-DOM-003 und T-DOM-004 und vor der Verdrahtung in T-APP-001.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
-- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-DOC-001, T-DAT-001, T-DAT-003, Build-Vorbereitungen.
-- **In Arbeit (Batch 1.2):** T-GEO-002, T-GEO-003, T-DAT-002 (vorgezogen aus Batch 1.3, Abhängigkeit T-DAT-001 erfüllt). Agenten-Worktrees unter `.claude/worktrees/`.
+- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-GEO-002, T-GEO-003, T-DOC-001, T-DAT-001, T-DAT-002, T-DAT-003, Build-Vorbereitungen.
+- **In Arbeit (Batch 1.3):** T-GEO-004, T-GEO-006. Agenten-Worktrees unter `.claude/worktrees/`.
 
 ## Nächste Schritte
 
-1. T-GEO-002, T-GEO-003 und T-DAT-002 prüfen und übernehmen.
-2. Batch 1.3: T-GEO-004 und T-GEO-006 (nach T-GEO-002). Batch 1.4: T-GEO-005 (nach T-GEO-004), T-GEO-007 (nach T-GEO-003, T-GEO-004 und T-GEO-006).
+1. T-GEO-004 und T-GEO-006 prüfen und übernehmen.
+2. Batch 1.4: T-GEO-005 (nach T-GEO-004), T-GEO-007 (nach T-GEO-003, T-GEO-004 und T-GEO-006).
 3. Wellen-Gate 1 mit Review, Tag `wave-1` und Push.

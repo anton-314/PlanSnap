@@ -34,7 +34,7 @@ graph LR
 | Welle 1 / 1.4 | T-GEO-005, T-GEO-007 |
 | Welle 2 / 2.1 | T-DOM-001, T-DOM-002, T-DOM-005, T-DRW-002 |
 | Welle 2 / 2.2 | T-DOM-003, T-DOM-004, T-DOM-006, T-DRW-001 |
-| Welle 2 / 2.3 | T-RND-001, T-EXP-001, T-APP-001 |
+| Welle 2 / 2.3 | T-RND-001, T-EXP-001, T-APP-001, T-DOM-007 |
 | Welle 3 / 3.1 | T-EDT-001, T-PRJ-001, T-SET-001, T-EXP-002 |
 | Welle 3 / 3.2 | T-EDT-002, T-EDT-003, T-EXP-003 |
 | Welle 3 / 3.3 | T-EDT-004, T-FEX-001 |
@@ -481,6 +481,17 @@ graph LR
 - **Tests:** JVM-Golden
 
 ### Batch 2.3
+
+#### T-DOM-007 – Projektvalidierung
+
+- **Modul:** :core:domain
+- **Rolle/Modell:** feature-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-DOM-003, T-DOM-004
+- **Besitzbereich:** `core/domain/…/validation/` (nur neue Implementierungsdateien, der Vertrag in `ProjectRules.kt` bleibt eingefroren)
+- **Vertrag:** `ProjectValidator`, DOMAIN §9 bis §11
+- **Akzeptanzkriterien:** Grenzwerte aus `GeometryTolerances`, Andockziele einschließlich `DockLink.ownWallId`, Wirtsöffnungen auf ihrer Wand, Andockzyklen und überlappende Öffnungen je Wand werden erkannt. Sich berührende Öffnungen gelten nicht als Überlappung. Gemeldet wird der erste Verstoß in Raum- und Indexreihenfolge. Die Regeln aus T-DOM-003 und T-DOM-004 werden wiederverwendet, nicht dupliziert. `RoomProjectRepository` (T-DAT-002) erhält die Implementierung über T-APP-001. Anforderungen: REQ-DATA-004, REQ-NFR-003
+- **Tests:** Tabellentests je Regel, Property: gültige Generatorprojekte bestehen
 
 #### T-RND-001 – Canvas-Renderer
 
