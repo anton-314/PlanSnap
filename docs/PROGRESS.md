@@ -37,6 +37,7 @@ Keine.
 - 2026-11-24: ADR 0019: Befehle haben eine optionale `suspend`-Vorbedingung `verify`, die `CommandHistory.execute` unter dem Mutex mit der aktuellen Toleranz vor `apply` prüft. `AcceptAdjustment` lehnt damit veraltete Vorschläge ab. `ClosureTolerance` verlangt `absoluteMm ≥ 1`.
 - 2026-11-24: Phase-3-Gate nach vier Review-Runden bestanden. Verträge in `:core:*` sind eingefroren, Änderungen nur per Change-Request (WORKFLOWS §5).
 - 2026-11-24: Erster GitHub-Actions-Lauf auf `f6a61e9` grün: Wrapper-Validierung, Build mit Tests, Lint und Coverage sowie instrumentierte Tests (API 36, x86_64).
+- 2026-11-24: `:core:document` nutzt `kotlinx-serialization-json` (aus dem Version Catalog) statt eines eigenen Parsers und erhält `:testing:fixtures` als Testabhängigkeit.
 
 ## Nächste Schritte
 
