@@ -43,11 +43,12 @@ Keine.
 - 2026-11-24: `:core:data` erhält Room (Runtime, KTX, Compiler über KSP, Schema-Export nach `core/data/schemas`), DataStore Preferences sowie Testabhängigkeiten. `androidx-room-testing` mit der Room-Version aus dem Catalog ergänzt, für den Migrationstest-Harness. Hilt folgt mit der DI-Wurzel (T-APP-001).
 - 2026-11-24: `:core:geometry` hat `:testing:fixtures` als Testabhängigkeit erhalten (`9c0ef23`). Es gibt keinen Zyklus, weil die Fixtures nur die Hauptausgabe nutzen. Geprüft mit Test, Pitest, Kover und `checkArchitecture`. Der leere T-DAT-001-Branch wurde verworfen, T-DAT-001 wurde neu gestartet.
 - 2026-11-24: Gespeichertes `absoluteMm` ist nur in `MIN_TOLERANCE_ABS_MM..MAX_WALL_MM` (1 bis 100 000) gültig. Werte außerhalb fallen je Feld auf den Standard zurück. Eine Toleranz über der größten Wandlänge ist sinnlos.
+- 2026-11-24: T-DAT-003 gemergt (`f5ccf27`, 13 Tests). Werte mit falschem gespeicherten Typ fallen je Feld auf den Standard zurück. `update` mit ungültigem `absoluteMm` liefert `InvalidValue(TOLERANCE, TOO_LARGE)` und schreibt nichts.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
-- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-DOC-001, Build-Vorbereitungen.
-- **In Arbeit (Batch 1.2):** T-GEO-001 (vom WIP `6800714`), T-DAT-003 (vom WIP `f6d54bd`), T-DAT-001 (neu). Agenten-Worktrees unter `.claude/worktrees/`. Die alten WIP-Worktrees `agent-a8663ab4…` und `agent-aeeeee52…` werden nach der Übernahme entfernt.
+- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-DOC-001, T-DAT-003, Build-Vorbereitungen.
+- **In Arbeit (Batch 1.2):** T-GEO-001 (vom WIP `6800714`), T-DAT-001 (neu). Agenten-Worktrees unter `.claude/worktrees/`. Die alten WIP-Worktrees `agent-a8663ab4…` wird nach der Übernahme entfernt.
 
 ## Nächste Schritte
 
