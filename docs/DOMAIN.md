@@ -93,10 +93,10 @@ enum class ShapeStatus { OPEN, CONFIRMED, NEEDS_ADJUSTMENT, ADJUSTED, PROPOSED, 
 | Status | Bedeutung | Im Export |
 |---|---|---|
 | `OPEN` | Weniger als 3 Wände oder nicht abgeschlossen | Nicht exportierbar, Warnung |
-| `CONFIRMED` | Form eindeutig, exakt oder mit Korrekturen bis `EXACT_CLOSURE_MM` geschlossen | Normal |
+| `CONFIRMED` | Form bestimmt, exakt oder mit Korrekturen bis `EXACT_CLOSURE_MM` geschlossen, keine zweite gültige Form weiter als `T` gefunden (§5.6) | Normal |
 | `NEEDS_ADJUSTMENT` | Korrektur der Messwerte wartet auf Bestätigung | „Form nicht bestätigt“ |
 | `ADJUSTED` | Ausgleich bestätigt und zu den Rohwerten passend | Normal |
-| `PROPOSED` | Form aus Vorschlag, Zusatzmaße fehlen | „Form nicht bestätigt“ |
+| `PROPOSED` | Form aus Vorschlag, ein Zusatzmaß ist nötig: Es fehlen Maße (`UNDERDETERMINED`) oder eine zweite gültige Form weicht um mehr als `T` ab (`AMBIGUOUS_SHAPE`, §5.6) | „Form nicht bestätigt“ |
 | `CONFLICT` | Maße sind unmöglich oder widersprechen sich signifikant | Nicht exportierbar, Warnung |
 
 ### Auswertung `evaluate(room, tolerance)`
@@ -165,7 +165,7 @@ Gültig ist ein Ergebnis, wenn es konvergiert, der Umriss einfach ist (§7) und 
 3. dann die kleinsten Kosten `f` (Gleichstand bei Differenz unter `COST_TIE`),
 4. dann das lexikografisch kleinste `u`, auf 1e-6 rad gerundet.
 
-Ohne gültiges Ergebnis meldet der Solver `NoSimpleShape`. Das ist kein Endstatus, §5.5 entscheidet.
+Die übrigen gültigen Ergebnisse gibt der Solver in Auswahlreihenfolge als `alternatives` zurück, gefiltert nach §5.6. Ohne gültiges Ergebnis meldet der Solver `NoSimpleShape`. Das ist kein Endstatus, §5.5 entscheidet.
 
 **Verbindlicher Referenzfall:** Längen 3000, 3000, 3000, 5000 mm mit drei Linksdrehungen ergeben Innenwinkel von `arccos(1/3)` ≈ 70,53° an beiden Ecken der 5-m-Wand, ≈ 109,47° an den beiden anderen und die Fläche `8√2` ≈ 11,314 m².
 
@@ -184,8 +184,8 @@ Beispiele: Viereck ohne Zusatzmaße `v = 3, m = 2, ρ = 2`, mit einer Diagonale 
 
 **Bestimmtheit an der Lösung (`analyze`).** Nach dem Lösen oder Ausgleichen wird der Rang `ρ_L` an der geschlossenen Form erneut bestimmt, mit den wirksamen Längen und Drehungen und der Schwelle `max(RANK_TOLERANCE, RANK_SOLUTION_RESIDUAL_FACTOR · SOLVER_RESIDUAL_MM / U)`. **Nur dieser Rang ist maßgeblich.** Die Zahl fehlender Angaben ist `missing = v − ρ_L`. Für ein Viereck ohne Zusatzmaße gilt `missing = 3 − 2 = 1`.
 
-- `missing = 0`: Die Form ist bis auf diskrete Spiegelungen eindeutig. Die Drehrichtungen wählen die Lösung.
-- `missing > 0`: Status `PROPOSED`.
+- `missing = 0`: Die Form ist lokal bestimmt. Es kann trotzdem mehrere diskrete Lösungen geben, die alle Drehrichtungen einhalten. Diesen Fall behandelt §5.6.
+- `missing > 0`: Status `PROPOSED` mit Grund `UNDERDETERMINED`.
 
 **Empfehlung des Zusatzmaßes:** Unter allen Diagonalen zwischen nicht benachbarten Ecken, die den Rang erhöhen, wird die längste empfohlen. Gleichstand wird durch den kleinsten Index `(a, b)` entschieden. Für eine Ecke wird nur dann ein Winkel empfohlen, wenn keine Diagonale den Rang erhöht.
 
@@ -200,8 +200,10 @@ Die Schritte laufen in dieser Reihenfolge, der erste zutreffende legt das Ergebn
 **Zweig A, nicht überbestimmt (`m = ρ`):**
 
 - **A1 Solver** auf allen Bedingungen. `NoSimpleShape` führt zu **B2 mit Start bei den Sollwinkeln**.
-- **A2 Rang.** `analyze` an der Lösung. `missing > 0` ergibt `PROPOSED` mit den Rohlängen, ohne Korrekturangaben.
-- **A3 Drehrichtungen.** Bei `missing = 0` und verletzter Richtung (§3) folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`, sonst `CONFIRMED` mit `r = 0`.
+- **A2 Rang.** `analyze` an der Lösung. `missing > 0` ergibt `PROPOSED(UNDERDETERMINED)` mit den Rohlängen, ohne Korrekturangaben.
+- **A3 Drehrichtungen.** Bei `missing = 0` und verletzter Richtung (§3) folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`.
+- **A4 Mehrdeutigkeit.** §5.6 vergleicht die Lösung aus A1 mit den Alternativen aus A1. Eine Alternative weiter als `T` ergibt `PROPOSED(AMBIGUOUS_SHAPE)` mit den Rohlängen, ohne Korrekturangaben.
+- **A5 Bestätigt.** Sonst folgt `CONFIRMED` mit `r = 0`.
 
 **Zweig B, überbestimmt (`m > ρ`):**
 
@@ -211,7 +213,7 @@ Die Schritte laufen in dieser Reihenfolge, der erste zutreffende legt das Ergebn
 - **B4 Rang.** `analyze` an der ausgeglichenen Form ergibt `ρ_L`, `missing = v − ρ_L` und die Redundanz `r = m − ρ_L`.
 - **B5 Konflikttest.** Bei `r ≥ 1`, `S > T` **und** `q² > χ²(r; 0,99)` folgt `CONFLICT(MEASUREMENTS_INCONSISTENT)` unter Angabe von `worstObservation`.
 - **B6 Drehrichtungen.** Bei `missing = 0` und verletzter Richtung (§3) folgt `CONFLICT(TURN_DIRECTION_VIOLATED)`.
-- **B7 Vorschlag.** `missing > 0` ergibt `PROPOSED` mit der ausgeglichenen Form und **Pflicht-Korrekturangaben**: `S`, `q²` (nur bei `r ≥ 1` definiert), größte Einzelkorrektur und betroffene Messung. Eine verletzte Drehrichtung ist hier zulässig, weil die Form nur ein Vorschlag ist.
+- **B7 Vorschlag.** `missing > 0` ergibt `PROPOSED(UNDERDETERMINED)`. Eine verletzte Drehrichtung ist dort zulässig, weil die Form nur ein Vorschlag ist. Bei `missing = 0` vergleicht §5.6 die ausgeglichene Form mit den Alternativen aus B1. Eine Alternative weiter als `T` ergibt `PROPOSED(AMBIGUOUS_SHAPE)`, gleich ob sonst B8 oder B9 folgen würde. Beide Vorschläge zeigen die ausgeglichene Form und tragen **Pflicht-Korrekturangaben**: `S`, `q²` (nur bei `r ≥ 1` definiert), größte Einzelkorrektur und betroffene Messung.
 - **B8 Bestätigt.** `maxCorrectionMm ≤ EXACT_CLOSURE_MM` ergibt `CONFIRMED`. Eine stimmige Zusatzmessung verschlechtert den Status also nicht.
 - **B9 Ausgleich nötig.** Sonst folgt `NEEDS_ADJUSTMENT` mit Vorschau und `measurementControl`. Die **ausdrückliche Bestätigung** ist genau bei `r ≥ 1`, `S > T` und `χ²(r; 0,95) < q² ≤ χ²(r; 0,99)` nötig, sonst genügt die einfache. `S`, die größte Einzelkorrektur und die betroffene Messung stehen immer im Ergebnis.
 
@@ -225,15 +227,30 @@ Der Fall „alle Ecken gemessen, `e > T`“ hat `v = 0`, `ρ = 0` und `r = m`, l
 - `q² = Σ (v_i / σ_i)²` über dieselben Beobachtungen, mit `σ_i` aus §6.
 - `χ²(r; p)` liefert `ChiSquareLimits.quantile`: feste Tabelle für `r = 1 … 30`, darüber Wilson-Hilferty `r · (1 − 2/(9r) + z_p · √(2/(9r)))³`.
 
-**Bestätigung:** `AcceptAdjustment` nennt die tatsächlich gegebene Bestätigung. Verlangt der Vorschlag `EXPLICIT` und liegt nur `SIMPLE` vor, wird der Befehl mit `EXPLICIT_CONFIRMATION_REQUIRED` abgelehnt.
+**Bestätigung:** `AcceptAdjustment` ist nur zulässig, wenn die aktuelle Auswertung des Raums `NeedsAdjustment` mit gleichem `AdjustmentProposal` ist, sonst folgt `ADJUSTMENT_NOT_AVAILABLE`. Das schließt einen veralteten Fingerabdruck und jeden Raum in `PROPOSED` ein, auch mit Korrekturangaben. Der Befehl nennt die tatsächlich gegebene Bestätigung. Verlangt der Vorschlag `EXPLICIT` und liegt nur `SIMPLE` vor, wird er mit `EXPLICIT_CONFIRMATION_REQUIRED` abgelehnt.
 
-**Kontrollierbarkeit (`analyzeControl`).** Sie läuft bei jedem bestimmten Raum (`missing = 0`) mit Ausgleich und **ändert nie den Status**:
+**Kontrollierbarkeit (`analyzeControl`).** Sie läuft bei jedem bestimmten Raum (`missing = 0`) mit Ausgleich, der nicht `PROPOSED(AMBIGUOUS_SHAPE)` wird, und **ändert nie den Status**:
 
 - `r_i` ist die Redundanzzahl der Beobachtung, `r_i = (Q Aᵀ (A Q Aᵀ)⁻¹ A Q)_ii / σ_i²` an der Lösung.
 - `λ_i(3T) = (CONTROL_ERROR_FACTOR · T)² · r_i / σ_i²`. Für Winkel ist `σ_i` das mm-Äquivalent `σ · U / (2π)`.
 - Eine Messung ist **nicht kontrollierbar**, wenn `λ_i(3T) < λ₀(r)`. `λ₀(r)` ist die Nichtzentralität, bei der der Konflikttest die Trennschärfe `CONTROL_POWER` erreicht: feste, aufgerundete Tabelle für `r = 1 … 30`, darüber `λ₀ = c − r + 2z² + √(4z⁴ + z²(4c − 2r))` mit `c = χ²(r; 0,99)` und `z = z_0,95`.
 - **Empfohlenes Zusatzmaß je Messung:** Geprüft werden die noch nicht gemessenen Diagonalen zwischen nicht benachbarten Ecken, die längste zuerst, Gleichstand nach kleinstem `(a, b)`, danach die nicht gemessenen Ecken nach Index. Empfohlen wird das erste Maß, mit dem `λ_i(3T) ≥ λ₀(r + 1)` gilt. Gibt es keines, bleibt die Empfehlung leer.
 - Bei `r = 0` hat keine Messung eine Gegenprobe. `MeasurementControl` meldet dann `r = 0` und keine Einzelmessungen.
+
+### 5.6 Mehrdeutige Formen
+
+Der Rang an der Lösung (§5.4) ist eine lokale Aussage. Auch ein bestimmter Raum (`missing = 0`) kann mehrere diskrete Lösungen haben, die alle Eingaben und Drehrichtungen erfüllen, vor allem bei freier Schlussecke. Die Auswahl nach §5.3 zeigt dann eine davon, nicht zwingend den gemessenen Raum. Dieser Abschnitt legt fest, wann das als Mehrdeutigkeit gilt (ADR 0018, Ergänzung T-ARC-008). Er gilt nur in A4 und B7.
+
+1. **Alternativen.** `SolverOutcome.Solved.alternatives` aus A1 oder B1 enthält alle übrigen gültigen Ergebnisse nach §5.3, also aus allen Startwerten direkt und nach der Startverfeinerung, in Auswahlreihenfolge. Aufgenommen wird nur ein Ergebnis, das alle Drehrichtungen nach §3 einhält und mit den Rohlängen alle harten Bedingungen der Eingabe bis `EXACT_CLOSURE_MM` erfüllt: Schließung, gemessene Schlussecke als Bogen `|Δτ_0| · U / (2π)` und Diagonalen zwischen nicht benachbarten Ecken, auch außerhalb von `I`. Fast-Duplikate der gewählten Lösung sind zulässig. Ohne Solver-Ergebnis (`v = 0` oder `NoSimpleShape` in A1 oder B1) ist die Liste leer.
+2. **Formabstand.** `shapeDistanceMm(F, Q)` vergleicht zwei Umrisse mit gleicher Eckenreihenfolge. Beide werden auf ihren Eckenschwerpunkt verschoben, `p_i` und `q_i` sind die verschobenen Ecken. `F` wird um `θ = atan2(Σ p_i × q_i, Σ p_i · q_i)` gedreht. Das ist die Drehung mit der kleinsten Summe `Σ |R(θ) p_i − q_i|²`. Der Abstand ist `max_i |R(θ) p_i − q_i|` in mm. Eine Spiegelung wird nicht ausgerichtet. Das Maß ist geschlossen berechnet, also deterministisch, und hängt weder vom lokalen Ursprung noch von Lage und Drehung eines der Umrisse ab.
+3. **Prüfung.** `F` ist die angezeigte Form: in A4 die Lösung aus A1, in B7 die ausgeglichene Form mit den wirksamen Längen. Jede Alternative `Q` liegt auf den Rohlängen im lokalen System (§2). Mehrdeutig ist der Raum genau dann, wenn eine Alternative `shapeDistanceMm(F, Q) > T` hat. Ein Abstand genau gleich `T` zählt nicht (§4, Grenzfälle). Berichtet wird die Alternative mit dem größten Abstand, bei Gleichstand innerhalb `SOLVER_RESIDUAL_MM` die erste in Auswahlreihenfolge.
+4. **Empfehlung.** Ist `V_0` `Unspecified` und gilt `|wrap(τ_0(F) − τ_0(Q))| · U / (2π) > T`, wird der Winkel an `V_0` empfohlen. Sonst wird unter den nicht gemessenen Diagonalen `(a, b)` mit `a < b` zwischen nicht benachbarten Ecken die mit dem größten Unterschied `||F_a F_b| − |Q_a Q_b||` empfohlen. Bei Gleichstand innerhalb `SOLVER_RESIDUAL_MM` gewinnt das kleinste `(a, b)` lexikografisch. Liegt der größte Unterschied höchstens bei `EXACT_CLOSURE_MM`, bleibt die Empfehlung leer. `U` ist die Summe der Rohlängen.
+5. **Ergebnis.** `PROPOSED(AMBIGUOUS_SHAPE)` zeigt weiter `F`, mit `Determinacy` bei `missing = 0` und `ShapeAmbiguity` aus Alternative, Abstand, `T` und Empfehlung. `Proposed.recommendation` liefert die Empfehlung aus `ShapeAmbiguity`. Die Alternative wird nie automatisch gewählt. Invariante: `UNDERDETERMINED` genau bei `missing > 0`, `AMBIGUOUS_SHAPE` genau bei `missing = 0`.
+6. **Ausgleichspfad.** In B7 gilt die Regel auch dann, wenn ohne sie B9 `NEEDS_ADJUSTMENT` folgen würde. Der Vorschlag trägt dieselben Pflicht-Korrekturangaben wie bei `UNDERDETERMINED` in B7, aber kein `AdjustmentProposal`. `AcceptAdjustment` wird mit `ADJUSTMENT_NOT_AVAILABLE` abgelehnt (§5.5, Bestätigung), sodass der Raum durch Bestätigung nie `ADJUSTED` wird. Erst eine geänderte Eingabe, etwa das empfohlene Zusatzmaß, ändert den Status. Ein schon gespeichertes Overlay mit passendem Fingerabdruck bleibt nach §4 Schritt 2 `ADJUSTED`.
+7. **Messfehlerpfad.** Der Ausgleich bei `e ≤ T` (§4 Schritt 6) läuft ohne Solver, hat also keine Alternativen, und bleibt unverändert.
+8. **Grenze.** Die Suche ist endlich: feste Startwerte nach §5.3, keine Aufzählung aller Lösungen. Eine leere Liste beweist keine Eindeutigkeit, `CONFIRMED` heißt nur, dass keine zweite gültige Form weiter als `T` gefunden wurde. Die gemessene Restquote steht in ADR 0018.
+
+Die Prüfung läuft nach dem Konflikttest und der Drehrichtungsprüfung. Ein Konflikt geht also immer vor. `analyzeControl` entfällt bei einem Vorschlag, weil `Proposed` keine Kontrollierbarkeit trägt.
 
 ## 6. Schließungsausgleich
 

@@ -1,6 +1,6 @@
 # ADR 0018: Überbestimmung und Ausgleichsmodus
 
-**Status:** Angenommen, 2026-11-23, ergänzt durch T-ARC-006
+**Status:** Angenommen, 2026-11-23, ergänzt durch T-ARC-006, T-ARC-007 und T-ARC-008
 
 ## Kontext
 
@@ -74,3 +74,37 @@ Messungen mit `λ(3T) < λ₀(r)` kann keine Regel zuverlässig prüfen. Die Aus
 **Prüfstand** (Prototyp, Seed 20261124, 12 000 Fälle). Ehrliche Eingaben (K1a, deklariert nur an echten 90°-Ecken): 2 400 Fälle ohne Abweichung. Bei deklarierten Ecken, die in Wahrheit nicht 90° haben (K1b, 2 400 Fälle), bleiben 17 falsche Konflikte und 22 bestätigte Formen, die alle Eingaben erfüllen, aber von der wahren Form abweichen. In K3 (2 400 Fälle) enden 6 stimmige Räume in `CONFLICT`. In einer Stichprobe aus je 1 000 Fällen von K1b und K3 konvergierte der Ausgleich bei allen 12 verbliebenen Konflikten aus der wahren Form. Das spricht für Grenzen der lokalen Suche. Der Prototyp bricht den Solver bei einem Gradienten von 1e-7 ab, nicht bei `SOLVER_GRADIENT = 1e-9`.
 
 **Offen.** Der Rang an der Lösung erkennt keine zweite diskrete Lösung. Die Aussage „Drehrichtungen wählen die Lösung“ (DOMAIN §5.4) gilt daher nicht für jede Eingabe, vor allem nicht bei freier Schlussecke (19 der 22 Fälle). Die Behandlung braucht eine eigene Entscheidung.
+
+## Ergänzung T-ARC-008
+
+**Kontext.** Der offene Punkt aus T-ARC-007: Ein bestimmter Raum (`missing = 0`) kann mehrere diskrete Lösungen haben, die alle Eingaben und Drehrichtungen erfüllen. Die Auswahl nach DOMAIN §5.3 zeigt dann eine davon als `CONFIRMED`, obwohl der gemessene Raum die andere sein kann.
+
+**Optionen.**
+
+- **A:** Nichts ändern, nur dokumentieren. Bestätigt falsche Formen ohne Hinweis.
+- **B:** Mehrdeutigkeit nur bei freier Schlussecke annehmen. Übersieht Fälle mit gemessener Schlussecke und markiert eindeutige Räume pauschal.
+- **C:** Die übrigen gültigen Solver-Ergebnisse mit der angezeigten Form vergleichen. Weicht eine um mehr als `T` ab, wird der Raum ein Vorschlag mit Grund und trennendem Zusatzmaß.
+
+**Entscheidung.** Option C (DOMAIN §5.6).
+
+- `SolverOutcome.Solved.alternatives` liefert die übrigen gültigen Ergebnisse in Auswahlreihenfolge, nur mit eingehaltenen Drehrichtungen und allen harten Bedingungen auf den Rohlängen bis `EXACT_CLOSURE_MM`.
+- `shapeDistanceMm` ist der größte Eckenabstand nach Verschiebung auf den Eckenschwerpunkt und optimaler Drehung, geschlossen berechnet und unabhängig vom lokalen Ursprung. Spiegelungen werden nicht ausgerichtet.
+- `RoomEvaluation.Proposed` trägt `ProposalReason`. `UNDERDETERMINED` gilt genau bei `missing > 0`, `AMBIGUOUS_SHAPE` genau bei `missing = 0` und dann mit `ShapeAmbiguity`. `Proposed.recommendation` nennt das Zusatzmaß: zuerst die freie Schlussecke, wenn sie beide Formen um mehr als `T` als Bogen unterscheidet, sonst die nicht gemessene Diagonale mit dem größten Längenunterschied, Gleichstand nach kleinstem `(a, b)`.
+- Die Prüfung läuft in A4 und B7 (DOMAIN §5.5). Im Ausgleichspfad gilt sie auch für Räume, die sonst `NEEDS_ADJUSTMENT` würden. Der Vorschlag trägt dann die Pflicht-Korrekturangaben wie in B7, aber kein `AdjustmentProposal`. `AcceptAdjustment` verlangt die aktuelle Auswertung `NeedsAdjustment` mit gleichem Vorschlag und lehnt sonst mit `ADJUSTMENT_NOT_AVAILABLE` ab. Ein solcher Raum wird durch Bestätigung also nie `ADJUSTED`.
+- Der Messfehlerpfad (`e ≤ T`) hat keinen Solver-Lauf und keine Alternativen. Er bleibt unverändert.
+
+**Suchgrenze.** Die Prüfung sieht nur, was die festen Startwerte aus DOMAIN §5.3 finden. Sie zählt keine Lösungen vollständig auf. `CONFIRMED` heißt daher „keine zweite gültige Form weiter als `T` gefunden“, nicht „eindeutig“. Die Suche wird bewusst nicht weiter ausgebaut. Die verbleibende Quote wird am Produktionscode über den portierten Prüfstand verfolgt (T-GEO-005).
+
+**Prüfstand mit Regel** (Prototyp in `docs/research/evaluation-prototype/`, Seed 20261124, 12 000 Fälle, Vergleich mit der Wahrheit über den Formabstand):
+
+| Klasse | Status | Abweichungen |
+|---|---|---|
+| K1a, 2 400 | 2 017 `CONFIRMED`, 383 `NEEDS_ADJUSTMENT` | keine |
+| K1b, 2 400 | 1 510 `CONFIRMED`, 184 `NEEDS_ADJUSTMENT`, 689 `PROPOSED`, 17 `CONFLICT` | 17 falsche Konflikte, 2 bestätigte Formen weiter als `T` von der Wahrheit |
+| K2, 2 400 | 21 `CONFIRMED`, 16 `NEEDS_ADJUSTMENT`, 1 491 `PROPOSED`, 872 `CONFLICT` | keine |
+| K3, 2 400 | 2 393 `PROPOSED`, 1 `NEEDS_ADJUSTMENT`, 6 `CONFLICT` | keine falsche Bestätigung |
+| K4, 2 400 | 2 007 `CONFIRMED`, 393 `NEEDS_ADJUSTMENT` | keine |
+
+In K1b wurden 42 Räume `PROPOSED(AMBIGUOUS_SHAPE)`: 15 in A4, 22 in B7 statt B8 und 5 in B7 statt B9. Ohne Regel wären 20 Formen bestätigt, die weiter als `T` von der Wahrheit liegen. Davon erkennt die Regel 18, 2 bleiben an der Suchgrenze. Dafür werden 19 richtig bestätigte Räume (0,8 %) und 1 richtiger Ausgleichsfall zum Vorschlag, weil auch bei ihnen eine zweite gültige Form existiert. Die Zahl 22 aus T-ARC-007 beruhte auf dem Eckenabstand im lokalen System, nicht auf dem ausgerichteten Formabstand. In K2 wurde 1 Raum mehrdeutig, in K1a, K3 und K4 keiner.
+
+**Konsequenzen.** Die Sollwerte für T-GEO-005 stehen in `docs/research/evaluation-prototype/README.md`. `OverdeterminedCases` enthält drei Referenzfälle: angezeigte Form falsch mit freier Schlussecke, angezeigte Form richtig mit Diagonalempfehlung und den Ausgleichspfad. Der Prototyp liefert für alle 30 Katalogfälle Status und Grund wie erwartet.

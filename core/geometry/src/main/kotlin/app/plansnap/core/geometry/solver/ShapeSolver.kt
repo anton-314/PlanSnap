@@ -65,10 +65,27 @@ data class ShapeSolution(
 
 /** Result of the shape solver. */
 sealed interface SolverOutcome {
-    /** A valid shape was found. */
+    /**
+     * A valid shape was found.
+     *
+     * @property solution selected result (DOMAIN section 5.3).
+     * @property alternatives every other valid result of the fixed starts that keeps all turn directions and meets all
+     * hard conditions of the input on the raw lengths within `EXACT_CLOSURE_MM`, in selection order (DOMAIN section
+     * 5.6). This includes the conditions outside the solved set `I` (step B1). Near-duplicates of [solution] are
+     * allowed. The list is the input of the ambiguity check in steps A4 and B7. An empty list does not prove that the
+     * shape is unique.
+     */
     data class Solved(
         val solution: ShapeSolution,
-    ) : SolverOutcome
+        val alternatives: List<ShapeSolution>,
+    ) : SolverOutcome {
+        init {
+            require(alternatives.all { it.outline.vertices.size == solution.outline.vertices.size }) {
+                "Alternatives must have the vertex count of the solution"
+            }
+            require(alternatives.all { it.honorsDirections }) { "Alternatives must keep all turn directions" }
+        }
+    }
 
     /** No start value produced a valid simple outline. Not a final status: the evaluation continues at step B2. */
     data object NoSimpleShape : SolverOutcome

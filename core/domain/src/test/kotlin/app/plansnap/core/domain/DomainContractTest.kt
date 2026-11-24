@@ -14,6 +14,7 @@ import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
 import app.plansnap.core.domain.evaluation.AdjustmentProposal
 import app.plansnap.core.domain.evaluation.CorrectionSummary
 import app.plansnap.core.domain.evaluation.EvaluatedShape
+import app.plansnap.core.domain.evaluation.ProposalReason
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.domain.evaluation.currentCancellationSignal
 import app.plansnap.core.domain.evaluation.isExportable
@@ -34,6 +35,8 @@ import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.cancellation.CancellationSignal
 import app.plansnap.core.geometry.determinacy.Determinacy
 import app.plansnap.core.geometry.determinacy.MeasurementControl
+import app.plansnap.core.geometry.determinacy.MeasurementRecommendation
+import app.plansnap.core.geometry.determinacy.ShapeAmbiguity
 import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Polygon2
@@ -59,6 +62,7 @@ import app.plansnap.core.model.RoomTypeKey
 import app.plansnap.core.model.ShapeStatus
 import app.plansnap.core.model.Wall
 import app.plansnap.core.model.WallId
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
@@ -222,7 +226,7 @@ class DomainContractTest {
                 RoomEvaluation.Confirmed(roomId, shape, noOpenings),
                 RoomEvaluation.NeedsAdjustment(roomId, shape, error, proposalOf(adjustment), noOpenings, control),
                 RoomEvaluation.Adjusted(roomId, shape, noOpenings),
-                RoomEvaluation.Proposed(roomId, solvedShape, determinacy, rawLengths, null, noOpenings),
+                underdetermined(solvedShape, determinacy, rawLengths, null),
                 RoomEvaluation.Conflict(roomId, ConflictReason.WALL_TOO_LONG, null, null, noOpenings),
             )
         assertEquals(ShapeStatus.entries.toList(), evaluations.map { it.status })
@@ -264,9 +268,7 @@ class DomainContractTest {
                 control,
             )
         }
-        assertRejected {
-            RoomEvaluation.Proposed(roomId, solvedShape, Determinacy(2, 2, null), rawLengths, null, noOpenings)
-        }
+        assertRejected { underdetermined(solvedShape, Determinacy(2, 2, null), rawLengths, null) }
     }
 
     @Test
@@ -275,15 +277,119 @@ class DomainContractTest {
         val adjustedRaw = persistentListOf(1000L, 1400L, 1000L)
         val summary = CorrectionSummary(14.2, 8.1, 14.2, ObservationRef.WallLength(1))
 
-        assertRejected { RoomEvaluation.Proposed(roomId, shape, determinacy, adjustedRaw, null, noOpenings) }
+        assertRejected { underdetermined(shape, determinacy, adjustedRaw, null) }
+        assertRejected { underdetermined(shape, determinacy, persistentListOf(1000L), summary) }
+        assertEquals(summary, underdetermined(shape, determinacy, adjustedRaw, summary).correction)
+    }
+
+    @Test
+    fun `given ambiguous room that needs an adjustment then the proposal keeps its corrections and offers none`() {
+        val determined = Determinacy(freeVariables = 3, rank = 3, recommendation = null)
+        val adjustedRaw = persistentListOf(1000L, 1400L, 1000L)
+        val summary = CorrectionSummary(14.2, 8.1, 14.2, ObservationRef.WallLength(1))
+        val ambiguity = ambiguityOf(shape.outline, MeasurementRecommendation.CornerAngle(0))
+
         assertRejected {
-            RoomEvaluation.Proposed(roomId, shape, determinacy, persistentListOf(1000L), summary, noOpenings)
+            RoomEvaluation.Proposed(
+                roomId,
+                shape,
+                ProposalReason.AMBIGUOUS_SHAPE,
+                determined,
+                ambiguity,
+                adjustedRaw,
+                null,
+                noOpenings,
+            )
         }
-        assertEquals(
-            summary,
-            RoomEvaluation.Proposed(roomId, shape, determinacy, adjustedRaw, summary, noOpenings).correction,
+        val proposed =
+            RoomEvaluation.Proposed(
+                roomId,
+                shape,
+                ProposalReason.AMBIGUOUS_SHAPE,
+                determined,
+                ambiguity,
+                adjustedRaw,
+                summary,
+                noOpenings,
+            )
+        assertEquals(summary, proposed.correction)
+        assertTrue(proposed.status.isUnconfirmed)
+        assertTrue(
+            RoomEvaluation.Proposed::class.java.declaredFields.none { it.type == AdjustmentProposal::class.java },
         )
     }
+
+    @Test
+    fun `given proposal reason when it contradicts missing or ambiguity then it is rejected`() {
+        val underdetermined = Determinacy(freeVariables = 3, rank = 2, recommendation = null)
+        val determined = Determinacy(freeVariables = 3, rank = 3, recommendation = null)
+        val ambiguity = ambiguityOf(shape.outline, MeasurementRecommendation.CornerAngle(0))
+
+        assertRejected { proposed(ProposalReason.UNDERDETERMINED, determined, null) }
+        assertRejected { proposed(ProposalReason.UNDERDETERMINED, underdetermined, ambiguity) }
+        assertRejected { proposed(ProposalReason.AMBIGUOUS_SHAPE, underdetermined, ambiguity) }
+        assertRejected { proposed(ProposalReason.AMBIGUOUS_SHAPE, determined, null) }
+        assertDoesNotThrow { proposed(ProposalReason.UNDERDETERMINED, underdetermined, null) }
+        assertDoesNotThrow { proposed(ProposalReason.AMBIGUOUS_SHAPE, determined, ambiguity) }
+    }
+
+    @Test
+    fun `given second shape with another vertex count when proposed then it is rejected`() {
+        val determined = Determinacy(freeVariables = 3, rank = 3, recommendation = null)
+        val square = Polygon2(listOf(Vec2.ZERO, Vec2(1000.0, 0.0), Vec2(1000.0, 1000.0), Vec2(0.0, 1000.0)))
+
+        assertRejected { proposed(ProposalReason.AMBIGUOUS_SHAPE, determined, ambiguityOf(square, null)) }
+    }
+
+    @Test
+    fun `given proposal when recommendation is read then it follows the reason`() {
+        val missingDiagonal = MeasurementRecommendation.DiagonalBetween(0, 2)
+        val closingCorner = MeasurementRecommendation.CornerAngle(0)
+        val underdetermined = Determinacy(freeVariables = 3, rank = 2, recommendation = missingDiagonal)
+        val determined = Determinacy(freeVariables = 3, rank = 3, recommendation = null)
+
+        assertEquals(missingDiagonal, proposed(ProposalReason.UNDERDETERMINED, underdetermined, null).recommendation)
+        assertEquals(
+            closingCorner,
+            proposed(
+                ProposalReason.AMBIGUOUS_SHAPE,
+                determined,
+                ambiguityOf(shape.outline, closingCorner),
+            ).recommendation,
+        )
+        assertNull(
+            proposed(ProposalReason.AMBIGUOUS_SHAPE, determined, ambiguityOf(shape.outline, null)).recommendation,
+        )
+    }
+
+    private fun ambiguityOf(
+        alternative: Polygon2,
+        recommendation: MeasurementRecommendation?,
+    ): ShapeAmbiguity = ShapeAmbiguity(alternative, distanceMm = 200.0, limitMm = 100.0, recommendation)
+
+    private fun proposed(
+        reason: ProposalReason,
+        determinacy: Determinacy,
+        ambiguity: ShapeAmbiguity?,
+    ): RoomEvaluation.Proposed =
+        RoomEvaluation.Proposed(roomId, solvedShape, reason, determinacy, ambiguity, rawLengths, null, noOpenings)
+
+    private fun underdetermined(
+        evaluated: EvaluatedShape,
+        determinacy: Determinacy,
+        raw: ImmutableList<Long>,
+        correction: CorrectionSummary?,
+    ): RoomEvaluation.Proposed =
+        RoomEvaluation.Proposed(
+            roomId,
+            evaluated,
+            ProposalReason.UNDERDETERMINED,
+            determinacy,
+            null,
+            raw,
+            correction,
+            noOpenings,
+        )
 
     @Test
     fun `given correction summary when values are invalid then it is rejected`() {

@@ -87,8 +87,11 @@ sealed interface ProjectEdit {
     /**
      * Stores the adjustment of [proposal] as overlay.
      *
-     * Fails with `ADJUSTMENT_NOT_AVAILABLE` if its fingerprint is not current, and then with
-     * `EXPLICIT_CONFIRMATION_REQUIRED` if [confirmation] does not satisfy `proposal.requiredConfirmation`.
+     * Fails with `ADJUSTMENT_NOT_AVAILABLE` unless the current evaluation of the room is
+     * `RoomEvaluation.NeedsAdjustment` with a proposal equal to [proposal]. This also covers a fingerprint that is not
+     * current. A room in `PROPOSED`, also one with corrections or with `ProposalReason.AMBIGUOUS_SHAPE`, therefore
+     * never becomes `ADJUSTED` (DOMAIN section 5.6). After that check it fails with `EXPLICIT_CONFIRMATION_REQUIRED` if
+     * [confirmation] does not satisfy `proposal.requiredConfirmation`.
      *
      * @property confirmation confirmation the user actually gave. It has no default on purpose.
      */

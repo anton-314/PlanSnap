@@ -68,8 +68,21 @@ class ContractResultsTest {
     @Test
     fun `given solver outcomes when compared then payload decides`() {
         val solution = ShapeSolution(listOf(1.0, 1.0, 1.0), triangle, 0.5, SolverStart.CHORD_POLYGON, true)
-        assertEquals(solution, SolverOutcome.Solved(solution).solution)
-        assertNotEquals(SolverOutcome.Solved(solution), SolverOutcome.NoSimpleShape)
+        assertEquals(solution, SolverOutcome.Solved(solution, emptyList()).solution)
+        assertNotEquals(SolverOutcome.Solved(solution, emptyList()), SolverOutcome.NoSimpleShape)
+    }
+
+    @Test
+    fun `given solver alternatives when they break the contract then they are rejected`() {
+        val solution = ShapeSolution(listOf(1.0, 1.0, 1.0), triangle, 0.5, SolverStart.CHORD_POLYGON, true)
+        val square = Polygon2(listOf(Vec2.ZERO, Vec2(1.0, 0.0), Vec2(1.0, 1.0), Vec2(0.0, 1.0)))
+        val otherSize = ShapeSolution(listOf(1.0, 1.0, 1.0, 1.0), square, 0.5, SolverStart.MEAN_TURNS, true)
+
+        assertEquals(listOf(solution), SolverOutcome.Solved(solution, listOf(solution)).alternatives)
+        assertThrows(IllegalArgumentException::class.java) { SolverOutcome.Solved(solution, listOf(otherSize)) }
+        assertThrows(IllegalArgumentException::class.java) {
+            SolverOutcome.Solved(solution, listOf(solution.copy(honorsDirections = false)))
+        }
     }
 
     @Test

@@ -27,7 +27,7 @@ class OverdeterminedCasesTest {
         val keys = OverdeterminedCases.ALL.map { it.key }
 
         assertEquals(keys.toSet().size, keys.size)
-        assertEquals(27, keys.size)
+        assertEquals(30, keys.size)
         listOf(
             "NH1",
             "NH2",
@@ -43,6 +43,7 @@ class OverdeterminedCasesTest {
             "Flow start selection",
             "Flow simple iterate",
             "Flow unobserved turns",
+            "Ambiguous shape",
         ).forEach { finding ->
             assertTrue(OverdeterminedCases.ALL.any { finding in it.finding }, finding)
         }

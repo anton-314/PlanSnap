@@ -4,6 +4,8 @@ import app.plansnap.core.common.result.DomainResult
 import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.determinacy.Determinacy
 import app.plansnap.core.geometry.determinacy.MeasurementControl
+import app.plansnap.core.geometry.determinacy.MeasurementRecommendation
+import app.plansnap.core.geometry.determinacy.ShapeAmbiguity
 import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Polygon2
@@ -124,6 +126,15 @@ data class EvaluatedShape(
     }
 }
 
+/** Why a shape is only a proposal (DOMAIN sections 5.4 and 5.6). */
+enum class ProposalReason {
+    /** Measurements are missing, `missing > 0`. */
+    UNDERDETERMINED,
+
+    /** The room is determined, `missing = 0`, but the solver found a second valid shape farther away than `T`. */
+    AMBIGUOUS_SHAPE,
+}
+
 /** Result of evaluating one room (DOMAIN section 4). Each variant corresponds to exactly one [ShapeStatus]. */
 sealed interface RoomEvaluation {
     /** Evaluated room. */
@@ -157,7 +168,8 @@ sealed interface RoomEvaluation {
     }
 
     /**
-     * Shape is unique and closed exactly or with corrections up to `EXACT_CLOSURE_MM`.
+     * Shape is closed exactly or with corrections up to `EXACT_CLOSURE_MM`, and the finite solver search found no
+     * second valid shape farther away than `T` (DOMAIN section 5.6). This is no proof of uniqueness.
      *
      * @property measurementControl controllability of the measurements, `null` if the exact target shape needed no
      * rank analysis (DOMAIN section 4).
@@ -172,7 +184,8 @@ sealed interface RoomEvaluation {
     }
 
     /**
-     * Correction of the measurements that awaits confirmation.
+     * Correction of the measurements that awaits confirmation. The solver search found no second valid shape farther
+     * away than `T` (DOMAIN section 5.6), otherwise the room is [Proposed] with [ProposalReason.AMBIGUOUS_SHAPE].
      *
      * @property shape adjustment preview.
      * @property closureError error components of the target shape.
@@ -206,23 +219,43 @@ sealed interface RoomEvaluation {
     }
 
     /**
-     * Proposed shape with missing measurements.
+     * Proposed shape that needs another measurement.
      *
-     * @property determinacy rank analysis with at least one missing measurement and the recommended one.
+     * A proposal carries no [AdjustmentProposal]. Confirming it can never produce [Adjusted], also not when it shows
+     * adjusted lengths: `AcceptAdjustment` fails with `ADJUSTMENT_NOT_AVAILABLE` (DOMAIN section 5.6). The status only
+     * changes when the raw input changes.
+     *
+     * @property shape displayed shape: the solver result on the raw lengths (steps A2 and A4) or the adjusted shape
+     * (step B7).
+     * @property reason why the shape is a proposal. [ProposalReason.UNDERDETERMINED] exactly for `missing > 0`,
+     * [ProposalReason.AMBIGUOUS_SHAPE] exactly for `missing = 0`.
+     * @property determinacy rank analysis at the displayed shape.
+     * @property ambiguity second valid shape, present exactly for [ProposalReason.AMBIGUOUS_SHAPE].
      * @property rawLengthsMm raw wall lengths, one per wall.
-     * @property correction corrections of the adjustment. Required as soon as an effective length differs from
-     * [rawLengthsMm] by more than `SOLVER_RESIDUAL_MM`, `null` for a shape solved on the raw lengths.
+     * @property correction corrections of the adjustment, present for every proposal from step B7 (DOMAIN section 5.5).
+     * Required as soon as an effective length differs from [rawLengthsMm] by more than `SOLVER_RESIDUAL_MM`, `null`
+     * for a shape solved on the raw lengths.
      */
     data class Proposed(
         override val roomId: RoomId,
         override val shape: EvaluatedShape,
+        val reason: ProposalReason,
         val determinacy: Determinacy,
+        val ambiguity: ShapeAmbiguity?,
         val rawLengthsMm: ImmutableList<Long>,
         val correction: CorrectionSummary?,
         override val openingStatuses: ImmutableMap<OpeningId, OpeningStatus>,
     ) : RoomEvaluation {
         init {
-            require(determinacy.missing > 0) { "A proposal has at least one missing measurement" }
+            require((reason == ProposalReason.UNDERDETERMINED) == (determinacy.missing > 0)) {
+                "UNDERDETERMINED requires missing > 0 and AMBIGUOUS_SHAPE requires missing = 0"
+            }
+            require((reason == ProposalReason.AMBIGUOUS_SHAPE) == (ambiguity != null)) {
+                "A second shape is required exactly for AMBIGUOUS_SHAPE"
+            }
+            require(ambiguity == null || ambiguity.alternative.vertices.size == shape.outline.vertices.size) {
+                "The second shape must have one vertex per wall"
+            }
             require(rawLengthsMm.size == shape.lengthsMm.size) { "Expected one raw length per wall" }
             val deviates =
                 shape.lengthsMm.indices.any {
@@ -230,6 +263,10 @@ sealed interface RoomEvaluation {
                 }
             require(!deviates || correction != null) { "Lengths that differ from the raw values need a correction" }
         }
+
+        /** Next measurement to take, from [ambiguity] or otherwise from [determinacy]. */
+        val recommendation: MeasurementRecommendation?
+            get() = if (ambiguity != null) ambiguity.recommendation else determinacy.recommendation
 
         override val status: ShapeStatus get() = ShapeStatus.PROPOSED
     }

@@ -1,6 +1,7 @@
 package app.plansnap.testing.fixtures.rooms
 
 import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
+import app.plansnap.core.domain.evaluation.ProposalReason
 import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.determinacy.MeasurementRecommendation
 import app.plansnap.core.model.ConflictReason
@@ -11,6 +12,11 @@ private const val DEFAULT_CORRECTION_TOLERANCE = 0.01
 private const val STRAIGHT_CORNER_TOLERANCE = 0.001
 private const val M1_WALL = 3
 private const val M1_ADJUSTED_WALL_MM = 3025.0
+private const val AMBIGUOUS_ADJUSTED_WALL_MM = 2736.5
+private const val AMBIGUOUS_PENTAGON_ALTERNATIVE = "-32.12055 -66.64055 -97.44365 -94.715 -69.08026"
+
+/** Turns in degrees from a space separated list. */
+private fun degrees(text: String): List<Double> = text.split(' ').map(String::toDouble)
 
 /**
  * Expected counts of the rank analysis (DOMAIN section 5.4).
@@ -43,6 +49,30 @@ data class ExpectedCorrection(
 )
 
 /**
+ * Expected second shape of a determined room (DOMAIN section 5.6). Turns are `τ_0 … τ_{n-1}` in degrees.
+ *
+ * @property selectedTurnsDeg displayed shape: the solver result of DOMAIN section 5.3, in branch B after the adjustment
+ * with the lengths of `OverdeterminedCase.expectedAdjustedLengthsMm`.
+ * @property alternativeTurnsDeg farthest valid alternative on the raw lengths.
+ * @property distanceMm shape distance between both, compared within [DISTANCE_TOLERANCE_MM].
+ * @property recommendation measurement that separates both shapes.
+ * @property selectedIsTrueShape whether the displayed shape is the one the room was generated from.
+ */
+data class ExpectedAmbiguity(
+    val selectedTurnsDeg: List<Double>,
+    val alternativeTurnsDeg: List<Double>,
+    val distanceMm: Double,
+    val recommendation: MeasurementRecommendation,
+    val selectedIsTrueShape: Boolean,
+) {
+    /** Comparison limits. */
+    companion object {
+        /** Permitted deviation of [distanceMm]. */
+        const val DISTANCE_TOLERANCE_MM: Double = 1.0
+    }
+}
+
+/**
  * Named reference case of the overdetermination rules (DOMAIN sections 4 to 6, ADR 0018). Expected values are test data
  * from the review and the recalculation of T-ARC-006, never output of production code. T-GEO-005 and T-GEO-006 must
  * check every case.
@@ -58,6 +88,8 @@ data class ExpectedCorrection(
  * @property expectedUncontrolled measurements that are not controllable, with their recommended measurement.
  * @property expectedLargestCorrection measurement with the largest correction, `null` if it is not asserted.
  * @property expectedAdjustedLengthsMm adjusted wall lengths by wall index, compared within 0.01 mm.
+ * @property expectedProposalReason reason of the proposal, present exactly for [ShapeStatus.PROPOSED].
+ * @property expectedAmbiguity second shape, present exactly for [ProposalReason.AMBIGUOUS_SHAPE].
  */
 data class OverdeterminedCase(
     val key: String,
@@ -71,6 +103,8 @@ data class OverdeterminedCase(
     val expectedUncontrolled: Map<ObservationRef, MeasurementRecommendation?> = emptyMap(),
     val expectedLargestCorrection: ObservationRef? = null,
     val expectedAdjustedLengthsMm: Map<Int, Double> = emptyMap(),
+    val expectedProposalReason: ProposalReason? = null,
+    val expectedAmbiguity: ExpectedAmbiguity? = null,
 ) {
     init {
         require((expectedStatus == ShapeStatus.CONFLICT) == (expectedConflict != null)) {
@@ -79,6 +113,17 @@ data class OverdeterminedCase(
         require((expectedStatus == ShapeStatus.NEEDS_ADJUSTMENT) == (expectedConfirmation != null)) {
             "A confirmation is required exactly for NEEDS_ADJUSTMENT: $key"
         }
+        require((expectedStatus == ShapeStatus.PROPOSED) == (expectedProposalReason != null)) {
+            "A proposal reason is required exactly for PROPOSED: $key"
+        }
+        require((expectedProposalReason == ProposalReason.AMBIGUOUS_SHAPE) == (expectedAmbiguity != null)) {
+            "A second shape is required exactly for AMBIGUOUS_SHAPE: $key"
+        }
+        expectedRank?.takeIf { expectedProposalReason != null }?.let {
+            require((expectedProposalReason == ProposalReason.UNDERDETERMINED) == (it.missing > 0)) {
+                "UNDERDETERMINED requires missing > 0 and AMBIGUOUS_SHAPE missing = 0: $key"
+            }
+        }
     }
 }
 
@@ -86,6 +131,8 @@ private val ALL_MEASURED_RANK =
     ExpectedRank(freeVariables = 0, conditions = 3, routingRank = 0, missing = 0, redundancy = 3)
 private val REPEATED_WALL_RANK =
     ExpectedRank(freeVariables = 3, conditions = 3, routingRank = 2, missing = 1, redundancy = 1)
+private val DETERMINED_PENTAGON_RANK =
+    ExpectedRank(freeVariables = 3, conditions = 3, routingRank = 3, missing = 0, redundancy = 0)
 
 /**
  * Catalog of the numeric cases of the phase 3 re-review and the decisions of T-ARC-006.
@@ -101,6 +148,7 @@ object OverdeterminedCases {
             finding = "NH1",
             room = declaredRoom("nh1", "4000 3000 2500 2500 3000", "LLLLL", "0-2=5000 0-2=5000"),
             expectedStatus = ShapeStatus.PROPOSED,
+            expectedProposalReason = ProposalReason.UNDERDETERMINED,
             expectedRank =
                 ExpectedRank(
                     freeVariables = 4,
@@ -324,6 +372,7 @@ object OverdeterminedCases {
             finding = "H2",
             room = mixedRoom("h2b", "4000 2864 3106 2802 2915", "F L L L M118918", "0-3=4924"),
             expectedStatus = ShapeStatus.PROPOSED,
+            expectedProposalReason = ProposalReason.UNDERDETERMINED,
             expectedRank =
                 ExpectedRank(
                     freeVariables = 3,
@@ -379,6 +428,7 @@ object OverdeterminedCases {
             finding = "M1",
             room = declaredRoom("m1", "5000 3000 3000 3000", "LLLL", "0-3=3050"),
             expectedStatus = ShapeStatus.PROPOSED,
+            expectedProposalReason = ProposalReason.UNDERDETERMINED,
             expectedRank = REPEATED_WALL_RANK,
             expectedCorrection = ExpectedCorrection(sumMm = 50.0, normalizedSquareSum = 50.0),
             expectedLargestCorrection = ObservationRef.WallLength(index = 3),
@@ -409,6 +459,7 @@ object OverdeterminedCases {
             finding = "Flow simple iterate",
             room = mixedRoom("flow-simple", "6497 3430 4955 2310 3418 4526", "F L M84256 L L L", ""),
             expectedStatus = ShapeStatus.PROPOSED,
+            expectedProposalReason = ProposalReason.UNDERDETERMINED,
             expectedRank =
                 ExpectedRank(
                     freeVariables = 4,
@@ -426,6 +477,7 @@ object OverdeterminedCases {
             finding = "Flow unobserved turns",
             room = mixedRoom("flow-pull", "2090 2597 1328 1273 9514 4745", "F L L L M81921 L", "3-5=9420"),
             expectedStatus = ShapeStatus.PROPOSED,
+            expectedProposalReason = ProposalReason.UNDERDETERMINED,
             expectedRank =
                 ExpectedRank(
                     freeVariables = 4,
@@ -433,6 +485,96 @@ object OverdeterminedCases {
                     routingRank = 2,
                     missing = 2,
                     redundancy = 1,
+                ),
+        )
+
+    /**
+     * Stress scenario K1b: the selection rules display a shape that fits every input but is not the measured room. The
+     * measured room is the alternative, and the free closing corner separates both.
+     */
+    val AMBIGUOUS_SELECTED_OTHER_SHAPE: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "ambiguous-selected-other-shape",
+            finding = "Ambiguous shape",
+            room = mixedRoom("amb-other", "2733 9409 8211 9058 3769", "F R R m85285 R", "1-3=11659"),
+            expectedStatus = ShapeStatus.PROPOSED,
+            expectedProposalReason = ProposalReason.AMBIGUOUS_SHAPE,
+            expectedRank = DETERMINED_PENTAGON_RANK,
+            expectedAmbiguity =
+                ExpectedAmbiguity(
+                    selectedTurnsDeg = degrees("32.12055 -104.01375 -97.44365 -94.715 -95.94815"),
+                    alternativeTurnsDeg = degrees(AMBIGUOUS_PENTAGON_ALTERNATIVE),
+                    distanceMm = 1398.17,
+                    recommendation = MeasurementRecommendation.CornerAngle(corner = 0),
+                    selectedIsTrueShape = false,
+                ),
+        )
+
+    /**
+     * Stress scenario K1b: the displayed shape is the measured room, yet a second valid shape exists. Without the rule
+     * this room would be confirmed correctly by chance. `V_0` is measured, so a diagonal separates both shapes.
+     */
+    val AMBIGUOUS_SELECTED_TRUE_SHAPE: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "ambiguous-selected-true-shape",
+            finding = "Ambiguous shape",
+            room =
+                mixedRoom(
+                    "amb-true",
+                    "5700 1354 3411 3298 3356 2408 4689",
+                    "m90187 R L R L R m104851",
+                    "4-6=5116 2-6=6350",
+                ),
+            expectedStatus = ShapeStatus.PROPOSED,
+            expectedProposalReason = ProposalReason.AMBIGUOUS_SHAPE,
+            expectedRank =
+                ExpectedRank(
+                    freeVariables = 5,
+                    conditions = 5,
+                    routingRank = 5,
+                    missing = 0,
+                    redundancy = 0,
+                ),
+            expectedAmbiguity =
+                ExpectedAmbiguity(
+                    selectedTurnsDeg = degrees("-89.813 -104.46879 69.34079 -147.40839 43.18007 -55.68168 -75.149"),
+                    alternativeTurnsDeg = degrees("-89.813 -176.79863 156.95163 -125.10046 5.59115 -55.68168 -75.149"),
+                    distanceMm = 1027.237,
+                    recommendation = MeasurementRecommendation.DiagonalBetween(fromCorner = 1, toCorner = 3),
+                    selectedIsTrueShape = true,
+                ),
+        )
+
+    /**
+     * Decision 3 of T-ARC-008: [AMBIGUOUS_SELECTED_OTHER_SHAPE] with wall 0 measured again as 2740 mm. The repeated
+     * wall makes the room overdetermined, and the adjustment corrects wall 0 and the repetition by 3.5 mm each. Without
+     * the ambiguity rule the room would be `NEEDS_ADJUSTMENT` (step B9). It becomes a proposal with its corrections.
+     */
+    val AMBIGUOUS_NEEDS_ADJUSTMENT: OverdeterminedCase =
+        OverdeterminedCase(
+            key = "ambiguous-needs-adjustment",
+            finding = "Ambiguous shape",
+            room = mixedRoom("amb-adjust", "2733 9409 8211 9058 3769", "F R R m85285 R", "1-3=11659 0-1=2740"),
+            expectedStatus = ShapeStatus.PROPOSED,
+            expectedProposalReason = ProposalReason.AMBIGUOUS_SHAPE,
+            expectedRank =
+                ExpectedRank(
+                    freeVariables = 3,
+                    conditions = 4,
+                    routingRank = 3,
+                    missing = 0,
+                    redundancy = 1,
+                ),
+            expectedCorrection = ExpectedCorrection(sumMm = 7.0, normalizedSquareSum = 0.98),
+            expectedLargestCorrection = ObservationRef.WallLength(index = 0),
+            expectedAdjustedLengthsMm = mapOf(0 to AMBIGUOUS_ADJUSTED_WALL_MM),
+            expectedAmbiguity =
+                ExpectedAmbiguity(
+                    selectedTurnsDeg = degrees("32.33663 -104.13006 -97.44365 -94.715 -96.04792"),
+                    alternativeTurnsDeg = degrees(AMBIGUOUS_PENTAGON_ALTERNATIVE),
+                    distanceMm = 1403.307,
+                    recommendation = MeasurementRecommendation.CornerAngle(corner = 0),
+                    selectedIsTrueShape = false,
                 ),
         )
 
@@ -466,6 +608,9 @@ object OverdeterminedCases {
             QUAD_REPEATED_WALL_CONTRADICTION,
             TRIANGLE_WRONG_DIRECTION,
             HEXAGON_UNCONTROLLED,
+            AMBIGUOUS_SELECTED_OTHER_SHAPE,
+            AMBIGUOUS_SELECTED_TRUE_SHAPE,
+            AMBIGUOUS_NEEDS_ADJUSTMENT,
         )
 }
 
@@ -513,6 +658,7 @@ private fun repeatedWall(
         room = declaredRoom(key, "5000 3000 3000 3000", "LLLL", diagonal),
         expectedStatus = status,
         expectedConflict = conflict,
+        expectedProposalReason = ProposalReason.UNDERDETERMINED.takeIf { status == ShapeStatus.PROPOSED },
         expectedRank = REPEATED_WALL_RANK,
     )
 

@@ -3,7 +3,9 @@ package app.plansnap.core.geometry.determinacy
 import app.plansnap.core.geometry.adjustment.AdjustedShape
 import app.plansnap.core.geometry.adjustment.ObservationRef
 import app.plansnap.core.geometry.cancellation.CancellationSignal
+import app.plansnap.core.geometry.primitives.Polygon2
 import app.plansnap.core.geometry.solver.HardCondition
+import app.plansnap.core.geometry.solver.ShapeSolution
 import app.plansnap.core.geometry.traverse.ShapeInput
 
 /** Additional measurement recommended to determine a shape (DOMAIN section 5.4). */
@@ -124,6 +126,39 @@ data class MeasurementControl(
     }
 }
 
+/**
+ * Second valid shape of a determined room (DOMAIN section 5.6).
+ *
+ * @property alternative valid shape farthest from the displayed one, on the raw lengths in room-local coordinates.
+ * @property distanceMm [shapeDistanceMm] between the displayed shape and [alternative], above [limitMm].
+ * @property limitMm limit `T` of this room, positive.
+ * @property recommendation measurement that separates both shapes: the free closing corner `V_0` if its turns differ by
+ * more than [limitMm] as arc `|Δτ_0| · U / (2π)`, otherwise the unmeasured diagonal between non-adjacent corners with
+ * the largest length difference, ties within `SOLVER_RESIDUAL_MM` to the smallest `(a, b)`. `null` if no such diagonal
+ * differs by more than `EXACT_CLOSURE_MM`.
+ */
+data class ShapeAmbiguity(
+    val alternative: Polygon2,
+    val distanceMm: Double,
+    val limitMm: Double,
+    val recommendation: MeasurementRecommendation?,
+) {
+    init {
+        require(limitMm.isFinite() && limitMm > 0.0) { "Invalid limit: $limitMm" }
+        require(distanceMm.isFinite() && distanceMm > limitMm) { "An ambiguity needs a distance above the limit" }
+        if (recommendation is MeasurementRecommendation.CornerAngle) {
+            require(recommendation.corner == 0) { "Only the closing corner can be recommended" }
+        }
+        if (recommendation is MeasurementRecommendation.DiagonalBetween) {
+            val n = alternative.vertices.size
+            val from = recommendation.fromCorner
+            val to = recommendation.toCorner
+            require(to < n) { "Diagonal corner out of range: $to" }
+            require(to - from >= 2 && !(from == 0 && to == n - 1)) { "Diagonal must join non-adjacent corners" }
+        }
+    }
+}
+
 /** Rank analysis of the hard conditions (DOMAIN sections 5.4 and 5.5). */
 interface DeterminacyAnalyzer {
     /**
@@ -157,6 +192,25 @@ interface DeterminacyAnalyzer {
         turnsRad: List<Double>,
         cancellation: CancellationSignal,
     ): Determinacy
+
+    /**
+     * Compares the displayed shape of a determined room with the other solver results (DOMAIN section 5.6, steps A4
+     * and B7). Only called with `missing = 0` and kept turn directions.
+     *
+     * @param outline displayed closed shape: the solver result (step A4) or the adjusted shape (step B7).
+     * @param alternatives `SolverOutcome.Solved.alternatives` of step A1 or B1, empty without a solver result.
+     * @param limitMm limit `T` of this room.
+     * @return the ambiguity with the farthest alternative, ties within `SOLVER_RESIDUAL_MM` to the first in selection
+     * order, or `null` if no alternative is farther than [limitMm].
+     * @throws java.util.concurrent.CancellationException if [cancellation] cancels the computation.
+     */
+    fun analyzeAmbiguity(
+        input: ShapeInput,
+        outline: Polygon2,
+        alternatives: List<ShapeSolution>,
+        limitMm: Double,
+        cancellation: CancellationSignal,
+    ): ShapeAmbiguity?
 
     /**
      * Lists the measurements of a determined room that are not controllable (DOMAIN section 5.5).
