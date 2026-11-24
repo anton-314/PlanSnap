@@ -324,7 +324,7 @@ graph LR
 - **Abhängigkeiten:** T-ARC-002
 - **Besitzbereich:** `core/data/…/settings/`
 - **Vertrag:** `SettingsRepository`
-- **Akzeptanzkriterien:** Einheit, Toleranz, Raster, Stärke und Hinweise werden gespeichert. Ungültige Werte fallen auf den Standard zurück. Anforderungen: REQ-MEAS-011, REQ-UX-006
+- **Akzeptanzkriterien:** Einheit, Toleranz, Raster, Stärke und Hinweise werden gespeichert. Ungültige Werte fallen auf den Standard zurück. Ein gespeichertes `absoluteMm < 1` gilt als ungültig und fällt auf den Standard zurück, ohne Absturz (mit Test). Anforderungen: REQ-MEAS-011, REQ-UX-006
 - **Tests:** Repository-Tests mit Turbine
 
 ### Batch 1.3
@@ -408,8 +408,8 @@ graph LR
 - **Größe:** M
 - **Abhängigkeiten:** T-ARC-002
 - **Besitzbereich:** `core/domain/…/command/`
-- **Vertrag:** DOMAIN §11, ADR 0007
-- **Akzeptanzkriterien:** Jeder Befehl ist rein. Fehlschlag ändert nichts, Undo und Redo sind Identitäten. `EXPLICIT_CONFIRMATION_REQUIRED`, der Mutex-Ablauf mit Commit nach `withContext` und das Verhalten bei Abbruch sind getestet (ADR 0016). `AcceptAdjustment` wird mit `ADJUSTMENT_NOT_AVAILABLE` abgelehnt, wenn die aktuelle Auswertung nicht `NeedsAdjustment` mit gleichem Vorschlag ist (mit Test). Anforderungen: REQ-UX-005, REQ-MEAS-010
+- **Vertrag:** DOMAIN §11, ADR 0007, ADR 0016, ADR 0019
+- **Akzeptanzkriterien:** Jeder Befehl ist rein. Fehlschlag ändert nichts, Undo und Redo sind Identitäten. `EXPLICIT_CONFIRMATION_REQUIRED`, der Mutex-Ablauf mit Commit nach `withContext` und das Verhalten bei Abbruch sind getestet (ADR 0016). `AcceptAdjustment` wird mit `ADJUSTMENT_NOT_AVAILABLE` abgelehnt, wenn die aktuelle Auswertung nicht `NeedsAdjustment` mit gleichem Vorschlag ist (mit Test). `execute` ruft `verify` vor `apply` unter dem Mutex auf, ein Abbruch in `verify` ändert nichts, und der Zahlenfall aus ADR 0019 (Rechteck 4150/3000/4000/3000) wird mit `ADJUSTMENT_NOT_AVAILABLE` abgelehnt (mit Tests). Anforderungen: REQ-UX-005, REQ-MEAS-010
 - **Tests:** Property mit zufälligen Befehlsfolgen
 
 #### T-DOM-005 – Flächenbericht
