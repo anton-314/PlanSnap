@@ -49,7 +49,7 @@ Phase-3-Gate rot: Review `CHANGES_REQUESTED` (7 hoch, 9 mittel, 3 niedrig, kein 
    - `docs/research/evaluation-prototype/README.md` schreiben (Zweck, Befehl, Seed 20261124, K1a bis K4, Sollwerte, Gradient 1e-7 gegenüber 1e-9, numpy).
    - `stress.py` mit Mehrdeutigkeitsregel erneut laufen lassen und die Tabelle übernehmen.
    - Volle DoD ausführen, WIP-Commit durch `feat(core): model ambiguous room shapes [T-ARC-008]` ersetzen.
-2. Offene Entscheidung: In K1b bleiben 5 von 180 `NEEDS_ADJUSTMENT`-Räumen mit zweiter gültiger Form von der Regel unberührt und könnten nach Bestätigung `ADJUSTED` werden.
+2. Entschieden (2026-11-24): Die Mehrdeutigkeitsregel gilt auch für den Ausgleichspfad. Ein Raum mit zweiter gültiger Form wird dort ebenfalls `PROPOSED(AMBIGUOUS_SHAPE)` und kann nicht durch Bestätigung zu `ADJUSTED` werden.
 3. T-ARC-008 mergen, voller Gate-Lauf: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug`, `:core:geometry:pitest`, `scripts/run-instrumented-tests.sh`.
 4. Abschließendes Vertragsreview durch `reviewer`. Bei `APPROVE`: Tag `phase-3-foundation`, `git push origin main --tags`, ersten CI-Lauf prüfen.
 5. Welle 1, Batch 1.1 starten.
