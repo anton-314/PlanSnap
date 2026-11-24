@@ -5,11 +5,48 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+
+/** Row of the project list: project metadata with the number of its rooms. */
+data class ProjectSummaryRow(
+    val id: String,
+    val name: String,
+    val roomCount: Int,
+    val createdAtEpochMs: Long,
+    val updatedAtEpochMs: Long,
+)
+
+/** Columns of a project that change when its metadata is saved. The creation time is not among them. */
+data class ProjectMetadataUpdate(
+    val id: String,
+    val name: String,
+    val defaultHeightMm: Double,
+    val formatMajor: Int,
+    val formatMinor: Int,
+    val updatedAtEpochMs: Long,
+)
 
 /** Access to project metadata and project-wide atomic operations. */
 @Dao
 abstract class ProjectDao {
+    /** Observes the project list with room counts, most recently changed first. */
+    @Query(
+        "SELECT p.id AS id, p.name AS name, " +
+            "(SELECT COUNT(*) FROM rooms r WHERE r.projectId = p.id) AS roomCount, " +
+            "p.createdAtEpochMs AS createdAtEpochMs, p.updatedAtEpochMs AS updatedAtEpochMs " +
+            "FROM projects p ORDER BY p.updatedAtEpochMs DESC, p.id ASC",
+    )
+    abstract fun observeSummaries(): Flow<List<ProjectSummaryRow>>
+
+    /**
+     * Writes the metadata of a project and the format version of its rooms, keeping the creation time.
+     *
+     * @return number of changed rows, 0 if the project does not exist.
+     */
+    @Update(entity = ProjectEntity::class)
+    abstract suspend fun updateMetadata(update: ProjectMetadataUpdate): Int
+
     /** Observes all projects, most recently changed first. */
     @Query("SELECT * FROM projects ORDER BY updatedAtEpochMs DESC, id ASC")
     abstract fun observeAll(): Flow<List<ProjectEntity>>

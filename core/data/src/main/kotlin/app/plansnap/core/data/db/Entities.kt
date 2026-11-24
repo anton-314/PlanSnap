@@ -55,16 +55,15 @@ data class RoomEntity(
 )
 
 /**
- * Unconfirmed editor input of one room that survives process death (REQ-DATA-002).
+ * Unconfirmed editor input of a project that survives process death, one draft per project (REQ-DATA-002).
  *
- * @property projectId owning project.
- * @property roomId room the input belongs to, deleting the room deletes the draft.
- * @property inputJson serialized current input.
+ * @property projectId owning project, deleting the project deletes the draft.
+ * @property roomId room being edited, `null` if none is selected. Deleting the room deletes the draft.
+ * @property inputText running input, exactly as typed.
  * @property updatedAtEpochMs time of the last draft change.
  */
 @Entity(
     tableName = "editor_drafts",
-    primaryKeys = ["projectId", "roomId"],
     foreignKeys = [
         ForeignKey(
             entity = ProjectEntity::class,
@@ -82,8 +81,8 @@ data class RoomEntity(
     indices = [Index(value = ["roomId"])],
 )
 data class EditorDraftEntity(
-    val projectId: String,
-    val roomId: String,
-    val inputJson: String,
+    @PrimaryKey val projectId: String,
+    val roomId: String?,
+    val inputText: String,
     val updatedAtEpochMs: Long,
 )

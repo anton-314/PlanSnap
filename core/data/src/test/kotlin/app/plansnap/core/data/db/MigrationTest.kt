@@ -26,7 +26,7 @@ class MigrationTest {
         helper.createDatabase(TEST_DB, 1).use { db ->
             db.execSQL("INSERT INTO projects VALUES ('p1', 'Flat', 2500.0, 1, 0, 1, 2)")
             db.execSQL("INSERT INTO rooms VALUES ('r1', 'p1', 0, '{}')")
-            db.execSQL("INSERT INTO editor_drafts VALUES ('p1', 'r1', 'draft', 3)")
+            db.execSQL("INSERT INTO editor_drafts VALUES ('p1', NULL, 'draft', 3)")
         }
         helper.runMigrationsAndValidate(TEST_DB, 1, true, *PlanSnapMigrations.ALL).use { db ->
             db.query("SELECT COUNT(*) FROM editor_drafts").use { cursor ->

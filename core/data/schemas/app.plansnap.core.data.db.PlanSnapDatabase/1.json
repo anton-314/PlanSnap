@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "1ba5d260b5ce3332e1f200f99adf9e75",
+    "identityHash": "c706cf08b07917b092b6e6f87f350fa6",
     "entities": [
       {
         "tableName": "projects",
@@ -121,7 +121,7 @@
       },
       {
         "tableName": "editor_drafts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`projectId` TEXT NOT NULL, `roomId` TEXT NOT NULL, `inputJson` TEXT NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`projectId`, `roomId`), FOREIGN KEY(`projectId`) REFERENCES `projects`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`roomId`) REFERENCES `rooms`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`projectId` TEXT NOT NULL, `roomId` TEXT, `inputText` TEXT NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`projectId`), FOREIGN KEY(`projectId`) REFERENCES `projects`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`roomId`) REFERENCES `rooms`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "projectId",
@@ -132,12 +132,11 @@
           {
             "fieldPath": "roomId",
             "columnName": "roomId",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
-            "fieldPath": "inputJson",
-            "columnName": "inputJson",
+            "fieldPath": "inputText",
+            "columnName": "inputText",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -151,8 +150,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "projectId",
-            "roomId"
+            "projectId"
           ]
         },
         "indices": [
@@ -194,7 +192,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1ba5d260b5ce3332e1f200f99adf9e75')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c706cf08b07917b092b6e6f87f350fa6')"
     ]
   }
 }

@@ -17,6 +17,10 @@ abstract class RoomDao {
     @Query("SELECT * FROM rooms WHERE projectId = :projectId ORDER BY position ASC, id ASC")
     abstract suspend fun getByProject(projectId: String): List<RoomEntity>
 
+    /** Returns those of [roomIds] that are stored in any project. At most 500 ids per call. */
+    @Query("SELECT id FROM rooms WHERE id IN (:roomIds)")
+    abstract suspend fun existingIds(roomIds: List<String>): List<String>
+
     /** Returns one room or null. */
     @Query("SELECT * FROM rooms WHERE id = :roomId")
     abstract suspend fun get(roomId: String): RoomEntity?

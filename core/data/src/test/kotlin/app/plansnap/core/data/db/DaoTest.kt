@@ -82,7 +82,7 @@ class DaoTest {
             db.projectDao().create(project(), listOf(room("r1")))
             db.editorDraftDao().upsert(EditorDraftEntity("p1", "r1", "draft", 1L))
             db.roomDao().save("p1", listOf(room("r1", json = "{\"v\":2}")), 500L)
-            assertEquals("draft", db.editorDraftDao().get("p1", "r1")?.inputJson)
+            assertEquals("draft", db.editorDraftDao().get("p1")?.inputText)
         }
 
     @Test
@@ -95,7 +95,7 @@ class DaoTest {
             assertFalse(db.roomDao().remove("p1", "r1", 800L))
 
             assertEquals(listOf("r2"), db.roomDao().getByProject("p1").map { it.id })
-            assertNull(db.editorDraftDao().get("p1", "r1"))
+            assertNull(db.editorDraftDao().get("p1"))
             assertEquals(800L, db.projectDao().get("p1")?.updatedAtEpochMs)
         }
 
@@ -109,7 +109,7 @@ class DaoTest {
             db.projectDao().delete("p1")
 
             assertTrue(db.roomDao().getByProject("p1").isEmpty())
-            assertTrue(db.editorDraftDao().getByProject("p1").isEmpty())
+            assertTrue(db.editorDraftDao().get("p1") == null)
             assertEquals(listOf("r9"), db.roomDao().getByProject("p2").map { it.id })
         }
 
@@ -168,12 +168,41 @@ class DaoTest {
             db.projectDao().create(project(), listOf(room("r1")))
             drafts.upsert(EditorDraftEntity("p1", "r1", "a", 1L))
             drafts.upsert(EditorDraftEntity("p1", "r1", "b", 2L))
-            assertEquals("b", drafts.get("p1", "r1")?.inputJson)
-            assertEquals(1, drafts.getByProject("p1").size)
+            assertEquals("b", drafts.get("p1")?.inputText)
+            assertEquals("r1", drafts.get("p1")?.roomId)
 
             assertFailsWith<Exception> { drafts.upsert(EditorDraftEntity("p1", "ghost", "x", 1L)) }
-            assertEquals(1, drafts.delete("p1", "r1"))
-            assertNull(drafts.get("p1", "r1"))
+            assertEquals(1, drafts.delete("p1"))
+            assertNull(drafts.get("p1"))
+        }
+
+    @Test
+    fun `draft without room is allowed, is unique per project and survives deleting rooms`() =
+        runTest {
+            val drafts = db.editorDraftDao()
+            db.projectDao().create(project(), listOf(room("r1")))
+            drafts.upsert(EditorDraftEntity("p1", null, "a", 1L))
+            assertNull(drafts.get("p1")?.roomId)
+
+            drafts.upsert(EditorDraftEntity("p1", "r1", "b", 2L))
+            assertEquals("r1", drafts.get("p1")?.roomId)
+
+            drafts.upsert(EditorDraftEntity("p1", null, "c", 3L))
+            db.roomDao().remove("p1", "r1", 4L)
+            assertEquals("c", drafts.get("p1")?.inputText)
+        }
+
+    @Test
+    fun `summaries count rooms per project`() =
+        runTest {
+            db.projectDao().create(project("p1", updatedAt = 1L), listOf(room("r1"), room("r2", position = 1)))
+            db.projectDao().create(project("p2", updatedAt = 2L), emptyList())
+            db.projectDao().observeSummaries().test {
+                val rows = awaitItem()
+                assertEquals(listOf("p2", "p1"), rows.map { it.id })
+                assertEquals(listOf(0, 2), rows.map { it.roomCount })
+                cancelAndIgnoreRemainingEvents()
+            }
         }
 
     @Test
@@ -203,10 +232,10 @@ class DaoTest {
                 cancelAndIgnoreRemainingEvents()
             }
             db.projectDao().create(project("p2"), listOf(room("r2", projectId = "p2")))
-            db.editorDraftDao().observe("p2", "r2").test {
+            db.editorDraftDao().observe("p2").test {
                 assertNull(awaitItem())
                 db.editorDraftDao().upsert(EditorDraftEntity("p2", "r2", "x", 1L))
-                assertEquals("x", awaitItem()?.inputJson)
+                assertEquals("x", awaitItem()?.inputText)
                 cancelAndIgnoreRemainingEvents()
             }
         }
