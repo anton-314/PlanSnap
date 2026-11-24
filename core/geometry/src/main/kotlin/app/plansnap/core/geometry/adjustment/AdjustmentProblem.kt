@@ -79,14 +79,21 @@ internal class AdjustmentProblem(
     /** Reference `x̃_k`: the observation for observed variables, [x] for the others (DOMAIN section 6). */
     fun reference(x: DoubleArray): DoubleArray = DoubleArray(x.size) { if (observed[it]) observations[it] else x[it] }
 
+    /** Arc length in mm per radian of turn, `U / (2π)` with the raw perimeter [perimeterMm] (DOMAIN section 6). */
+    val mmPerRad: Double = perimeterMm / FULL_TURN
+
     /**
-     * Largest residual of [conditions]: the Euclidean closure gap `|(c_x, c_y)|` in mm, the wrapped turn sum and every
-     * diagonal row. Measuring the gap as one vector keeps the closure gap itself within the limit (DOMAIN sections 1
-     * and 4), not only its components.
+     * Convergence norm `‖C‖_∞` of [conditions] in mm (DOMAIN section 6, ADR 0018 addendum CR-W1-01):
+     * `max(|(c_x, c_y)|, |c_τ| · U / (2π), max_k |c_k|)`.
+     *
+     * The closure counts as the Euclidean gap, so the gap itself stays within the limit (DOMAIN sections 1 and 4), not
+     * only its components. The wrapped turn-sum row `c_τ` counts as arc length with `U` = [perimeterMm], the perimeter
+     * of the raw lengths, the same `U` as in `maxCorrectionMm` and `S`. Diagonal rows count directly in mm.
      */
     fun residual(conditions: DoubleArray): Double {
         var worst = StrictMath.hypot(conditions[ROW_X], conditions[ROW_Y])
-        for (row in ROW_TURNS until conditionCount) worst = maxOf(worst, StrictMath.abs(conditions[row]))
+        worst = maxOf(worst, StrictMath.abs(conditions[ROW_TURNS]) * mmPerRad)
+        for (row in FIXED_CONDITIONS until conditionCount) worst = maxOf(worst, StrictMath.abs(conditions[row]))
         return worst
     }
 

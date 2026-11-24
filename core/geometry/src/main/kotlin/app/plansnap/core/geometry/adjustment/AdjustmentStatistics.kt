@@ -15,7 +15,7 @@ internal fun adjustedShapeOf(
     jacobian: Array<DoubleArray>,
     system: NormalSystem,
 ): AdjustedShape {
-    val mmPerRad = problem.perimeterMm / (2.0 * StrictMath.PI)
+    val mmPerRad = problem.mmPerRad
     val entries = ArrayList<Entry>(problem.variableCount)
     for (i in 0 until problem.wallCount) entries += entry(problem, x, i, ObservationRef.WallLength(i), 1.0)
     for (i in 0 until problem.wallCount) {

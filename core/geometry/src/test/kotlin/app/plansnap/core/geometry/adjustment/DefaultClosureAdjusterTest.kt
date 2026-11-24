@@ -138,6 +138,39 @@ class DefaultClosureAdjusterTest {
     }
 
     @Test
+    fun `given closed rectangle with turn sum off by 0_3 deg when adjusted then the misclosure is distributed`() {
+        // Regression T-GEO-008 (ADR 0018, CR-W1-01): the gap is 0, only the turn sum misses 360° by 0.3°.
+        // As an arc this is 0.3° · U / 360° = 11.67 mm, far above SOLVER_RESIDUAL_MM, so the start x_1 must not count
+        // as converged although |c_τ| = 0.0052 rad is below 0.01.
+        val input =
+            ShapeInput(
+                lengthsMm = listOf(4000, 3000, 4000, 3000),
+                corners =
+                    listOf(
+                        CornerInput.Measured(TurnDirection.LEFT, Angle(89_700)),
+                        CornerInput.Measured(TurnDirection.LEFT, Angle.RIGHT),
+                        CornerInput.Measured(TurnDirection.LEFT, Angle.RIGHT),
+                        CornerInput.Measured(TurnDirection.LEFT, Angle.RIGHT),
+                    ),
+            )
+        val start = targetStart(input)
+        val mmPerRad = AdjustmentTestSupport.perimeter(input) / (2.0 * StrictMath.PI)
+        val misclosureMm = StrictMath.toRadians(0.3) * mmPerRad
+        val shape = adjustOrFail(input, AdjustmentMode.MEASUREMENT_ERROR, start)
+        val turnSumArcMm = StrictMath.abs(wrapAngle(shape.adjustedTurnsRad.sum() - 2.0 * StrictMath.PI)) * mmPerRad
+        assertTrue(turnSumArcMm <= GeometryTolerances.SOLVER_RESIDUAL_MM, "turn sum off by $turnSumArcMm mm")
+        assertTrue(gapMm(shape) <= GeometryTolerances.SOLVER_RESIDUAL_MM, "gap ${gapMm(shape)} mm")
+        // Every corner observation is corrected, and the arcs of the corrections add up to the −0.3° misclosure.
+        // The closure couples the turns, so V_2 moves the other way while V_0 with the deviating value moves most.
+        val cornerCorrectionsMm = start.indices.map { (shape.adjustedTurnsRad[it] - start[it]) * mmPerRad }
+        assertTrue(cornerCorrectionsMm.all { StrictMath.abs(it) > 1.0 }, "$cornerCorrectionsMm")
+        assertEquals(-misclosureMm, cornerCorrectionsMm.sum(), GeometryTolerances.SOLVER_RESIDUAL_MM)
+        assertTrue(shape.correctionSumMm >= misclosureMm - GeometryTolerances.SOLVER_RESIDUAL_MM)
+        assertEquals(ObservationRef.CornerAngle(0), shape.largestCorrection)
+        assertEquals(ObservationRef.CornerAngle(0), shape.worstObservation)
+    }
+
+    @Test
     fun `given start turn shifted by two full turns when adjusted then angle corrections are wrapped`() {
         // Rectangle 4000 x 2000 with a straight measured closing corner in the middle of the bottom wall.
         val input =

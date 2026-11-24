@@ -10,8 +10,11 @@ import app.plansnap.core.geometry.traverse.ShapeInput
  *
  * Starting at `x_1 = x_0` with the turns `startTurnsRad`, each step computes
  * `x_{k+1} = x̃_k − Q Aᵀ (A Q Aᵀ)⁻¹ (C(x_k) + A (x̃_k − x_k))` until `‖C‖_∞ ≤ SOLVER_RESIDUAL_MM`, for at most
- * `ADJUSTMENT_MAX_ITERATIONS` steps. In `‖C‖_∞` the closure counts as the Euclidean gap `|(c_x, c_y)|`, so the gap
- * of an adjusted outline never exceeds `SOLVER_RESIDUAL_MM`. The outcome is [AdjustmentOutcome.NotConverged] if the
+ * `ADJUSTMENT_MAX_ITERATIONS` steps. The limit is checked before every step, also at `x_1`. `‖C‖_∞` is measured in mm
+ * (ADR 0018, addendum CR-W1-01): `max(|(c_x, c_y)|, |c_τ| · U / (2π), max_k |c_k|)`. The closure counts as the
+ * Euclidean gap, so the gap of an adjusted outline never exceeds `SOLVER_RESIDUAL_MM`. The turn-sum row
+ * `c_τ = wrap(Σ τ_i − 2π·s)` counts as arc length with `U` the perimeter of the raw lengths, so a start that closes
+ * but misses the turn sum still takes steps. The outcome is [AdjustmentOutcome.NotConverged] if the
  * limit is not reached, the normal matrix `A Q Aᵀ` is singular, or a step leaves a variable non-finite or a wall or
  * diagonal length not positive.
  *
