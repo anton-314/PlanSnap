@@ -39,6 +39,7 @@ Keine.
 - 2026-11-24: Erster GitHub-Actions-Lauf auf `f6a61e9` grün: Wrapper-Validierung, Build mit Tests, Lint und Coverage sowie instrumentierte Tests (API 36, x86_64).
 - 2026-11-24: `:core:document` nutzt `kotlinx-serialization-json` (aus dem Version Catalog) statt eines eigenen Parsers und erhält `:testing:fixtures` als Testabhängigkeit.
 - 2026-11-24: `kotest-property` ist über `plansnap.jvm.library` in allen JVM-Modulen als Testabhängigkeit verfügbar. Längen werden nicht gerundet: Eingaben feiner als 1 mm werden abgelehnt. Längenanzeige mit festen Nachkommastellen je Einheit (mm 0, cm 1, m 3), Winkelanzeige ohne überflüssige Nullen.
+- 2026-11-24: ktlint erlaubt PascalCase nur für `@Composable`-Funktionen, nach ausdrücklicher Freigabe des Auftraggebers (der Auto-Modus hatte die Änderung beim Agenten abgelehnt).
 
 ## Nächste Schritte
 
