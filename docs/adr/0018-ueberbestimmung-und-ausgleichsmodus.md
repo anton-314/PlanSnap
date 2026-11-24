@@ -1,6 +1,6 @@
 # ADR 0018: Überbestimmung und Ausgleichsmodus
 
-**Status:** Angenommen, 2026-11-23, ergänzt durch T-ARC-006, T-ARC-007, T-ARC-008 und ADR 0019
+**Status:** Angenommen, 2026-11-23, ergänzt durch T-ARC-006, T-ARC-007, T-ARC-008, ADR 0019 und CR-W1-01
 
 ## Kontext
 
@@ -46,7 +46,7 @@ Widersprüchliche Messungen enden deterministisch in `CONFLICT`. T-GEO-005 und T
 | Falsch-Konflikt-Rate, 13 Szenarien | 0,00 bis 0,93 % |
 | Wandfehler 3 T erkannt | 72 von 77 Wandfällen mindestens 95 % |
 | Nicht erkennbar | Messungen ohne Gegenprobe (`r_i = 0`) mit 0 bis 1 %, `r_i = 0,00088` mit rund 75 % |
-| Unerkanntes Band ohne Rauschen, nur Wandfehler | bis 1,10 T (L) bis 1,57 T (Kreuz) |
+| Unerkanntes Band ohne Rauschen, nur Wandfehler | bis 1,10 T (L) bis 1,57 T (Kreuz), nicht reproduzierbar, korrigiert in Ergänzung CR-W1-01 |
 | Ausdrückliche Bestätigung bei stimmigen Räumen, alle Ecken gemessen | Rechteck 3,62 %, L 3,83 %, U 3,78 %, Kreuz 3,98 % |
 | Große Korrektur mit einfacher Bestätigung, gleiche Räume | Rechteck 11,88 %, L 23,79 %, U 27,12 %, Kreuz 39,92 % |
 
@@ -108,3 +108,38 @@ Messungen mit `λ(3T) < λ₀(r)` kann keine Regel zuverlässig prüfen. Die Aus
 In K1b wurden 42 Räume `PROPOSED(AMBIGUOUS_SHAPE)`: 15 in A4, 22 in B7 statt B8 und 5 in B7 statt B9. Ohne Regel wären 20 Formen bestätigt, die weiter als `T` von der Wahrheit liegen. Davon erkennt die Regel 18, 2 bleiben an der Suchgrenze. Dafür werden 19 richtig bestätigte Räume (0,8 %) und 1 richtiger Ausgleichsfall zum Vorschlag, weil auch bei ihnen eine zweite gültige Form existiert. Die Zahl 22 aus T-ARC-007 beruhte auf dem Eckenabstand im lokalen System, nicht auf dem ausgerichteten Formabstand. In K2 wurde 1 Raum mehrdeutig, in K1a, K3 und K4 keiner.
 
 **Konsequenzen.** Die Sollwerte für T-GEO-005 stehen in `docs/research/evaluation-prototype/README.md`. `OverdeterminedCases` enthält drei Referenzfälle: angezeigte Form falsch mit freier Schlussecke, angezeigte Form richtig mit Diagonalempfehlung und den Ausgleichspfad. Der Prototyp liefert für alle 30 Katalogfälle Status und Grund wie erwartet.
+
+## Ergänzung CR-W1-01
+
+**Kontext.** T-GEO-006 hat den Ausgleich portiert und die Restgrenzen am Produktionscode nachgerechnet. Offen waren die Konvergenznorm, der Gleichstand bei `worstObservation` und zwei Tabellenzeilen, die der Produktionscode nicht traf. Das Skript der Tabelle „Statistische Restgrenzen“ liegt nicht im Repository.
+
+**Konvergenznorm.** `‖C‖_∞` aus DOMAIN §6 wird in mm gemessen: `max(|(c_x, c_y)|, |c_τ| · U / (2π), max_k |c_k|)`. Die Grenze wird vor jedem Schritt geprüft, auch an `x_1`.
+
+- Die Schließung zählt als euklidische Lücke. Auch `g` (DOMAIN §4) und die strukturelle Gültigkeit (§6) messen die Lücke als Vektor. Komponentenweise blieben bis `√2 · SOLVER_RESIDUAL_MM`, im Katalog von T-GEO-006 eine Lücke von 0,0128 mm über dem Kriterium von 0,01 mm.
+- Die Winkelsummenzeile zählt als Bogen. In Radiant gegen 0,01 verglichen, endet der Ausgleich an `x_1`, wenn die Lücke schon passt und nur die Winkelsumme abweicht. Beispiel, am Produktionscode nachgestellt: Rechteck 4000, 3000, 4000, 3000, alle Ecken gemessen, `V_1` bis `V_3` mit 90°, `V_0` mit 89,7°. `e = a = 11,67 mm ≤ T`, also Messfehlerpfad mit Start bei den Beobachtungen. Die Lücke ist 0, `|c_τ| = 0,0052 rad ≤ 0,01`. Der Ausgleich endet ohne Schritt mit `S = 0` und einer Winkelsumme von 360,3°. Als Bogen ist `|c_τ| = 11,67 mm`, und der Fehler wird verteilt.
+- Verworfen: komponentenweise Norm und Winkelsumme in Radiant. Der Prototyp (`flow.py`, `adjust`) nutzt beides und weicht hier vom Vertrag ab.
+
+**Gleichstand bei `worstObservation`.** Normierte Residuen, die sich um höchstens `SOLVER_RESIDUAL_MM / SIGMA_LENGTH_MM` unterscheiden, gelten als gleich, danach gilt die Reihenfolge von `largestCorrection`. Die Iteration legt Längen nur bis `SOLVER_RESIDUAL_MM` fest, `SIGMA_LENGTH_MM` ist das kleinste σ in mm. Feiner aufgelöst hinge die Wahl von Rundungsresten ab.
+
+**Abgleich der Restgrenzen.** Die Zeilen werden so definiert und am Produktionscode in `ClosureAdjusterSimulationTest` gehalten:
+
+- Räume sind die wahren Formen der NH3-Fälle aus `OverdeterminedCases`: Rechteck 4000 × 3000, L mit `U = 20 m`, U mit `U = 25 m`, Kreuz aus 12 × 2000 mm. Alle Ecken sind als 90° gemessen, `r = 3`, `T` ist der Standard.
+- Rauschen ist normalverteilt mit σ nach DOMAIN §6 und wird auf ganze mm und Milligrad gerundet.
+- Jede Stichprobe durchläuft die Verzweigung aus DOMAIN §4. Bei `e ≤ T` gilt der Messfehlerpfad mit einfacher Bestätigung und ohne χ²-Test. Nur bei `e > T` folgt Zweig B. Raten beziehen sich auf alle Stichproben.
+- „Große Korrektur mit einfacher Bestätigung“ ist B9 mit `S > T` und `q² ≤ χ²(3; 0,95)`.
+- „Unerkanntes Band“ ist ohne Rauschen der größte Fehler einer Wand in Vielfachen von `T`, auf mm gerundet, mit beiden Vorzeichen, der noch nicht zu `CONFLICT` führt. Angegeben ist das Maximum über alle Wände.
+
+| Größe | ADR | Prototyp `flow.evaluate`, 30 000 je Raum | Produktion, 40 000 je Raum |
+|---|---|---|---|
+| Große Korrektur mit einfacher Bestätigung | 11,88 / 23,79 / 27,12 / 39,92 % | 12,03 / 24,05 / 26,66 / 40,46 % | 12,52 / 23,81 / 26,71 / 40,17 % |
+| Ausdrückliche Bestätigung | 3,62 / 3,83 / 3,78 / 3,98 % | 3,47 / 3,76 / 3,73 / 3,89 % | 3,57 / 3,56 / 3,59 / 3,80 % |
+| Falsche Konflikte | 0,00 bis 0,93 % (13 Szenarien) | 0,97 / 1,01 / 1,00 / 1,07 % | 0,93 / 0,97 / 0,94 / 1,00 % |
+| Unerkanntes Band | 1,10 T (L) bis 1,57 T (Kreuz) | 1,689 / 1,728 / 1,494 / 1,635 T | 1,689 / 1,728 / 1,494 / 1,635 T |
+
+Reihenfolge jeweils Rechteck, L, U, Kreuz.
+
+- **Große Korrektur:** Die ADR-Werte gelten. Die Abweichung aus T-GEO-006 (19,3 / 33,8 / 46,2 / 63,4 %) stammte aus einem Test, der jede Stichprobe durch Zweig B schickte, auch bei `e ≤ T`. Der Prototyp liefert mit dieser Definition dieselben Werte (18,27 / 33,95 / 46,20 / 63,71 %). Der Messfehlerpfad nimmt 54 bis 72 % der Stichproben auf.
+- **Unerkanntes Band:** Die ADR-Zeile ist nicht reproduzierbar. Produktion, Prototyp und die lineare Näherung `σ_L · √(χ²(3; 0,99) / r_i) / T` an der wahren Form stimmen überein. Die ADR-Werte passen weder zum Maximum noch zum Minimum über die Wände (Minimum 1,27 / 1,14 / 1,15 / 1,64 T). Es gilt: **größter unerkannter Wandfehler 1,49 T (U) bis 1,73 T (L)**. Die Aussage zur Erkennung von 3 T bleibt unberührt.
+- Die übrigen Zeilen der Tabelle (13 Szenarien, 77 Wandfälle) sind ohne Skript nicht nachrechenbar und bleiben stehen. Die nachgerechnete Teilmenge widerspricht ihnen nicht.
+
+**Konsequenzen.** `DefaultClosureAdjuster` misst die Winkelsummenzeile noch in Radiant und braucht eine Korrektur samt Regressionstest mit dem Rechteck oben. Bis dahin weicht der Produktionscode in diesem Punkt vom Vertrag ab. Der README des Prototyps soll die Norm unter „Bekannte Abweichungen vom Vertrag“ aufführen.

@@ -44,8 +44,11 @@ data class ObservationRedundancy(
  * @property maxCorrectionMm largest correction over all observations in mm: `|ΔL_i|`, `|ΔD_k|` and `|Δτ_i| · U / (2π)`.
  * Corners without an observation do not count (DOMAIN section 6). Compared with `EXACT_CLOSURE_MM` in DOMAIN
  * section 5.5.
- * @property worstObservation observation with the largest normalized residual, `null` if all residuals are zero. Never
- * a corner without an observation.
+ * @property worstObservation observation with the largest normalized residual `|v_i| / σ_i`, angles wrapped and in
+ * radians. Residuals within `SOLVER_RESIDUAL_MM / SIGMA_LENGTH_MM` of the largest count as equal, because the
+ * iteration fixes lengths only to `SOLVER_RESIDUAL_MM`. Ties go to the first in the order walls, observed corners,
+ * diagonals, each by smallest index. `null` if all residuals are exactly zero. Never a corner without an observation
+ * (DOMAIN section 6).
  * @property correctionSumMm sum norm `S` over the same mm-equivalent corrections as [maxCorrectionMm].
  * @property normalizedSquareSum `q² = Σ (v_i / σ_i)²` over all observations.
  * @property largestCorrection observation with the largest mm-equivalent correction. Ties within `SOLVER_RESIDUAL_MM`
