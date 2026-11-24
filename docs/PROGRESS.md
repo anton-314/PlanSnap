@@ -66,11 +66,12 @@ Keine.
 - 2026-11-24: CI-Lauf für `wave-1` (`eced75c`) grün. Es gibt noch keine testbare APK, weil `:app` keine Activity und die Feature-Module keinen Code haben. Die erste bedienbare App folgt mit T-APP-001 (Welle 2) und den Screens aus Welle 3.
 - 2026-11-24: `:core:domain` und `:core:drawing` erhalten `:testing:fixtures` als Testabhängigkeit. Geprüft mit Test und `checkArchitecture`.
 - 2026-11-24: T-DOM-005 gemergt (`ba53ee6`, 10 Tests). Fläche und Umfang kommen ungerundet aus der angezeigten Form, gerundet wird erst am Anzeigerand (UI, Export). Räume ohne Form (`OPEN`, `CONFLICT`) fehlen in den Summen. T-DOM-006 wird vorgezogen, weil seine Abhängigkeit T-GEO-001 erfüllt ist.
+- 2026-11-24: T-DOM-006 gemergt (`d610cea`-Inhalt, 19 Tests). Die erste qualifizierende Art gewinnt in der Reihenfolge Ecke, Wand, Raster, innerhalb einer Art der nächste Kandidat. Die Snap-Distanz gilt inklusiv in Weltkoordinaten, die Umrechnung von 16 dp macht der Aufrufer. Abgeschaltet liefert das Einrasten die Eingabe bitgleich zurück.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
 - **Welle 1:** fertig, Tag `wave-1`.
-- **Welle 2:** Laufend: T-DOM-001, T-DOM-002, T-DRW-002, T-DOM-006 (vorgezogen). Gemergt: T-DOM-005.
+- **Welle 2:** Laufend: T-DOM-001, T-DOM-002, T-DRW-002. Gemergt: T-DOM-005, T-DOM-006.
 
 ## Nächste Schritte
 
