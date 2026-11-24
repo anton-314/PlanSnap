@@ -58,13 +58,13 @@ Keine.
 - 2026-11-24: T-GEO-005 startet parallel zu T-GEO-008 und übernimmt den Fix vor den finalen Prüfstandsmessungen. T-GEO-007 folgt nach beiden und stellt den Katalogtest auf Startdrehungen des Produktions-Solvers um.
 - 2026-11-24: T-GEO-008 gemergt (`674494a`). Vorher rot (4 Tests), danach grün. Geometrie: 362 Tests, Pitest 85 %. Katalog-, Property- und Simulationserwartungen sind unverändert. `DefaultClosureAdjuster.VERSION` bleibt 1, weil noch nichts ausgeliefert ist und es deshalb keine Overlays aus dem fehlerhaften Stand gibt. Versionssprünge gelten erst ab dem ersten Release.
 - 2026-11-24: T-GEO-007 gemergt (`cf80edc`). Geometrie: 435 Tests, Kover 99,9 % Zeilen und 97,6 % Branches, Pitest 86 %. Alle 13 Referenzräume laufen durch die gemergte Pipeline. Der Katalogtest bezieht die B1-Startdrehungen jetzt vom `DefaultShapeSolver`, alle 30 Fälle bleiben mit unveränderten Erwartungen grün.
+- 2026-11-24: T-GEO-005 gemergt (`8561dbd`). Geometrie: 628 Tests, Pitest laut Agent 86 % (Pitest-Laufzeit rund 11 Minuten wegen des Prüfstands). Prüfstand am Produktionscode mit voller README-Stichprobe (12 000 Fälle, Seed 20261124): alle Sollwerte erfüllt. K1a, K3 und K4 sind identisch mit dem Prototyp. K1b hat 11 falsche CONFLICT (0,46 %, Prototyp 17), K2 hat 0 nicht einfache Umrisse und 0 bestätigte Formen mit verletzter Richtung. Die Fälle sind identisch mit `stress.py`, weil `PythonRandom` MT19937 nachbildet. `ShapeDistance` nutzt jetzt `StrictMath.atan2`.
+- 2026-11-24: Offener Katalogpunkt (nicht blockierend, in BACKLOG): Die Trapezfälle h2a-109471 und h2a-109472 melden die Wände w1 und w3 als nicht kontrollierbar, das ist plausibel bei `r_i < 0,0025`. Der Katalog nennt dort keine Einträge. `architect` soll den Katalog ergänzen, sobald `:testing:fixtures` wieder bearbeitet wird.
 
-## Wiedereinstieg (Stand 2026-11-24, Nutzungslimit)
+## Wiedereinstieg (Stand 2026-11-24)
 
-- **Welle 1 auf `main` (lokal, nicht gepusht):** alle Aufgaben außer T-GEO-005, dazu CR-W1-01 und der Fix T-GEO-008.
-- **Unterbrochen:** T-GEO-005 läuft im Worktree `.claude/worktrees/agent-a0e6d3a98c43c7ef4` (Branch `worktree-agent-a0e6d3a98c43c7ef4`, Basis `8a91899`). Der Agent hat die Anweisung, den Fix `187e86b` per Cherry-pick zu übernehmen. Vor dem Fortsetzen `git -C <worktree> status` und `git log main..<branch>` prüfen. Ist sein Commit fertig, nur den T-GEO-005-Commit übernehmen, weil der Fix schon auf `main` ist (`674494a`). Sonst einen neuen Agenten auf dem Stand des Worktrees starten.
+- **Welle 1:** Alle Aufgaben sind auf `main` (lokal, nicht gepusht). Das Wellen-Gate läuft.
 
 ## Nächste Schritte
 
-1. T-GEO-005 prüfen und übernehmen. Die Prüfstandswerte gegen das README in `docs/research/evaluation-prototype/` vergleichen.
-2. Wellen-Gate 1: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug`, `:core:geometry:pitest`, `scripts/run-instrumented-tests.sh`, dann Review durch `reviewer`. Bei Bestehen Tag `wave-1` und `git push origin main --tags`, danach CI prüfen.
+1. Wellen-Gate 1: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug`, `:core:geometry:pitest`, `scripts/run-instrumented-tests.sh`, dann Review durch `reviewer`. Bei Bestehen Tag `wave-1` und `git push origin main --tags`, danach CI prüfen.

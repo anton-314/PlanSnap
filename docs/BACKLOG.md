@@ -20,3 +20,4 @@
 - Wechsel auf compileSdk 37 und aktuelle AndroidX-Versionen (ADR 0012)
 - Wechsel auf detekt 2, sobald eine stabile Version erscheint
 - Optimierte Layouts für Querformat, Tablets und Faltbare
+- `OverdeterminedCases`: Für h2a-109471 und h2a-109472 die nicht kontrollierbaren Wände w1 und w3 mit Empfehlung (1,3) bzw. (0,2) aufnehmen (aus T-GEO-005).
