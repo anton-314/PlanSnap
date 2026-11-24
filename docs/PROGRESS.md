@@ -56,14 +56,15 @@ Keine.
 - 2026-11-24: Defekt gefunden: `AdjustmentProblem.residual()` vergleicht die Winkelsummenzeile in Radiant mit der mm-Grenze. Ein Rechteck mit 0,3° Winkelfehler endet ohne Schritt mit einer Winkelsumme von 360,3°. Fix-Aufgabe T-GEO-008. Der Prototyp hat denselben Fehler, im Prototyp-README als Abweichung vermerkt.
 - 2026-11-24: T-GEO-004 gemergt (`8a91899`). Geometrie: 356 Tests, Pitest 85 %. Trapez 70,53°/109,47° mit 11,314 m², mit Diagonale 4 m 10,472 m². Abweichungen vom Prototyp: Gradient `1e-9`, Ausdünnen über die Rangbestimmung statt `lstsq`, freie Drehungen werden für die Auswahlregel auf (−π, π] gewrappt. Bekannte Grenze: Die SQP stagniert teils kurz vor `SOLVER_GRADIENT` (Maratos-Effekt wie im Prototyp). Die Form ist dann zulässig, aber nur auf etwa 1e-6 rad optimal.
 - 2026-11-24: T-GEO-005 startet parallel zu T-GEO-008 und übernimmt den Fix vor den finalen Prüfstandsmessungen. T-GEO-007 folgt nach beiden und stellt den Katalogtest auf Startdrehungen des Produktions-Solvers um.
+- 2026-11-24: T-GEO-008 gemergt (`674494a`). Vorher rot (4 Tests), danach grün. Geometrie: 362 Tests, Pitest 85 %. Katalog-, Property- und Simulationserwartungen sind unverändert. `DefaultClosureAdjuster.VERSION` bleibt 1, weil noch nichts ausgeliefert ist und es deshalb keine Overlays aus dem fehlerhaften Stand gibt. Versionssprünge gelten erst ab dem ersten Release.
 
-## Wiedereinstieg (Stand 2026-11-24)
+## Wiedereinstieg (Stand 2026-11-24, Nutzungslimit)
 
-- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-GEO-002, T-GEO-003, T-GEO-004, T-GEO-006, T-DOC-001, T-DAT-001, T-DAT-002, T-DAT-003, Build-Vorbereitungen.
-- **In Arbeit:** T-GEO-008 (Fix der Konvergenznorm), T-GEO-005 (Batch 1.4). Agenten-Worktrees unter `.claude/worktrees/`.
+- **Welle 1 auf `main` (lokal, nicht gepusht):** alle Aufgaben außer T-GEO-005 und T-GEO-007, dazu CR-W1-01 und der Fix T-GEO-008.
+- **Unterbrochen:** T-GEO-005 läuft im Worktree `.claude/worktrees/agent-a0e6d3a98c43c7ef4` (Branch `worktree-agent-a0e6d3a98c43c7ef4`, Basis `8a91899`). Der Agent hat die Anweisung, den Fix `187e86b` per Cherry-pick zu übernehmen. Vor dem Fortsetzen `git -C <worktree> status` und `git log main..<branch>` prüfen. Ist sein Commit fertig, nur den T-GEO-005-Commit übernehmen, weil der Fix schon auf `main` ist (`674494a`). Sonst einen neuen Agenten auf dem Stand des Worktrees starten.
 
 ## Nächste Schritte
 
-1. T-GEO-008 prüfen, übernehmen und den Commit an T-GEO-005 weitergeben. Danach T-GEO-005 übernehmen.
-2. T-GEO-007, inklusive Umstellung von `CatalogReferenceRuns.kt` auf den Produktions-Solver.
-3. Wellen-Gate 1 mit Review, Tag `wave-1` und Push.
+1. T-GEO-005 prüfen und übernehmen. Die Prüfstandswerte gegen das README in `docs/research/evaluation-prototype/` vergleichen.
+2. T-GEO-007 (test-engineer), inklusive Umstellung von `adjustment/CatalogReferenceRuns.kt` auf Startdrehungen des Produktions-Solvers.
+3. Wellen-Gate 1: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug`, `:core:geometry:pitest`, `scripts/run-instrumented-tests.sh`, dann Review durch `reviewer`. Bei Bestehen Tag `wave-1` und `git push origin main --tags`, danach CI prüfen.
