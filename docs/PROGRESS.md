@@ -52,14 +52,16 @@ Keine.
 - 2026-11-24: Planungslücke geschlossen: Keine Aufgabe implementierte `ProjectValidator`, den `RoomProjectRepository` für den Import braucht. Neue Aufgabe T-DOM-007 in Batch 2.3, nach T-DOM-003 und T-DOM-004 und vor der Verdrahtung in T-APP-001.
 - 2026-11-24: T-GEO-006 gemergt (`222f2d6`). Geometrie: 293 Tests, Pitest 85 % (873 von 1 023). Alle 30 Katalogfälle laufen am Produktionscode. Die Schließung zählt in `‖C‖_∞` als euklidische Lücke, sonst blieb eine Lücke von 0,0128 mm über dem Kriterium von 0,01 mm. Nachgerechnet am Produktionscode: Falsche Konflikte (0,87 bis 1,04 %) und ausdrückliche Bestätigungen (3,8 bis 4,1 %) entsprechen ADR 0018 und der χ²-Theorie. Zwei Werte weichen ab: große Korrekturen 19 bis 63 % (ADR 12 bis 40 %) und unerkanntes Band bis 1,72 T (ADR bis 1,57 T). Das Skript der ADR fehlt im Repository, den Abgleich übernimmt `architect` (CR-W1-01).
 - 2026-11-24: Folgepunkte aus T-GEO-006: `ShapeDistance.kt` nutzt `kotlin.math.atan2` entgegen DOMAIN §11, das wird Teil von T-GEO-005. Der Katalogtest bezieht die Startdrehungen für Zweig B1 vorläufig aus Prototyp-Läufen (`CatalogReferenceRuns.kt`). Die Umstellung auf den Produktions-Solver wird Teil von T-GEO-007.
+- 2026-11-24: CR-W1-01 gemergt (`e677a33`). Die Konvergenznorm des Ausgleichs ist `max(|(c_x, c_y)|, |c_τ| · U/(2π), max_k |c_k|)` in mm und wird vor jedem Schritt geprüft. Bei `worstObservation` gelten normierte Residuen innerhalb `SOLVER_RESIDUAL_MM / SIGMA_LENGTH_MM` als gleich. Dann gewinnt die erste Beobachtung in der Reihenfolge Wände, Ecken, Diagonalen. Simulation: Die Zeile „große Korrektur“ war im Test falsch definiert, weil der Test jede Stichprobe durch Zweig B schickte. Neu gemessen am Produktionscode: 12,5 / 23,8 / 26,7 / 40,2 %, passend zu ADR 0018. Die ADR-Zeile „unerkanntes Band“ ist nicht reproduzierbar. Produktion, Prototyp und lineare Näherung ergeben übereinstimmend 1,69 / 1,73 / 1,49 / 1,64 T. Die ADR ist per Ergänzung korrigiert.
+- 2026-11-24: Defekt gefunden: `AdjustmentProblem.residual()` vergleicht die Winkelsummenzeile in Radiant mit der mm-Grenze. Ein Rechteck mit 0,3° Winkelfehler endet ohne Schritt mit einer Winkelsumme von 360,3°. Fix-Aufgabe T-GEO-008. Der Prototyp hat denselben Fehler, im Prototyp-README als Abweichung vermerkt.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
 - **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-GEO-002, T-GEO-003, T-GEO-006, T-DOC-001, T-DAT-001, T-DAT-002, T-DAT-003, Build-Vorbereitungen.
-- **In Arbeit (Batch 1.3):** T-GEO-004, dazu CR-W1-01 bei `architect` (DOMAIN §6, KDoc `worstObservation`, Abgleich der Simulationswerte aus ADR 0018). Agenten-Worktrees unter `.claude/worktrees/`.
+- **In Arbeit (Batch 1.3):** T-GEO-004, T-GEO-008 (Fix der Konvergenznorm). Agenten-Worktrees unter `.claude/worktrees/`.
 
 ## Nächste Schritte
 
-1. T-GEO-004 und CR-W1-01 prüfen und übernehmen.
+1. T-GEO-004 und T-GEO-008 prüfen und übernehmen.
 2. Batch 1.4: T-GEO-005 (nach T-GEO-004), T-GEO-007 (nach T-GEO-003, T-GEO-004 und T-GEO-006).
 3. Wellen-Gate 1 mit Review, Tag `wave-1` und Push.

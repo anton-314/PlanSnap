@@ -30,7 +30,7 @@ graph LR
 | Phase 3 / F.9 (Review-Fixes) | T-ARC-009 |
 | Welle 1 / 1.1 | T-COM-001, T-GEO-001, T-DES-001, T-DOC-001 |
 | Welle 1 / 1.2 | T-GEO-002, T-GEO-003, T-DAT-001, T-DAT-003 |
-| Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002 |
+| Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002, T-GEO-008 (Fix) |
 | Welle 1 / 1.4 | T-GEO-005, T-GEO-007 |
 | Welle 2 / 2.1 | T-DOM-001, T-DOM-002, T-DOM-005, T-DRW-002 |
 | Welle 2 / 2.2 | T-DOM-003, T-DOM-004, T-DOM-006, T-DRW-001 |
@@ -361,6 +361,17 @@ graph LR
 - **Vertrag:** Repository-Schnittstellen
 - **Akzeptanzkriterien:** Anlegen, Lesen, Umbenennen, Löschen und tiefes Duplizieren. Serielles Speichern, Entwurf übersteht Neustart. Anforderungen: REQ-DATA-001, REQ-DATA-002, REQ-DATA-007
 - **Tests:** Integration mit Robolectric
+
+#### T-GEO-008 – Fix: Konvergenznorm der Winkelsummenzeile
+
+- **Modul:** :core:geometry
+- **Rolle/Modell:** geometry-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-GEO-006, CR-W1-01
+- **Besitzbereich:** `core/geometry/…/adjustment/` (ohne die Vertragsdatei `ClosureAdjuster.kt`)
+- **Vertrag:** DOMAIN §6 nach CR-W1-01
+- **Akzeptanzkriterien:** `AdjustmentProblem.residual()` misst die Winkelsummenzeile als Bogen `|c_τ| · U/(2π)` in mm, wie in DOMAIN §6 festgelegt. Die Norm wird vor jedem Schritt geprüft, auch an `x_1`. Regressionstest (WORKFLOWS §6): Rechteck 4000/3000/4000/3000, alle Ecken gemessen, `V_0` = 89 700 mdeg, die übrigen 90 000 mdeg, Modus `MEASUREMENT_ERROR`, Start bei den Sollwinkeln. Vor dem Fix endet der Ausgleich ohne Schritt mit `S = 0` und einer Winkelsumme von 360,3°, danach liegt die Winkelsumme im Rahmen der Norm und `S > 0`. Katalog-, Property- und Simulationstests bleiben grün. KDoc von `DefaultClosureAdjuster` angepasst. Anforderungen: REQ-MEAS-009, REQ-MEAS-010
+- **Tests:** Regressionstest, bestehende Suite
 
 ### Batch 1.4
 

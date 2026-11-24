@@ -80,5 +80,6 @@ Statuszahlen dürfen wegen des strengeren Gradienten leicht abweichen. Abweichun
 | Abbruch des projizierten Gradienten im Solver | `1e-7` | `SOLVER_GRADIENT = 1e-9` (DOMAIN §1, §5.2) |
 | Lineare Algebra | numpy, `lstsq` als Rückfall bei singulärem KKT-System | eigene Dense-Matrizen, Ausdünnen über die Rangbestimmung (§5.2) |
 | Abbruch | nicht vorgesehen | `CancellationSignal` bis in Solver, Ausgleich und Rang |
+| Konvergenznorm des Ausgleichs | komponentenweise, Winkelsummenzeile in Radiant gegen `0,01` | `max(|(c_x, c_y)|, |c_τ| · U/(2π), max_k |c_k|)` in mm (DOMAIN §6, CR-W1-01) |
 
 Maßgeblich ist immer DOMAIN. Widerspricht der Prototyp DOMAIN, ist der Prototyp falsch.
