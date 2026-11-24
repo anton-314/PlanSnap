@@ -48,7 +48,7 @@ Keine.
 - **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-DOC-001 gemergt. Build-Vorbereitung für `:core:data` (Room, DataStore, KSP) und `kotest-property` gemergt.
 - **Unterbrochen, je in eigenem Worktree unter `.claude/worktrees/`:**
   - T-GEO-001 auf Branch `worktree-agent-a8663ab4c0ee1175e`: WIP-Commit `8c9ffc8`. Letzter DoD-Lauf grün (Pitest 78 %), aber ohne zwei neue Distanztests in `DefaultPolygonAnalyzerTest`. Entschieden: `:core:geometry` erhält `testImplementation(project(":testing:fixtures"))`, damit die Tests `ReferenceRooms` direkt nutzen statt gespiegelter Werte in `AnalyticShapes.kt`. Die Build-Zeile trägt der Orchestrator ein und prüft, dass keine Zyklusprobleme entstehen.
-  - T-DAT-001 auf Branch `worktree-agent-aa680b4dec6a9aed5`
+  - T-DAT-001 auf Branch `worktree-agent-aa680b4dec6a9aed5`: nur ein leerer WIP-Commit `b798b02`, keine Dateien. Ein zu komplexer Befehl zum Anlegen der Dateien wurde vom Harness abgelehnt. Die Aufgabe neu von `main` aus starten, Dateien einzeln anlegen. Entschieden: Die Tabelle `editor_drafts` gehört laut ARCHITECTURE §7 und ADR 0006 schon in Schema 1, damit T-DAT-002 keine Migration braucht.
   - T-DAT-003 auf Branch `worktree-agent-aeeeee5291a30bc39`: WIP-Commit `f9ff5a3`, nur `DataStoreSettingsRepository.kt`, nicht kompiliert, Tests fehlen. Offen: Obergrenze für `absoluteMm` (vorläufig `MAX_WALL_MM`) bestätigen.
   - Jeder Branch hat entweder einen `wip(...)`-Commit oder ungespeicherte Änderungen im Worktree. Vor dem Fortsetzen mit `git -C <worktree> status` und `git log main..<branch>` prüfen.
 
