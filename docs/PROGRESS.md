@@ -54,14 +54,16 @@ Keine.
 - 2026-11-24: Folgepunkte aus T-GEO-006: `ShapeDistance.kt` nutzt `kotlin.math.atan2` entgegen DOMAIN §11, das wird Teil von T-GEO-005. Der Katalogtest bezieht die Startdrehungen für Zweig B1 vorläufig aus Prototyp-Läufen (`CatalogReferenceRuns.kt`). Die Umstellung auf den Produktions-Solver wird Teil von T-GEO-007.
 - 2026-11-24: CR-W1-01 gemergt (`e677a33`). Die Konvergenznorm des Ausgleichs ist `max(|(c_x, c_y)|, |c_τ| · U/(2π), max_k |c_k|)` in mm und wird vor jedem Schritt geprüft. Bei `worstObservation` gelten normierte Residuen innerhalb `SOLVER_RESIDUAL_MM / SIGMA_LENGTH_MM` als gleich. Dann gewinnt die erste Beobachtung in der Reihenfolge Wände, Ecken, Diagonalen. Simulation: Die Zeile „große Korrektur“ war im Test falsch definiert, weil der Test jede Stichprobe durch Zweig B schickte. Neu gemessen am Produktionscode: 12,5 / 23,8 / 26,7 / 40,2 %, passend zu ADR 0018. Die ADR-Zeile „unerkanntes Band“ ist nicht reproduzierbar. Produktion, Prototyp und lineare Näherung ergeben übereinstimmend 1,69 / 1,73 / 1,49 / 1,64 T. Die ADR ist per Ergänzung korrigiert.
 - 2026-11-24: Defekt gefunden: `AdjustmentProblem.residual()` vergleicht die Winkelsummenzeile in Radiant mit der mm-Grenze. Ein Rechteck mit 0,3° Winkelfehler endet ohne Schritt mit einer Winkelsumme von 360,3°. Fix-Aufgabe T-GEO-008. Der Prototyp hat denselben Fehler, im Prototyp-README als Abweichung vermerkt.
+- 2026-11-24: T-GEO-004 gemergt (`8a91899`). Geometrie: 356 Tests, Pitest 85 %. Trapez 70,53°/109,47° mit 11,314 m², mit Diagonale 4 m 10,472 m². Abweichungen vom Prototyp: Gradient `1e-9`, Ausdünnen über die Rangbestimmung statt `lstsq`, freie Drehungen werden für die Auswahlregel auf (−π, π] gewrappt. Bekannte Grenze: Die SQP stagniert teils kurz vor `SOLVER_GRADIENT` (Maratos-Effekt wie im Prototyp). Die Form ist dann zulässig, aber nur auf etwa 1e-6 rad optimal.
+- 2026-11-24: T-GEO-005 startet parallel zu T-GEO-008 und übernimmt den Fix vor den finalen Prüfstandsmessungen. T-GEO-007 folgt nach beiden und stellt den Katalogtest auf Startdrehungen des Produktions-Solvers um.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
-- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-GEO-002, T-GEO-003, T-GEO-006, T-DOC-001, T-DAT-001, T-DAT-002, T-DAT-003, Build-Vorbereitungen.
-- **In Arbeit (Batch 1.3):** T-GEO-004, T-GEO-008 (Fix der Konvergenznorm). Agenten-Worktrees unter `.claude/worktrees/`.
+- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-GEO-001, T-GEO-002, T-GEO-003, T-GEO-004, T-GEO-006, T-DOC-001, T-DAT-001, T-DAT-002, T-DAT-003, Build-Vorbereitungen.
+- **In Arbeit:** T-GEO-008 (Fix der Konvergenznorm), T-GEO-005 (Batch 1.4). Agenten-Worktrees unter `.claude/worktrees/`.
 
 ## Nächste Schritte
 
-1. T-GEO-004 und T-GEO-008 prüfen und übernehmen.
-2. Batch 1.4: T-GEO-005 (nach T-GEO-004), T-GEO-007 (nach T-GEO-003, T-GEO-004 und T-GEO-006).
+1. T-GEO-008 prüfen, übernehmen und den Commit an T-GEO-005 weitergeben. Danach T-GEO-005 übernehmen.
+2. T-GEO-007, inklusive Umstellung von `CatalogReferenceRuns.kt` auf den Produktions-Solver.
 3. Wellen-Gate 1 mit Review, Tag `wave-1` und Push.
