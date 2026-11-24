@@ -65,11 +65,12 @@ Keine.
 - 2026-11-24: Wellen-Gate 1 bestanden. Pitest und instrumentierte Tests liefen auf `9507601`. Danach kamen nur Dokumentation und T-DAT-004 in `:core:data` hinzu. Darauf lief der volle Build erneut grün.
 - 2026-11-24: CI-Lauf für `wave-1` (`eced75c`) grün. Es gibt noch keine testbare APK, weil `:app` keine Activity und die Feature-Module keinen Code haben. Die erste bedienbare App folgt mit T-APP-001 (Welle 2) und den Screens aus Welle 3.
 - 2026-11-24: `:core:domain` und `:core:drawing` erhalten `:testing:fixtures` als Testabhängigkeit. Geprüft mit Test und `checkArchitecture`.
+- 2026-11-24: T-DOM-005 gemergt (`ba53ee6`, 10 Tests). Fläche und Umfang kommen ungerundet aus der angezeigten Form, gerundet wird erst am Anzeigerand (UI, Export). Räume ohne Form (`OPEN`, `CONFLICT`) fehlen in den Summen. T-DOM-006 wird vorgezogen, weil seine Abhängigkeit T-GEO-001 erfüllt ist.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
 - **Welle 1:** fertig, Tag `wave-1`.
-- **Welle 2:** Batch 2.1 läuft (T-DOM-001, T-DOM-002, T-DOM-005, T-DRW-002).
+- **Welle 2:** Laufend: T-DOM-001, T-DOM-002, T-DRW-002, T-DOM-006 (vorgezogen). Gemergt: T-DOM-005.
 
 ## Nächste Schritte
 
