@@ -1,9 +1,5 @@
 package app.plansnap.core.geometry.primitives
 
-import kotlin.math.cos
-import kotlin.math.hypot
-import kotlin.math.sin
-
 /**
  * Computed 2D point or vector in millimeters. Both components are always finite.
  *
@@ -32,13 +28,13 @@ data class Vec2(
     /** Returns the z component of the cross product. */
     fun cross(other: Vec2): Double = x * other.y - y * other.x
 
-    /** Returns the Euclidean length. */
-    fun length(): Double = hypot(x, y)
+    /** Returns the Euclidean length, computed with [StrictMath] so that it is bit-identical on every device. */
+    fun length(): Double = StrictMath.hypot(x, y)
 
-    /** Returns this vector rotated counter-clockwise by [radians]. */
+    /** Returns this vector rotated counter-clockwise by [radians], with [StrictMath] trigonometry. */
     fun rotated(radians: Double): Vec2 {
-        val c = cos(radians)
-        val s = sin(radians)
+        val c = StrictMath.cos(radians)
+        val s = StrictMath.sin(radians)
         return Vec2(x * c - y * s, x * s + y * c)
     }
 
