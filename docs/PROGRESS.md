@@ -49,7 +49,7 @@ Keine.
 - **Unterbrochen, je in eigenem Worktree unter `.claude/worktrees/`:**
   - T-GEO-001 auf Branch `worktree-agent-a8663ab4c0ee1175e`
   - T-DAT-001 auf Branch `worktree-agent-aa680b4dec6a9aed5`
-  - T-DAT-003 auf Branch `worktree-agent-aeeeee5291a30bc39`
+  - T-DAT-003 auf Branch `worktree-agent-aeeeee5291a30bc39`: WIP-Commit `f9ff5a3`, nur `DataStoreSettingsRepository.kt`, nicht kompiliert, Tests fehlen. Offen: Obergrenze für `absoluteMm` (vorläufig `MAX_WALL_MM`) bestätigen.
   - Jeder Branch hat entweder einen `wip(...)`-Commit oder ungespeicherte Änderungen im Worktree. Vor dem Fortsetzen mit `git -C <worktree> status` und `git log main..<branch>` prüfen.
 
 ## Nächste Schritte
