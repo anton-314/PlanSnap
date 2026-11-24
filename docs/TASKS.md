@@ -545,7 +545,7 @@ graph LR
 - **Abhängigkeiten:** T-DAT-002, T-DAT-003, T-DOM-002, T-DOM-007
 - **Besitzbereich:** `app/`
 - **Vertrag:** UX §1
-- **Akzeptanzkriterien:** Typsichere Navigation zwischen allen Screens, DI-Graph vollständig, Backup deaktiviert. Die Produktions-DataStore der Einstellungen wird mit `ReplaceFileCorruptionHandler { emptyPreferences() }` erzeugt, sonst liefert nach einer beschädigten Datei jedes `update` dauerhaft `WRITE_FAILED` (Gate-Review Welle 1). `RoomProjectRepository` erhält die `ProjectValidator`-Implementierung aus T-DOM-007. Anforderungen: REQ-DATA-003, REQ-NFR-004
+- **Akzeptanzkriterien:** Typsichere Navigation zwischen allen Screens, DI-Graph vollständig, Backup deaktiviert. Die Produktions-DataStore der Einstellungen wird mit `ReplaceFileCorruptionHandler { emptyPreferences() }` erzeugt, sonst liefert nach einer beschädigten Datei jedes `update` dauerhaft `WRITE_FAILED` (Gate-Review Welle 1). `RoomProjectRepository` erhält die `ProjectValidator`-Implementierung aus T-DOM-007. `DefaultProjectCommandFactory` erhält `DefaultOpeningRules` (T-DOM-003), `DefaultCommandHistory` den Resolver aus T-DOM-004. Anforderungen: REQ-DATA-003, REQ-NFR-004
 - **Tests:** Hilt-Graph-Test, Navigationstests
 
 ## Welle 3
