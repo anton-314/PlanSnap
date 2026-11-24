@@ -27,6 +27,7 @@ graph LR
 | Phase 3 / F.6 (Nachreview-Fixes) | T-ARC-006, T-BLD-006 |
 | Phase 3 / F.7 (Review-Fixes) | T-ARC-007 |
 | Phase 3 / F.8 (Review-Fixes) | T-ARC-008 |
+| Phase 3 / F.9 (Review-Fixes) | T-ARC-009 |
 | Welle 1 / 1.1 | T-COM-001, T-GEO-001, T-DES-001, T-DOC-001 |
 | Welle 1 / 1.2 | T-GEO-002, T-GEO-003, T-DAT-001, T-DAT-003 |
 | Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002 |
@@ -218,6 +219,19 @@ graph LR
 - **Vertrag:** Entscheidung zu diskret mehrdeutigen Formen
 - **Akzeptanzkriterien:** Findet der Solver bei `missing = 0` eine zweite gültige Form mit mehr als `T` Abweichung, folgt `PROPOSED` mit Grund und empfohlenem Zusatzmaß. Der Prüfstand liegt versioniert im Repository. Anforderungen: REQ-MEAS-006, REQ-MEAS-008
 - **Tests:** Vertragstests und Referenzfälle
+
+### Batch F.9
+
+#### T-ARC-009 – Vorbedingungen unter dem Historien-Mutex
+
+- **Modul:** core/geometry, core/domain
+- **Rolle/Modell:** architect
+- **Größe:** S
+- **Abhängigkeiten:** T-ARC-008
+- **Besitzbereich:** `core/geometry/`, `core/domain/`, `testing/fixtures/` (nur Anpassung), `docs/DOMAIN.md`, `docs/ARCHITECTURE.md`, `docs/adr/`
+- **Vertrag:** Abschlussreview H1 und M1
+- **Akzeptanzkriterien:** Ein Befehl kann eine `suspend`-Vorbedingung haben, die `CommandHistory.execute` unter dem Mutex mit der aktuellen Toleranz vor dem Commit prüft. `apply` bleibt rein. `AcceptAdjustment` nutzt sie, ein veralteter Vorschlag wird abgelehnt. `ClosureTolerance` erzwingt `T > 0`. Anforderungen: REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-011
+- **Tests:** Vertragstests für Invariante und Vorbedingung
 
 ## Welle 1
 
