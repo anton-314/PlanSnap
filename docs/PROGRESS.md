@@ -41,16 +41,13 @@ Keine.
 - 2026-11-24: `kotest-property` ist über `plansnap.jvm.library` in allen JVM-Modulen als Testabhängigkeit verfügbar. Längen werden nicht gerundet: Eingaben feiner als 1 mm werden abgelehnt. Längenanzeige mit festen Nachkommastellen je Einheit (mm 0, cm 1, m 3), Winkelanzeige ohne überflüssige Nullen.
 - 2026-11-24: ktlint erlaubt PascalCase nur für `@Composable`-Funktionen, nach ausdrücklicher Freigabe des Auftraggebers (der Auto-Modus hatte die Änderung beim Agenten abgelehnt).
 - 2026-11-24: `:core:data` erhält Room (Runtime, KTX, Compiler über KSP, Schema-Export nach `core/data/schemas`), DataStore Preferences sowie Testabhängigkeiten. `androidx-room-testing` mit der Room-Version aus dem Catalog ergänzt, für den Migrationstest-Harness. Hilt folgt mit der DI-Wurzel (T-APP-001).
+- 2026-11-24: `:core:geometry` hat `:testing:fixtures` als Testabhängigkeit erhalten (`9c0ef23`). Es gibt keinen Zyklus, weil die Fixtures nur die Hauptausgabe nutzen. Geprüft mit Test, Pitest, Kover und `checkArchitecture`. Der leere T-DAT-001-Branch wurde verworfen, T-DAT-001 wurde neu gestartet.
+- 2026-11-24: Gespeichertes `absoluteMm` ist nur in `MIN_TOLERANCE_ABS_MM..MAX_WALL_MM` (1 bis 100 000) gültig. Werte außerhalb fallen je Feld auf den Standard zurück. Eine Toleranz über der größten Wandlänge ist sinnlos.
 
-## Wiedereinstieg (Stand 2026-11-24, Nutzungslimit)
+## Wiedereinstieg (Stand 2026-11-24)
 
-- **Phase 3:** fertig, Tag `phase-3-foundation` gepusht, CI grün.
-- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-DOC-001 gemergt. Build-Vorbereitung für `:core:data` (Room, DataStore, KSP) und `kotest-property` gemergt.
-- **Unterbrochen, je in eigenem Worktree unter `.claude/worktrees/`:**
-  - T-GEO-001 auf Branch `worktree-agent-a8663ab4c0ee1175e`: WIP-Commit `8c9ffc8`. Letzter DoD-Lauf grün (Pitest 78 %), aber ohne zwei neue Distanztests in `DefaultPolygonAnalyzerTest`. Entschieden: `:core:geometry` erhält `testImplementation(project(":testing:fixtures"))`, damit die Tests `ReferenceRooms` direkt nutzen statt gespiegelter Werte in `AnalyticShapes.kt`. Die Build-Zeile trägt der Orchestrator ein und prüft, dass keine Zyklusprobleme entstehen.
-  - T-DAT-001 auf Branch `worktree-agent-aa680b4dec6a9aed5`: nur ein leerer WIP-Commit `b798b02`, keine Dateien. Ein zu komplexer Befehl zum Anlegen der Dateien wurde vom Harness abgelehnt. Die Aufgabe neu von `main` aus starten, Dateien einzeln anlegen. Entschieden: Die Tabelle `editor_drafts` gehört laut ARCHITECTURE §7 und ADR 0006 schon in Schema 1, damit T-DAT-002 keine Migration braucht.
-  - T-DAT-003 auf Branch `worktree-agent-aeeeee5291a30bc39`: WIP-Commit `f9ff5a3`, nur `DataStoreSettingsRepository.kt`, nicht kompiliert, Tests fehlen. Offen: Obergrenze für `absoluteMm` (vorläufig `MAX_WALL_MM`) bestätigen.
-  - Jeder Branch hat entweder einen `wip(...)`-Commit oder ungespeicherte Änderungen im Worktree. Vor dem Fortsetzen mit `git -C <worktree> status` und `git log main..<branch>` prüfen.
+- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-DOC-001, Build-Vorbereitungen.
+- **In Arbeit (Batch 1.2):** T-GEO-001 (vom WIP `6800714`), T-DAT-003 (vom WIP `f6d54bd`), T-DAT-001 (neu). Agenten-Worktrees unter `.claude/worktrees/`. Die alten WIP-Worktrees `agent-a8663ab4…` und `agent-aeeeee52…` werden nach der Übernahme entfernt.
 
 ## Nächste Schritte
 
