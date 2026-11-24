@@ -67,11 +67,12 @@ Keine.
 - 2026-11-24: `:core:domain` und `:core:drawing` erhalten `:testing:fixtures` als Testabhängigkeit. Geprüft mit Test und `checkArchitecture`.
 - 2026-11-24: T-DOM-005 gemergt (`ba53ee6`, 10 Tests). Fläche und Umfang kommen ungerundet aus der angezeigten Form, gerundet wird erst am Anzeigerand (UI, Export). Räume ohne Form (`OPEN`, `CONFLICT`) fehlen in den Summen. T-DOM-006 wird vorgezogen, weil seine Abhängigkeit T-GEO-001 erfüllt ist.
 - 2026-11-24: T-DOM-006 gemergt (`d610cea`-Inhalt, 19 Tests). Die erste qualifizierende Art gewinnt in der Reihenfolge Ecke, Wand, Raster, innerhalb einer Art der nächste Kandidat. Die Snap-Distanz gilt inklusiv in Weltkoordinaten, die Umrechnung von 16 dp macht der Aufrufer. Abgeschaltet liefert das Einrasten die Eingabe bitgleich zurück.
+- 2026-11-24: T-DOM-002 gemergt (`e4d0b75`). `:core:domain` hat 121 Tests. Die Historie nutzt einen fairen Mutex: Vorbedingung, `apply` und Auflösung laufen in `withContext`, danach folgen `ensureActive` und der Commit. Ein Property-Test mit 300 × 40 Schritten zeigt, dass Undo und Redo Identitäten sind. Festlegungen ohne ausdrückliche Spezifikation: `EditWall` lässt das Overlay stehen, der Fingerabdruck macht es ungültig. Nur `RemoveLastWall` an einem geschlossenen Raum verwirft es. `DockRoom` prüft Ziele und Zyklen im Modell, die Platzierung rechnet T-DOM-004. Offen: Den ADR-0019-Zahlenfall gegen den echten Evaluator prüfen, sobald T-DOM-001 gemergt ist.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
 - **Welle 1:** fertig, Tag `wave-1`.
-- **Welle 2:** Laufend: T-DOM-001, T-DOM-002, T-DRW-002. Gemergt: T-DOM-005, T-DOM-006.
+- **Welle 2:** Laufend: T-DOM-001, T-DRW-002, T-DOM-003, T-DOM-004. Gemergt: T-DOM-002, T-DOM-005, T-DOM-006.
 
 ## Nächste Schritte
 
