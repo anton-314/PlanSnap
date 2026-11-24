@@ -2,7 +2,6 @@ package app.plansnap.core.geometry.determinacy
 
 import app.plansnap.core.geometry.primitives.Polygon2
 import app.plansnap.core.geometry.primitives.Vec2
-import kotlin.math.atan2
 
 /**
  * Distance between two shapes with the same corner order in mm (DOMAIN section 5.6).
@@ -22,7 +21,7 @@ fun shapeDistanceMm(
     val b = centered(second.vertices)
     val dot = a.indices.sumOf { a[it].dot(b[it]) }
     val cross = a.indices.sumOf { a[it].cross(b[it]) }
-    val angle = atan2(cross, dot)
+    val angle = StrictMath.atan2(cross, dot)
     return a.indices.maxOf { (a[it].rotated(angle) - b[it]).length() }
 }
 
