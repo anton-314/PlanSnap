@@ -46,6 +46,7 @@ Keine.
 - 2026-11-24: T-DAT-003 gemergt (`f5ccf27`, 13 Tests). Werte mit falschem gespeicherten Typ fallen je Feld auf den Standard zurück. `update` mit ungültigem `absoluteMm` liefert `InvalidValue(TOLERANCE, TOO_LARGE)` und schreibt nichts.
 - 2026-11-24: T-DAT-001 gemergt (`99fba85`, 16 Tests). Schema 1 mit `projects`, `rooms`, `editor_drafts`, Fremdschlüssel mit CASCADE. `@Upsert` statt REPLACE, weil REPLACE per Cascade die Entwürfe löschen würde. Kein UNIQUE auf `(projectId, position)`, damit Umsortieren nicht kollidiert. Die DAOs speichern das Raumdokument als JSON-String, Kodierung und Formatversion übernimmt T-DAT-002 über `DocumentCodec`.
 - 2026-11-24: T-GEO-001 gemergt (`f687756`). Die Referenzfälle laufen direkt über `ReferenceRooms.ALL`, `AnalyticShapes` ist entfallen. Abstandsgrenze in `isSimple` inklusiv getestet. Pitest Geometrie 78 % (482 von 615).
+- 2026-11-24: Schema 1 wird vor der Auslieferung korrigiert: `editor_drafts` erhält `projectId` als Primärschlüssel und ein nullbares `roomId`, weil der eingefrorene Vertrag einen Entwurf je Projekt mit optionalem Raum vorsieht. Die Korrektur gehört zu T-DAT-002, das den Pfad `db/` nach dem Merge von T-DAT-001 übernimmt. Eine Migration ist nicht nötig, weil Schema 1 noch nicht ausgeliefert ist.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
@@ -54,6 +55,6 @@ Keine.
 
 ## Nächste Schritte
 
-1. Die drei unterbrochenen Aufgaben vom jeweiligen Branch aus fertigstellen (neuer Agent je Aufgabe mit dem Briefing aus docs/TASKS.md, Start auf dem WIP-Stand), prüfen und übernehmen.
-2. Batch 1.2 vervollständigen: T-GEO-002, T-GEO-003 (nach T-GEO-001).
-3. Batches 1.3 und 1.4, danach Wellen-Gate 1 mit Review, Tag `wave-1` und Push.
+1. T-GEO-002, T-GEO-003 und T-DAT-002 prüfen und übernehmen.
+2. Batch 1.3: T-GEO-004 und T-GEO-006 (nach T-GEO-002). Batch 1.4: T-GEO-005 (nach T-GEO-004), T-GEO-007 (nach T-GEO-003, T-GEO-004 und T-GEO-006).
+3. Wellen-Gate 1 mit Review, Tag `wave-1` und Push.
