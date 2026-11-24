@@ -42,6 +42,18 @@ Keine.
 - 2026-11-24: ktlint erlaubt PascalCase nur für `@Composable`-Funktionen, nach ausdrücklicher Freigabe des Auftraggebers (der Auto-Modus hatte die Änderung beim Agenten abgelehnt).
 - 2026-11-24: `:core:data` erhält Room (Runtime, KTX, Compiler über KSP, Schema-Export nach `core/data/schemas`), DataStore Preferences sowie Testabhängigkeiten. `androidx-room-testing` mit der Room-Version aus dem Catalog ergänzt, für den Migrationstest-Harness. Hilt folgt mit der DI-Wurzel (T-APP-001).
 
+## Wiedereinstieg (Stand 2026-11-24, Nutzungslimit)
+
+- **Phase 3:** fertig, Tag `phase-3-foundation` gepusht, CI grün.
+- **Welle 1 auf `main` (lokal, nicht gepusht):** T-COM-001, T-DES-001, T-DOC-001 gemergt. Build-Vorbereitung für `:core:data` (Room, DataStore, KSP) und `kotest-property` gemergt.
+- **Unterbrochen, je in eigenem Worktree unter `.claude/worktrees/`:**
+  - T-GEO-001 auf Branch `worktree-agent-a8663ab4c0ee1175e`
+  - T-DAT-001 auf Branch `worktree-agent-aa680b4dec6a9aed5`
+  - T-DAT-003 auf Branch `worktree-agent-aeeeee5291a30bc39`
+  - Jeder Branch hat entweder einen `wip(...)`-Commit oder ungespeicherte Änderungen im Worktree. Vor dem Fortsetzen mit `git -C <worktree> status` und `git log main..<branch>` prüfen.
+
 ## Nächste Schritte
 
-1. Welle 1, Batch 1.1 starten: T-COM-001, T-GEO-001, T-DES-001, T-DOC-001.
+1. Die drei unterbrochenen Aufgaben vom jeweiligen Branch aus fertigstellen (neuer Agent je Aufgabe mit dem Briefing aus docs/TASKS.md, Start auf dem WIP-Stand), prüfen und übernehmen.
+2. Batch 1.2 vervollständigen: T-GEO-002, T-GEO-003 (nach T-GEO-001).
+3. Batches 1.3 und 1.4, danach Wellen-Gate 1 mit Review, Tag `wave-1` und Push.
