@@ -179,7 +179,12 @@ class ClosureAdjusterCatalogTest {
                 ClosureClass.SHAPE_DEVIATION
             }
         assertEquals(expectedClass, closureClass)
-        val shape = adjustOrFail(input, run.mode, run.startTurnsRad ?: targetStart(input))
+        val shape =
+            adjustOrFail(
+                input,
+                run.mode,
+                if (run.start == StartTurns.SOLVER) CatalogReferenceRuns.solverStart(input) else targetStart(input),
+            )
         assertTrue(gapMm(shape) <= GeometryTolerances.SOLVER_RESIDUAL_MM, "gap ${gapMm(shape)}")
         val decision =
             if (run.mode ==

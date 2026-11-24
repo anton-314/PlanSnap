@@ -1,13 +1,21 @@
 package app.plansnap.core.geometry.adjustment
 
+import app.plansnap.core.geometry.cancellation.CancellationSignal
+import app.plansnap.core.geometry.primitives.GeometryTolerances
+import app.plansnap.core.geometry.solver.DefaultShapeSolver
+import app.plansnap.core.geometry.solver.DenseLinearAlgebra
+import app.plansnap.core.geometry.solver.HardCondition
+import app.plansnap.core.geometry.solver.SolverOutcome
+import app.plansnap.core.geometry.solver.SolverProblem
+import app.plansnap.core.geometry.solver.jacobian
+import app.plansnap.core.geometry.traverse.ShapeInput
 import app.plansnap.testing.fixtures.rooms.OverdeterminedCase
 import app.plansnap.testing.fixtures.rooms.OverdeterminedCases
 
 /**
  * How the evaluation of DOMAIN sections 4 and 5.5 reaches each catalog case, as traced in the reference prototype
- * `docs/research/evaluation-prototype/flow.py`. Start turns from a solver run (steps A1 and B1) are the prototype's
- * values in radians, because T-GEO-006 must not depend on the solver. They are only the first linearization point, so
- * the production solver may deliver slightly different values without changing the adjusted result.
+ * `docs/research/evaluation-prototype/flow.py`. Start turns of step B1 come from the production [DefaultShapeSolver]
+ * (see [CatalogReferenceRuns.solverStart]). They are only the first linearization point of the adjustment.
  */
 internal sealed interface ReferenceRun {
     /** Step 6 of DOMAIN section 4 with `e ≤ EXACT_CLOSURE_MM`: no adjustment. */
@@ -18,37 +26,81 @@ internal sealed interface ReferenceRun {
         val solutionTurnsRad: List<Double>?,
     ) : ReferenceRun
 
-    /** Adjustment in [mode], from the target turns if [startTurnsRad] is `null`, else from the solver start. */
+    /** Adjustment in [mode], from the start turns of [start]. */
     data class Adjust(
         val mode: AdjustmentMode,
-        val startTurnsRad: List<Double>? = null,
+        val start: StartTurns = StartTurns.TARGETS,
     ) : ReferenceRun
+}
+
+/** Origin of the first linearization point of an adjustment. */
+internal enum class StartTurns {
+    /** Target turns, step B2 after a solver without result and for rooms without free variables. */
+    TARGETS,
+
+    /** Solution of the production solver on the independent conditions (step B1). */
+    SOLVER,
 }
 
 /** Reference runs of all catalog cases. */
 internal object CatalogReferenceRuns {
+    /**
+     * Start turns of step B1 of DOMAIN section 5.5: the production solver on the independent conditions `I`, chosen
+     * greedily in row order at the routing point (DOMAIN section 5.4, the better rank of `τ̂` and the probe point).
+     * Without a free variable or without a simple solver result the start is the target turns (steps B1 and B2).
+     */
+    fun solverStart(input: ShapeInput): List<Double> {
+        val selection = independentConditions(input)
+        return when (val outcome = DefaultShapeSolver().solve(input, selection, CancellationSignal.NONE)) {
+            is SolverOutcome.Solved -> outcome.solution.turnsRad
+            SolverOutcome.NoSimpleShape -> AdjustmentTestSupport.targetStart(input)
+        }
+    }
+
+    private fun independentConditions(input: ShapeInput): List<HardCondition> {
+        val problem = SolverProblem(input)
+        val atTargets = independentAt(problem, problem.targets)
+        val probe =
+            DoubleArray(problem.n) { i ->
+                if (i in
+                    problem.free
+                ) {
+                    problem.targets[i] + GeometryTolerances.RANK_PROBE_RAD * i / problem.n
+                } else {
+                    problem.targets[i]
+                }
+            }
+        val atProbe = independentAt(problem, probe)
+        return if (atProbe.size > atTargets.size) atProbe else atTargets
+    }
+
+    private fun independentAt(
+        problem: SolverProblem,
+        turns: DoubleArray,
+    ): List<HardCondition> {
+        if (problem.free.isEmpty()) return emptyList()
+        val matrix = problem.jacobian(problem.rows, problem.walk(turns))
+        return DenseLinearAlgebra
+            .independentRows(matrix, GeometryTolerances.RANK_TOLERANCE)
+            .map { problem.rows[it] }
+    }
+
     private val SHAPE_FROM_TARGETS = ReferenceRun.Adjust(AdjustmentMode.SHAPE_DEVIATION)
-
-    private val QUAD_SOLVER_START =
-        listOf(1.910633236241642, 1.9106332362371987, 1.2309594173540754, 1.2309594173466696)
-
-    private fun fromSolver(vararg turns: Double) = ReferenceRun.Adjust(AdjustmentMode.SHAPE_DEVIATION, turns.toList())
+    private val SHAPE_FROM_SOLVER = ReferenceRun.Adjust(AdjustmentMode.SHAPE_DEVIATION, StartTurns.SOLVER)
 
     val RUNS: Map<OverdeterminedCase, ReferenceRun> =
         with(OverdeterminedCases) {
             mapOf(
                 SELF_INTERSECTING_EXACT to ReferenceRun.Exact,
-                TRAPEZOID_ROUNDED_ANGLES to
-                    fromSolver(1.9106293854507488, 1.9106293854506766, 1.2309632681390805, 1.2309632681390805),
-                TRAPEZOID_ROUNDED_ANGLES_CONTROL to
-                    fromSolver(1.9106468387432631, 1.9106468387432018, 1.2309458148465608, 1.2309458148465608),
+                TRAPEZOID_ROUNDED_ANGLES to SHAPE_FROM_SOLVER,
+                TRAPEZOID_ROUNDED_ANGLES_CONTROL to SHAPE_FROM_SOLVER,
                 // A1 has no simple result, so B2 starts at the target turns.
                 PENTAGON_DEPENDENT_DIAGONAL to SHAPE_FROM_TARGETS,
                 STRAIGHT_CORNER_LEFT to SHAPE_FROM_TARGETS,
                 STRAIGHT_CORNER_RIGHT to SHAPE_FROM_TARGETS,
                 NEARLY_STRAIGHT_CORNER_RIGHT to SHAPE_FROM_TARGETS,
-                PROPOSED_WITH_CORRECTION to ReferenceRun.Adjust(AdjustmentMode.SHAPE_DEVIATION, QUAD_SOLVER_START),
-                TRIANGLE_START_BRANCH to fromSolver(2.666094457648059, 1.0472673643666774, 2.5698234851648496),
+                PROPOSED_WITH_CORRECTION to SHAPE_FROM_SOLVER,
+                TRIANGLE_START_BRANCH to SHAPE_FROM_SOLVER,
                 HEXAGON_KEEPS_SIMPLE to
                     ReferenceRun.BranchA(
                         listOf(
@@ -60,32 +112,9 @@ internal object CatalogReferenceRuns {
                             0.07883651080706791,
                         ),
                     ),
-                HEXAGON_UNOBSERVED_TURNS to
-                    fromSolver(
-                        -1.0527804120115967,
-                        1.1165426992557734,
-                        0.637414695368409,
-                        0.7784677973295849,
-                        1.7118014770635184,
-                        3.091739050173897,
-                    ),
-                PENTAGON_REPEATED_DIAGONAL to
-                    fromSolver(
-                        1.3607049748633209,
-                        1.5707963267948966,
-                        1.195884124892516,
-                        0.7783436212145455,
-                        1.377456259414307,
-                    ),
-                HEXAGON_ALL_DIAGONALS to
-                    fromSolver(
-                        1.6088159492596352,
-                        1.07033886084881,
-                        0.27748939957393454,
-                        1.0122605607071626,
-                        1.561037910247893,
-                        0.7532426265421507,
-                    ),
+                HEXAGON_UNOBSERVED_TURNS to SHAPE_FROM_SOLVER,
+                PENTAGON_REPEATED_DIAGONAL to SHAPE_FROM_SOLVER,
+                HEXAGON_ALL_DIAGONALS to SHAPE_FROM_SOLVER,
                 RECTANGLE_WRONG_WALL to SHAPE_FROM_TARGETS,
                 L_SHAPE_WRONG_WALL to SHAPE_FROM_TARGETS,
                 U_SHAPE_WRONG_WALL to SHAPE_FROM_TARGETS,
@@ -94,32 +123,15 @@ internal object CatalogReferenceRuns {
                 RECTANGLE_LARGE_SIMPLE to SHAPE_FROM_TARGETS,
                 RECTANGLE_LARGE_EXPLICIT to SHAPE_FROM_TARGETS,
                 RECTANGLE_LARGE_CONFLICT to SHAPE_FROM_TARGETS,
-                TRAPEZOID_TWO_DIAGONALS to
-                    fromSolver(1.9106331115882593, 1.9106321141843703, 1.230957547255754, 1.2309625341512023),
-                QUAD_REPEATED_WALL to ReferenceRun.Adjust(AdjustmentMode.SHAPE_DEVIATION, QUAD_SOLVER_START),
-                QUAD_REPEATED_WALL_1_MM to ReferenceRun.Adjust(AdjustmentMode.SHAPE_DEVIATION, QUAD_SOLVER_START),
-                QUAD_REPEATED_WALL_CONTRADICTION to
-                    ReferenceRun.Adjust(AdjustmentMode.SHAPE_DEVIATION, QUAD_SOLVER_START),
+                TRAPEZOID_TWO_DIAGONALS to SHAPE_FROM_SOLVER,
+                QUAD_REPEATED_WALL to SHAPE_FROM_SOLVER,
+                QUAD_REPEATED_WALL_1_MM to SHAPE_FROM_SOLVER,
+                QUAD_REPEATED_WALL_CONTRADICTION to SHAPE_FROM_SOLVER,
                 TRIANGLE_WRONG_DIRECTION to ReferenceRun.BranchA(null),
-                HEXAGON_UNCONTROLLED to
-                    fromSolver(
-                        1.2341501730537345,
-                        1.1072604206876422,
-                        1.0619965974956076,
-                        0.9322989909492468,
-                        0.97454646014636,
-                        0.9729326648469951,
-                    ),
+                HEXAGON_UNCONTROLLED to SHAPE_FROM_SOLVER,
                 AMBIGUOUS_SELECTED_OTHER_SHAPE to ReferenceRun.BranchA(null),
                 AMBIGUOUS_SELECTED_TRUE_SHAPE to ReferenceRun.BranchA(null),
-                AMBIGUOUS_NEEDS_ADJUSTMENT to
-                    fromSolver(
-                        0.5606093047997387,
-                        -1.8153823816036243,
-                        -1.7007124791508477,
-                        -1.6530886010264292,
-                        -1.6746111501984238,
-                    ),
+                AMBIGUOUS_NEEDS_ADJUSTMENT to SHAPE_FROM_SOLVER,
             )
         }
 }
