@@ -4,8 +4,6 @@ import app.plansnap.core.common.result.DomainError
 import app.plansnap.core.common.result.DomainResult
 import app.plansnap.core.common.result.InvalidValueReason
 import app.plansnap.core.common.result.ValueField
-import java.math.BigDecimal
-import java.text.DecimalFormatSymbols
 import java.util.Locale
 
 /** Parses a user-entered corner angle `α` with `0° < α ≤ 180°` (DOMAIN section 3, REQ-MEAS-004). */
@@ -25,21 +23,16 @@ fun interface AngleParser {
 
 /** Default [AngleParser] with exact decimal arithmetic. */
 object DecimalAngleParser : AngleParser {
-    private const val MAX_INPUT_CHARS = 32
-    private const val MILLI_DECIMALS = 3
-    private val NUMBER = Regex("""-?[0-9]+(\.[0-9]+)?""")
     private val MAX_DEGREES =
         Angle.STRAIGHT.milliDegrees
             .toBigDecimal()
-            .movePointLeft(MILLI_DECIMALS)
+            .movePointLeft(DecimalText.MILLI_DEGREE_DECIMALS)
 
     override fun parse(
         text: String,
         locale: Locale,
     ): DomainResult<Angle> {
-        val separator = DecimalFormatSymbols.getInstance(locale).decimalSeparator
-        val normalized = text.trim().replace(separator, '.').replace(',', '.')
-        val degrees = normalized.takeIf { it.length <= MAX_INPUT_CHARS && NUMBER.matches(it) }?.let(::BigDecimal)
+        val degrees = DecimalText.parseOrNull(text, DecimalText.separatorOf(locale))
         val angle = degrees?.let(Angle::ofDegreesExactOrNull)
         return when {
             degrees == null -> failure(InvalidValueReason.MALFORMED)
