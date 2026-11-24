@@ -41,6 +41,9 @@ object GeometryTolerances {
     /** Default absolute measurement error limit in mm. */
     const val DEFAULT_TOLERANCE_ABS_MM: Long = 50L
 
+    /** Smallest absolute measurement error limit in mm, so that `T > 0` holds for every perimeter. */
+    const val MIN_TOLERANCE_ABS_MM: Long = 1L
+
     /** Default measurement error limit relative to the perimeter. */
     const val DEFAULT_TOLERANCE_REL: Double = 0.01
 
@@ -144,20 +147,28 @@ fun Double.isCloseTo(
 /**
  * User-adjustable limit between measurement error and shape deviation (DOMAIN section 4).
  *
- * @property absoluteMm absolute limit `T_abs` in mm, not negative.
+ * The limit `T` is always positive, because [absoluteMm] is at least [GeometryTolerances.MIN_TOLERANCE_ABS_MM]
+ * (DOMAIN section 1). Every consumer of `T`, for example `ShapeAmbiguity.limitMm`, relies on this.
+ *
+ * @property absoluteMm absolute limit `T_abs` in mm, at least [GeometryTolerances.MIN_TOLERANCE_ABS_MM].
  * @property relative limit `T_rel` relative to the perimeter, in `[0, 1]`.
+ * @throws IllegalArgumentException if [absoluteMm] is below [GeometryTolerances.MIN_TOLERANCE_ABS_MM] or [relative] is
+ * out of range.
  */
 data class ClosureTolerance(
     val absoluteMm: Long = GeometryTolerances.DEFAULT_TOLERANCE_ABS_MM,
     val relative: Double = GeometryTolerances.DEFAULT_TOLERANCE_REL,
 ) {
     init {
-        require(absoluteMm >= 0L) { "Absolute tolerance must not be negative: $absoluteMm" }
+        require(absoluteMm >= GeometryTolerances.MIN_TOLERANCE_ABS_MM) {
+            "Absolute tolerance must be at least ${GeometryTolerances.MIN_TOLERANCE_ABS_MM} mm: $absoluteMm"
+        }
         require(relative.isFinite() && relative in 0.0..1.0) { "Relative tolerance out of range: $relative" }
     }
 
     /**
-     * Returns `T = max(T_abs, T_rel · U)` for the perimeter `U` in mm.
+     * Returns `T = max(T_abs, T_rel · U)` for the perimeter `U` in mm, always at least
+     * [GeometryTolerances.MIN_TOLERANCE_ABS_MM].
      *
      * @throws IllegalArgumentException if [perimeterMm] is negative, NaN or infinite.
      */

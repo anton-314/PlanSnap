@@ -1,6 +1,6 @@
 # ADR 0018: Überbestimmung und Ausgleichsmodus
 
-**Status:** Angenommen, 2026-11-23, ergänzt durch T-ARC-006, T-ARC-007 und T-ARC-008
+**Status:** Angenommen, 2026-11-23, ergänzt durch T-ARC-006, T-ARC-007, T-ARC-008 und ADR 0019
 
 ## Kontext
 
@@ -90,7 +90,7 @@ Messungen mit `λ(3T) < λ₀(r)` kann keine Regel zuverlässig prüfen. Die Aus
 - `SolverOutcome.Solved.alternatives` liefert die übrigen gültigen Ergebnisse in Auswahlreihenfolge, nur mit eingehaltenen Drehrichtungen und allen harten Bedingungen auf den Rohlängen bis `EXACT_CLOSURE_MM`.
 - `shapeDistanceMm` ist der größte Eckenabstand nach Verschiebung auf den Eckenschwerpunkt und optimaler Drehung, geschlossen berechnet und unabhängig vom lokalen Ursprung. Spiegelungen werden nicht ausgerichtet.
 - `RoomEvaluation.Proposed` trägt `ProposalReason`. `UNDERDETERMINED` gilt genau bei `missing > 0`, `AMBIGUOUS_SHAPE` genau bei `missing = 0` und dann mit `ShapeAmbiguity`. `Proposed.recommendation` nennt das Zusatzmaß: zuerst die freie Schlussecke, wenn sie beide Formen um mehr als `T` als Bogen unterscheidet, sonst die nicht gemessene Diagonale mit dem größten Längenunterschied, Gleichstand nach kleinstem `(a, b)`.
-- Die Prüfung läuft in A4 und B7 (DOMAIN §5.5). Im Ausgleichspfad gilt sie auch für Räume, die sonst `NEEDS_ADJUSTMENT` würden. Der Vorschlag trägt dann die Pflicht-Korrekturangaben wie in B7, aber kein `AdjustmentProposal`. `AcceptAdjustment` verlangt die aktuelle Auswertung `NeedsAdjustment` mit gleichem Vorschlag und lehnt sonst mit `ADJUSTMENT_NOT_AVAILABLE` ab. Ein solcher Raum wird durch Bestätigung also nie `ADJUSTED`.
+- Die Prüfung läuft in A4 und B7 (DOMAIN §5.5). Im Ausgleichspfad gilt sie auch für Räume, die sonst `NEEDS_ADJUSTMENT` würden. Der Vorschlag trägt dann die Pflicht-Korrekturangaben wie in B7, aber kein `AdjustmentProposal`. `AcceptAdjustment` verlangt die aktuelle Auswertung `NeedsAdjustment` mit gleichem Vorschlag und lehnt sonst mit `ADJUSTMENT_NOT_AVAILABLE` ab. Geprüft wird in der Vorbedingung unter dem Mutex der Historie mit der Toleranz des laufenden `execute` (ADR 0019). Ein solcher Raum wird durch Bestätigung also nie `ADJUSTED`.
 - Der Messfehlerpfad (`e ≤ T`) hat keinen Solver-Lauf und keine Alternativen. Er bleibt unverändert.
 
 **Suchgrenze.** Die Prüfung sieht nur, was die festen Startwerte aus DOMAIN §5.3 finden. Sie zählt keine Lösungen vollständig auf. `CONFIRMED` heißt daher „keine zweite gültige Form weiter als `T` gefunden“, nicht „eindeutig“. Die Suche wird bewusst nicht weiter ausgebaut. Die verbleibende Quote wird am Produktionscode über den portierten Prüfstand verfolgt (T-GEO-005).

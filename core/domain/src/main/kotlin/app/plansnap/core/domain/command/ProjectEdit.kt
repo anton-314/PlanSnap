@@ -87,11 +87,17 @@ sealed interface ProjectEdit {
     /**
      * Stores the adjustment of [proposal] as overlay.
      *
-     * Fails with `ADJUSTMENT_NOT_AVAILABLE` unless the current evaluation of the room is
-     * `RoomEvaluation.NeedsAdjustment` with a proposal equal to [proposal]. This also covers a fingerprint that is not
-     * current. A room in `PROPOSED`, also one with corrections or with `ProposalReason.AMBIGUOUS_SHAPE`, therefore
-     * never becomes `ADJUSTED` (DOMAIN section 5.6). After that check it fails with `EXPLICIT_CONFIRMATION_REQUIRED` if
-     * [confirmation] does not satisfy `proposal.requiredConfirmation`.
+     * The command's [ProjectCommand.verify] evaluates the room with `CommandContext.evaluate`, under the history mutex
+     * and with the tolerance of `CommandHistory.execute` (ADR 0019). It fails with `ADJUSTMENT_NOT_AVAILABLE` unless
+     * that evaluation is `RoomEvaluation.NeedsAdjustment` with a proposal equal to [proposal]. This also covers a
+     * fingerprint that is not current and a proposal from an evaluation with another tolerance, for example a `SIMPLE`
+     * proposal where the current tolerance demands `EXPLICIT`. A room in `PROPOSED`, also one with corrections or with
+     * `ProposalReason.AMBIGUOUS_SHAPE`, therefore never becomes `ADJUSTED` (DOMAIN section 5.6). A missing room fails
+     * with `NotFound`, a failed evaluation is returned unchanged.
+     *
+     * [ProjectCommand.apply] then checks purely: `NotFound` for a missing room, `ADJUSTMENT_NOT_AVAILABLE` if the
+     * fingerprint of `proposal.adjustment` does not match the raw input of the room, and
+     * `EXPLICIT_CONFIRMATION_REQUIRED` if [confirmation] does not satisfy `proposal.requiredConfirmation`.
      *
      * @property confirmation confirmation the user actually gave. It has no default on purpose.
      */

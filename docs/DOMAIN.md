@@ -23,6 +23,7 @@ Rohlängen sind `Length(mm: Long)`, Rohwinkel `Angle(milliDegrees: Int)`, berech
 | `COST_TIE` | 1e-9 | Kostengleichheit bei der Lösungsauswahl |
 | `DEFAULT_TOLERANCE_ABS_MM` | 50 | Grenze Messfehler, absolut |
 | `DEFAULT_TOLERANCE_REL` | 0,01 | Grenze Messfehler, relativ zum Umfang |
+| `MIN_TOLERANCE_ABS_MM` | 1 | Kleinste zulässige Grenze Messfehler, absolut |
 | `SOLVER_REGULARIZATION` | 1e-8 | Regularisierung `μ` der Hesse-Matrix (§5.2) |
 | `SOLUTION_ROUNDING_RAD` | 1e-6 | Rundung für den lexikografischen Vergleich (§5.3) |
 | `ADJUSTMENT_MAX_ITERATIONS` | 50 | Schritte des Ausgleichs (§6) |
@@ -49,6 +50,8 @@ Rohlängen sind `Length(mm: Long)`, Rohwinkel `Angle(milliDegrees: Int)`, berech
 | `START_REFINEMENT_GRADIENT` | 1e-13 | Abbruch der Startverfeinerung (§5.3) |
 | `NEAR_COLLINEAR_SIN` | 1e-6 | Grenze für fast kollineare Ecken (§8) |
 | `MITER_LIMIT_FACTOR` | 4,0 | Gehrungsgrenze als Vielfaches der Wandstärke (§8) |
+
+**Toleranz `ClosureTolerance(absoluteMm, relative)`:** `T_abs = absoluteMm` ist eine ganze Zahl mit `T_abs ≥ MIN_TOLERANCE_ABS_MM`, `T_rel = relative` liegt in `[0, 1]`. Ein Verstoß wirft `IllegalArgumentException` im Konstruktor. Damit gilt `T = max(T_abs, T_rel · U) ≥ 1 mm > 0` für jeden Umfang, auch bei `T_rel = 0`. Jeder Verbraucher von `T` darf sich darauf verlassen, etwa `ShapeAmbiguity.limitMm > 0` (§5.6) und die Kontrollierbarkeit mit `CONTROL_ERROR_FACTOR · T` (§5.5). Einstellungen mit kleinerem Wert sind ungültig und fallen auf den Standard zurück (`SettingsRepository`).
 
 ## 2. Koordinaten
 
@@ -111,7 +114,7 @@ Die Schritte laufen in dieser Reihenfolge. Der erste zutreffende Schritt legt da
    - `r_k = |d_k(τ̂) − D_k|` für alle Diagonalen
    - `a = |wrap(τ̂_0,fest − τ_0,abgeleitet)| · U / (2π)` mit `τ_0,abgeleitet = 2π·s − Σ_{i≥1} τ̂_i`, falls die Schlussecke festgelegt ist (`Measured` oder `DeclaredRight`), sonst 0
    - `e = max(g, max r_k, a)`
-5. **Grenzwert:** `T = max(T_abs, T_rel · U)` mit `U = Σ L_i`.
+5. **Grenzwert:** `T = max(T_abs, T_rel · U)` mit `U = Σ L_i`. Nach §1 gilt immer `T > 0`.
 6. **Verzweigung:**
    - `e ≤ EXACT_CLOSURE_MM`: Die Sollform wird nach §7 geprüft. Ist sie einfach, folgt `CONFIRMED` mit der Sollform, sonst `CONFLICT(NO_SIMPLE_SHAPE)`.
    - `e ≤ T` ist ein **Messfehler**. Der Ausgleich aus §6 läuft im Modus `MEASUREMENT_ERROR` mit Start bei den Beobachtungen. `NotConverged` ergibt `CONFLICT(ADJUSTMENT_NOT_CONVERGED)`, ein nicht einfacher Umriss `CONFLICT(NO_SIMPLE_SHAPE)`, sonst folgt `NEEDS_ADJUSTMENT` mit Vorschau und einfacher Bestätigung. Die Redundanz für die Kontrollierbarkeit (§5.5) ist hier `r = 2 + [Schlussecke festgelegt] + Anzahl der Diagonalen`.
@@ -227,7 +230,9 @@ Der Fall „alle Ecken gemessen, `e > T`“ hat `v = 0`, `ρ = 0` und `r = m`, l
 - `q² = Σ (v_i / σ_i)²` über dieselben Beobachtungen, mit `σ_i` aus §6.
 - `χ²(r; p)` liefert `ChiSquareLimits.quantile`: feste Tabelle für `r = 1 … 30`, darüber Wilson-Hilferty `r · (1 − 2/(9r) + z_p · √(2/(9r)))³`.
 
-**Bestätigung:** `AcceptAdjustment` ist nur zulässig, wenn die aktuelle Auswertung des Raums `NeedsAdjustment` mit gleichem `AdjustmentProposal` ist, sonst folgt `ADJUSTMENT_NOT_AVAILABLE`. Das schließt einen veralteten Fingerabdruck und jeden Raum in `PROPOSED` ein, auch mit Korrekturangaben. Der Befehl nennt die tatsächlich gegebene Bestätigung. Verlangt der Vorschlag `EXPLICIT` und liegt nur `SIMPLE` vor, wird er mit `EXPLICIT_CONFIRMATION_REQUIRED` abgelehnt.
+**Bestätigung:** `AcceptAdjustment` ist nur zulässig, wenn die aktuelle Auswertung des Raums `NeedsAdjustment` mit gleichem `AdjustmentProposal` ist, sonst folgt `ADJUSTMENT_NOT_AVAILABLE`. „Aktuell“ heißt: ausgewertet in der Vorbedingung des Befehls unter dem Mutex der Historie, auf dem zuletzt festgeschriebenen Projekt und mit der Toleranz des laufenden `execute` (§11, ADR 0019). Das schließt einen veralteten Fingerabdruck, einen Vorschlag aus einer Auswertung mit anderer Toleranz und jeden Raum in `PROPOSED` ein, auch mit Korrekturangaben. Der Befehl nennt die tatsächlich gegebene Bestätigung. Verlangt der Vorschlag `EXPLICIT` und liegt nur `SIMPLE` vor, wird er mit `EXPLICIT_CONFIRMATION_REQUIRED` abgelehnt.
+
+Beispiel (Prüfstand, ADR 0019): Rechteck 4150, 3000, 4000, 3000, alle Ecken als 90° gemessen, `U = 14 150`. Mit `T_abs = 250` ist `T = 250` und `e = 150 ≤ T`, es folgt `NEEDS_ADJUSTMENT` im Messfehlerpfad mit einfacher Bestätigung. Mit der Standardtoleranz ist `T = 141,5 < e`, Zweig B ergibt B9 mit `S = 223,94 > T`, `q² = 8,062` zwischen `χ²(3; 0,95)` und `χ²(3; 0,99)`, also ausdrückliche Bestätigung. Das Overlay ist in beiden Fällen gleich, die Vorschläge unterscheiden sich nur in `requiredConfirmation`. Ein unter `T_abs = 250` angezeigter einfacher Vorschlag wird nach dem Wechsel zur Standardtoleranz mit `ADJUSTMENT_NOT_AVAILABLE` abgelehnt.
 
 **Kontrollierbarkeit (`analyzeControl`).** Sie läuft bei jedem bestimmten Raum (`missing = 0`) mit Ausgleich, der nicht `PROPOSED(AMBIGUOUS_SHAPE)` wird, und **ändert nie den Status**:
 
@@ -359,17 +364,26 @@ data class DockLink(
 
 ## 11. Befehle und Historie
 
-`ProjectCommand.apply(project): DomainResult<Project>` ist rein und deterministisch. Mindestens: `AddWall`, `EditWall`, `RemoveLastWall`, `SetCorner`, `AddDiagonal`, `RemoveDiagonal`, `CloseRoom`, `AcceptAdjustment`, `RevertAdjustment`, `SetThickness`, `Add/Edit/RemoveOpening`, `AddRoom`, `RemoveRoom`, `MoveRoom`, `DockRoom`, `UpdateRoomDetails`, `SetProjectHeight`.
+`ProjectCommand.apply(project): DomainResult<Project>` ist rein und deterministisch. Es kennt weder Toleranz noch Auswertung, Uhr oder Dispatcher. Mindestens: `AddWall`, `EditWall`, `RemoveLastWall`, `SetCorner`, `AddDiagonal`, `RemoveDiagonal`, `CloseRoom`, `AcceptAdjustment`, `RevertAdjustment`, `SetThickness`, `Add/Edit/RemoveOpening`, `AddRoom`, `RemoveRoom`, `MoveRoom`, `DockRoom`, `UpdateRoomDetails`, `SetProjectHeight`.
 
 Ein fehlgeschlagener Befehl ändert weder Projekt noch Historie. Ein neuer Befehl nach Undo verwirft den Redo-Stapel. Jeder `execute(command, tolerance)` erzeugt genau einen Undo-Schritt, einschließlich der Neuberechnung der Platzierungen (ADR 0015). IDs werden beim Erzeugen des Befehls vergeben, damit Redo identische Objekte herstellt.
 
 Befehle werden als Daten (`ProjectEdit`) beschrieben. `ProjectCommandFactory.create(edit)` erzeugt daraus den ausführbaren `ProjectCommand`. Der Aufruf lautet `history.execute(factory.create(edit), tolerance)`.
 
+**Vorbedingung (ADR 0019):** `ProjectCommand.verify(project, context): DomainResult<Unit>` ist `suspend` und liefert standardmäßig `Success(Unit)`. `CommandContext` trägt die Toleranz des laufenden `execute` und `evaluate(room)`, das den `RoomEvaluator` der Historie mit genau dieser Toleranz aufruft. Eine Bedingung, die eine Auswertung oder die Toleranz braucht, gehört in `verify`, nie in `apply`.
+
+- **Ablauf von `execute(command, tolerance)`:** Mutex nehmen, dann in einem `withContext` auf dem Default-Dispatcher `verify` auf dem zuletzt festgeschriebenen Projekt, `apply` und `DockPlacementResolver.resolve`, danach unter demselben Mutex committen. Der erste Fehlschlag wird unverändert zurückgegeben, Projekt und Historie bleiben unverändert. Abbruch in `verify` ändert nichts (ADR 0016). Zwischen `verify` und Commit kann keine andere Operation, auch kein `reconcile`, das Projekt ändern.
+- **Toleranz:** Der Aufrufer übergibt die Toleranz, die zum Zeitpunkt des Aufrufs in den Einstellungen gilt, nie eine zusammen mit einer angezeigten Auswertung gemerkte. Operationen gelten in Aufrufreihenfolge. Ein `execute`, das vor einem `reconcile(neu)` aufgerufen wurde, läuft vollständig mit der alten Toleranz. Das ist eine Folge von Operationen, kein Wettlauf.
+- **Undo und Redo** stellen gespeicherte Stände exakt wieder her und rufen `verify` nicht auf (ADR 0015). Ein per Redo wiederhergestelltes Overlay bleibt nach §4 Schritt 2 gültig, auch wenn sich die Toleranz inzwischen geändert hat.
+- **Toleranzwechsel nach gültigem `AcceptAdjustment`:** Das Overlay hängt nur vom Fingerabdruck ab (§4 Schritt 2, §6). Der Raum bleibt `ADJUSTED`, auch wenn die neue Toleranz einen anderen Vorschlag oder `PROPOSED(AMBIGUOUS_SHAPE)` ergäbe. `reconcile` ändert nur Platzierungen, nie Overlays, und prüft keine Vorbedingungen. Erst `RevertAdjustment` oder eine geänderte Rohgeometrie führt zur Neuauswertung mit der dann gültigen Toleranz.
+- **`AcceptAdjustment`:** `verify` wertet den Raum über `context.evaluate` aus und verlangt `NeedsAdjustment` mit gleichem `AdjustmentProposal` (§5.5), ein fehlender Raum ergibt `NotFound`, ein Auswertungsfehler wird durchgereicht. „Gleich“ ist die strukturelle Gleichheit des Datenobjekts. Das ist kein Vergleich berechneter Größen im Sinn von §1, sondern die Wiedererkennung desselben Ergebnisses derselben deterministischen Auswertung. `apply` prüft danach rein: fehlender Raum `NotFound`, Fingerabdruck des Overlays passt nicht zur Rohgeometrie `ADJUSTMENT_NOT_AVAILABLE`, unzureichende Bestätigung `EXPLICIT_CONFIRMATION_REQUIRED`.
+- Produktiver Code führt nur Befehle aus `ProjectCommandFactory` aus. Ein Wrapper um einen Befehl muss `verify` weiterreichen.
+
 Weitere Festlegungen:
 
 - **`RemoveLastWall`:** Auf einem geschlossenen Raum öffnet der Befehl den Raum und verwirft das Overlay, das per Undo zurückkommt. Hängen an der entfernten Wand oder Ecke Öffnungen, Diagonalen oder Dock-Links, wird er mit einer eigenen `DomainRule` abgelehnt, damit nichts still gelöscht wird.
 - **`RoomEvaluator.evaluate`** liefert `DomainResult<RoomEvaluation>`. Verstöße gegen Wertebereiche ergeben `InvalidValue`.
-- **Nebenläufigkeit (ADR 0016):** `CommandHistory.execute`, `reconcile`, `undo`, `redo`, `DockPlacementResolver.resolve` und `RoomEvaluator.evaluate` sind `suspend`. Eine Operation nimmt den Mutex der Historie, rechnet unter ihm per `withContext` auf dem Default-Dispatcher und schreibt danach unter demselben Mutex. Bestätigte Befehle und Speichern laufen im Application-Scope und werden durch Verlassen des Editors nicht abgebrochen. Abbrechbar sind nur Vorschauen und Auswertungen ohne Commit. Ein `CancellationSignal` reicht bis in Solver, Ausgleich und Rangbestimmung. Abbruch vor dem Commit lässt Projekt und Historie unverändert.
+- **Nebenläufigkeit (ADR 0016, ADR 0019):** `CommandHistory.execute`, `reconcile`, `undo`, `redo`, `ProjectCommand.verify`, `DockPlacementResolver.resolve` und `RoomEvaluator.evaluate` sind `suspend`. Eine Operation nimmt den Mutex der Historie, rechnet unter ihm per `withContext` auf dem Default-Dispatcher und schreibt danach unter demselben Mutex. Bestätigte Befehle und Speichern laufen im Application-Scope und werden durch Verlassen des Editors nicht abgebrochen. Abbrechbar sind nur Vorschauen und Auswertungen ohne Commit. Ein `CancellationSignal` reicht bis in Solver, Ausgleich und Rangbestimmung. Abbruch vor dem Commit lässt Projekt und Historie unverändert.
 - **`EditOpening`:** Soll eine Öffnung mit angedocktem Raum die Wand wechseln, wird der Befehl mit `OPENING_HAS_DOCKED_ROOMS` abgelehnt. Der Dock-Link wird nicht still gelöst.
 - **Import (ADR 0017):** `importProject(input: InputStream)` liest ein nicht vertrauenswürdiges Dokument. `:core:data` decodiert es, prüft es mit `ProjectValidator` und speichert es erst danach. Der Aufrufer besitzt den Stream und schließt ihn. `DocumentCodec` übersetzt `IllegalArgumentException` in `DomainError.Document(INVALID_VALUES)`. `ProjectValidator` in `:core:domain` prüft Wandgrenzen, Dock-Ziele einschließlich `DockLink.ownWallId`, Zyklen und überlappende Öffnungen je Wand. Berührende Öffnungen überlappen nicht.
 - **`updatedAtEpochMs`** wird nicht von Befehlen geändert, sondern von `ProjectSaver` beim Speichern über `EpochClock` gesetzt.

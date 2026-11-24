@@ -16,6 +16,7 @@ class GeometryTolerancesTest {
         assertEquals(128, GeometryTolerances.MAX_WALLS_PER_ROOM)
         assertEquals(200, GeometryTolerances.SOLVER_MAX_ITERATIONS)
         assertEquals(50L, GeometryTolerances.DEFAULT_TOLERANCE_ABS_MM)
+        assertEquals(1L, GeometryTolerances.MIN_TOLERANCE_ABS_MM)
         assertEquals(50, GeometryTolerances.ADJUSTMENT_MAX_ITERATIONS)
     }
 
@@ -110,7 +111,9 @@ class GeometryTolerancesTest {
 
     @Test
     fun `given invalid tolerance settings when created then they are rejected`() {
-        assertThrows(IllegalArgumentException::class.java) { ClosureTolerance(absoluteMm = -1L) }
+        listOf(-1L, 0L).forEach {
+            assertThrows(IllegalArgumentException::class.java) { ClosureTolerance(absoluteMm = it) }
+        }
         listOf(-0.01, 1.01, Double.NaN, Double.POSITIVE_INFINITY).forEach {
             assertThrows(IllegalArgumentException::class.java) { ClosureTolerance(relative = it) }
         }
@@ -118,7 +121,15 @@ class GeometryTolerancesTest {
 
     @Test
     fun `given boundary tolerance settings when created then they are accepted`() {
-        assertEquals(0.0, ClosureTolerance(0L, 0.0).limitMm(1_000.0), 0.0)
-        assertEquals(1_000.0, ClosureTolerance(0L, 1.0).limitMm(1_000.0), 0.0)
+        assertEquals(1.0, ClosureTolerance(1L, 0.0).limitMm(1_000.0), 0.0)
+        assertEquals(1_000.0, ClosureTolerance(1L, 1.0).limitMm(1_000.0), 0.0)
+    }
+
+    @Test
+    fun `given smallest tolerance when limit is computed for any perimeter then it stays positive`() {
+        val smallest = ClosureTolerance(GeometryTolerances.MIN_TOLERANCE_ABS_MM, 0.0)
+        listOf(0.0, 0.5, 30.0, 1_000.0, 12_800_000.0).forEach {
+            assertTrue(smallest.limitMm(it) > 0.0, "T must be positive at U = $it")
+        }
     }
 }

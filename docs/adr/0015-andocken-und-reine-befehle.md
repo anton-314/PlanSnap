@@ -1,6 +1,6 @@
 # ADR 0015: Andocken und reine Befehle
 
-**Status:** Angenommen, 2026-11-23, Nebenläufigkeit ergänzt durch ADR 0016
+**Status:** Angenommen, 2026-11-23, Nebenläufigkeit ergänzt durch ADR 0016, Vorbedingungen durch ADR 0019
 
 ## Kontext
 
@@ -16,10 +16,10 @@
 
 Option A.
 
-- `CommandHistory.execute(command, tolerance)` führt `apply` und danach `DockPlacementResolver.resolve(project, tolerance)` aus. Beides zusammen ist genau ein Undo-Schritt. Schlägt einer der beiden Schritte fehl, bleiben Projekt und Historie unverändert.
-- Undo und Redo stellen die gespeicherten Stände exakt wieder her und rechnen nichts neu.
+- `CommandHistory.execute(command, tolerance)` führt `ProjectCommand.verify` (ADR 0019), `apply` und danach `DockPlacementResolver.resolve(project, tolerance)` aus. Beides zusammen ist genau ein Undo-Schritt. Schlägt einer der Schritte fehl, bleiben Projekt und Historie unverändert.
+- Undo und Redo stellen die gespeicherten Stände exakt wieder her, rechnen nichts neu und prüfen keine Vorbedingung erneut.
 - Maßgeblich ist der angezeigte Umriss: die Sollform bei `CONFIRMED`, das Overlay bei `ADJUSTED`, die Vorschau bei `NEEDS_ADJUSTMENT`, der Vorschlag bei `PROPOSED`. Ist der Wirtsraum oder der eigene Raum `OPEN` oder `CONFLICT`, bleibt die letzte Platzierung des Raums einschließlich Dock-Link erhalten, weil kein Umriss zum Ausrichten existiert.
-- Ändert sich die Toleranz, ruft der Editor `CommandHistory.reconcile(tolerance)` auf. Ändern sich dadurch Platzierungen, entsteht genau ein Undo-Schritt, sonst keiner.
+- Ändert sich die Toleranz, ruft der Editor `CommandHistory.reconcile(tolerance)` auf. Ändern sich dadurch Platzierungen, entsteht genau ein Undo-Schritt, sonst keiner. `reconcile` ändert keine Overlays und prüft keine Vorbedingungen.
 
 ## Konsequenzen
 

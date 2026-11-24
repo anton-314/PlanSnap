@@ -81,6 +81,10 @@ sequenceDiagram
   participant S as ProjectSaver
   U->>V: Intent ConfirmWall
   V->>H: execute(factory.create(AddWall), tolerance)
+  opt Befehl mit Vorbedingung, z. B. AcceptAdjustment
+    H->>E: verify unter dem Mutex: evaluate(Raum, tolerance)
+    E-->>H: RoomEvaluation, sonst Abbruch mit Fehler
+  end
   H-->>V: neues Project
   V->>E: evaluate(geänderter Raum)
   E-->>V: RoomEvaluation
@@ -103,10 +107,12 @@ sequenceDiagram
 | State-Updates | Main | Nur im ViewModel |
 | Solver, Raumauswertung | Default | Abbrechbar über `CancellationSignal`. Bei Vorschauen ersetzt ein neuerer Lauf den älteren |
 | Szene | Default | `SceneBuilder` ist rein und kennt kein Signal. Abbrechbare Aufrufer bauen raumweise mit `buildRoom` und prüfen den Abbruch zwischen den Aufrufen |
-| `CommandHistory` | Default für die Auswertung | Mutex nehmen, unter ihm per `withContext` rechnen, danach unter demselben Mutex committen. Bestätigte Befehle laufen im Application-Scope und werden nie verworfen. Abbruch vor dem Commit ändert nichts (ADR 0016) |
+| `CommandHistory` | Default für die Auswertung | Mutex nehmen, unter ihm per `withContext` `verify`, `apply` und Platzierungen rechnen, danach unter demselben Mutex committen. Bestätigte Befehle laufen im Application-Scope und werden nie verworfen. Abbruch vor dem Commit ändert nichts (ADR 0016, ADR 0019) |
 | Datenbank, Dateien | IO | `ProjectSaver` arbeitet Schreibvorgänge seriell ab |
 
 Dispatcher werden immer injiziert. `:core:geometry` bleibt frei von Coroutines und sieht nur die JVM-Abstraktion `CancellationSignal`, die `:core:domain` an den laufenden Job bindet. Eine bestätigte Wand gilt erst als gespeichert, wenn die Transaktion abgeschlossen ist. Bestätigte Befehle und `ProjectSaver` laufen im Application-Scope und überleben das ViewModel. Nur Vorschauen und Auswertungen ohne Commit hängen am Bildschirm und sind abbrechbar.
+
+Bedingungen, die eine Auswertung oder die Toleranz brauchen, prüft `ProjectCommand.verify` unter dem Mutex der Historie, nie der Aufrufer vorab (ADR 0019). Der Aufrufer übergibt `execute` die zum Aufrufzeitpunkt gültige Toleranz aus den Einstellungen, Operationen gelten in Aufrufreihenfolge. Undo und Redo prüfen keine Vorbedingung erneut. `reconcile` ändert nur Platzierungen, ein gültig bestätigtes Overlay bleibt bei einem Toleranzwechsel bestehen.
 
 ## 6. Fehlerbehandlung
 

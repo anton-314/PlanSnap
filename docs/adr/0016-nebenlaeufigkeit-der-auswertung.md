@@ -1,6 +1,6 @@
 # ADR 0016: Nebenläufigkeit der Auswertung
 
-**Status:** Angenommen, 2026-11-23, präzisiert durch T-ARC-006
+**Status:** Angenommen, 2026-11-23, präzisiert durch T-ARC-006, Vorbedingungen ergänzt durch ADR 0019
 
 ## Kontext
 
@@ -16,9 +16,9 @@
 
 Option B.
 
-- `CommandHistory.execute`, `reconcile`, `undo`, `redo`, `DockPlacementResolver.resolve` und `RoomEvaluator.evaluate` sind `suspend` und main-safe. Die Auswertung läuft auf dem injizierten Default-Dispatcher.
+- `CommandHistory.execute`, `reconcile`, `undo`, `redo`, `ProjectCommand.verify`, `DockPlacementResolver.resolve` und `RoomEvaluator.evaluate` sind `suspend` und main-safe. Die Auswertung läuft auf dem injizierten Default-Dispatcher.
 - Alle verändernden Zugriffe auf die Historie sind über einen fairen Mutex in Aufrufreihenfolge serialisiert. `undo` und `redo` gehören dazu, weil sie sonst einen laufenden `execute` überholen könnten. `state` bleibt ein atomarer Schnappschuss und ist von jedem Thread lesbar.
-- **Ablauf einer Operation:** Mutex nehmen, die Berechnung unter dem Mutex per `withContext` auf dem Default-Dispatcher ausführen, danach unter demselben Mutex committen. Der Mutex wird zwischen Berechnung und Commit nicht freigegeben.
+- **Ablauf einer Operation:** Mutex nehmen, die Berechnung unter dem Mutex per `withContext` auf dem Default-Dispatcher ausführen, danach unter demselben Mutex committen. Der Mutex wird zwischen Berechnung und Commit nicht freigegeben. Bei `execute` gehört `ProjectCommand.verify` zur Berechnung und läuft vor `apply` auf dem zuletzt festgeschriebenen Projekt (ADR 0019). Abbruch in `verify` ändert nichts.
 - `CancellationSignal.checkpoint()` in `:core:geometry` wirft bei Abbruch die JDK-Klasse `CancellationException`. Solver, Ausgleich und Rangbestimmung rufen es mindestens vor jedem Startwert, je Iteration und je Eliminationsschritt auf. `currentCancellationSignal()` in `:core:domain` bindet es an den laufenden Job.
 - Abbruch liefert kein Teilergebnis. Bis zum Commit bleiben Projekt und Historie unverändert, der Commit selbst ist ein einzelnes atomares Update.
 - **Lebensdauer:** Bestätigte Befehle und das Speichern laufen in einem Application-Scope und werden durch Verlassen des Editors nicht abgebrochen. Abbrechbar sind nur Vorschauen und Auswertungen ohne Commit.

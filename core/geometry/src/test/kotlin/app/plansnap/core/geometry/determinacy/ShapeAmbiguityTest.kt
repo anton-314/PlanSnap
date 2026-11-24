@@ -1,5 +1,7 @@
 package app.plansnap.core.geometry.determinacy
 
+import app.plansnap.core.geometry.primitives.ClosureTolerance
+import app.plansnap.core.geometry.primitives.GeometryTolerances
 import app.plansnap.core.geometry.primitives.Polygon2
 import app.plansnap.core.geometry.primitives.Vec2
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -79,6 +81,13 @@ class ShapeAmbiguityTest {
         listOf(0.0, -1.0, Double.NaN, Double.POSITIVE_INFINITY).forEach { limit ->
             assertRejected { ShapeAmbiguity(pentagon, 200.0, limit, null) }
         }
+    }
+
+    @Test
+    fun `given the smallest permitted tolerance then its limit is a valid ambiguity limit`() {
+        val limit = ClosureTolerance(GeometryTolerances.MIN_TOLERANCE_ABS_MM, 0.0).limitMm(0.0)
+
+        assertDoesNotThrow { ShapeAmbiguity(pentagon, 200.0, limit, null) }
     }
 
     @Test
