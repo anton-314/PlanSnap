@@ -34,6 +34,7 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
             dependencies {
                 add("testImplementation", platform(libs.findLibrary("junit-bom").get()))
                 add("testImplementation", libs.findLibrary("junit-jupiter").get())
+                add("testImplementation", libs.findLibrary("kotest-property").get())
                 add("testRuntimeOnly", libs.findLibrary("junit-platform-launcher").get())
             }
         }
