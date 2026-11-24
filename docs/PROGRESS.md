@@ -1,6 +1,6 @@
 # Fortschritt
 
-**Aktuelle Phase:** 4 – Umsetzung, Welle 1
+**Aktuelle Phase:** 4 – Umsetzung, Welle 2
 **Letzte Aktualisierung:** 2026-11-24
 
 ## Phasen
@@ -11,7 +11,7 @@
 | 1 – Umgebung | Fertig | `docs/ENVIRONMENT.md`, Emulator-Boot ausgeführt |
 | 2 – Spezifikation | Fertig | Vom Auftraggeber freigegeben am 2026-11-23 |
 | 3 – Fundament | Fertig | Gate 2026-11-24 auf `ebe15b1`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 381 JVM-Tests, Pitest Geometrie 82 %, 2 instrumentierte Tests, Review `APPROVE`. Vertragsfreeze, Tag `phase-3-foundation` |
-| 4 – Umsetzung | Offen | |
+| 4 – Umsetzung | Welle 1 fertig | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1` |
 | 5 – Härtung | Offen | |
 | 6 – Release | Offen | |
 | 7 – Abschlussbericht | Offen | |
@@ -61,11 +61,15 @@ Keine.
 - 2026-11-24: T-GEO-005 gemergt (`8561dbd`). Geometrie: 628 Tests, Pitest laut Agent 86 % (Pitest-Laufzeit rund 11 Minuten wegen des Prüfstands). Prüfstand am Produktionscode mit voller README-Stichprobe (12 000 Fälle, Seed 20261124): alle Sollwerte erfüllt. K1a, K3 und K4 sind identisch mit dem Prototyp. K1b hat 11 falsche CONFLICT (0,46 %, Prototyp 17), K2 hat 0 nicht einfache Umrisse und 0 bestätigte Formen mit verletzter Richtung. Die Fälle sind identisch mit `stress.py`, weil `PythonRandom` MT19937 nachbildet. `ShapeDistance` nutzt jetzt `StrictMath.atan2`.
 - 2026-11-24: Offener Katalogpunkt (nicht blockierend, in BACKLOG): Die Trapezfälle h2a-109471 und h2a-109472 melden die Wände w1 und w3 als nicht kontrollierbar, das ist plausibel bei `r_i < 0,0025`. Der Katalog nennt dort keine Einträge. `architect` soll den Katalog ergänzen, sobald `:testing:fixtures` wieder bearbeitet wird.
 - 2026-11-24: Gate-Review Welle 1: `APPROVE`, keine kritischen oder hohen Befunde. Mittel: Die Standardhöhe wurde als `Double` gespeichert und verliert Werte über 2^53. Das wird vor der Auslieferung von Schema 1 in T-DAT-004 behoben. Niedrig: Corruption-Handler der DataStore geht in T-APP-001, die Fehlerabbildung von `observeProjects` in den Backlog. T-APP-001 hängt jetzt auch an T-DOM-007.
+- 2026-11-24: T-DAT-004 gemergt (`1a5ec6e`): Die Standardhöhe wird als INTEGER gespeichert, Schema bleibt Version 1. Regressionstests vorher rot, danach grün.
+- 2026-11-24: Wellen-Gate 1 bestanden. Pitest und instrumentierte Tests liefen auf `9507601`. Danach kamen nur Dokumentation und T-DAT-004 in `:core:data` hinzu. Darauf lief der volle Build erneut grün.
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
-- **Welle 1:** Alle Aufgaben sind auf `main` (lokal, nicht gepusht). Das Wellen-Gate läuft.
+- **Welle 1:** fertig, Tag `wave-1`.
+- **Welle 2:** noch nicht begonnen.
 
 ## Nächste Schritte
 
-1. Wellen-Gate 1: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug`, `:core:geometry:pitest`, `scripts/run-instrumented-tests.sh`, dann Review durch `reviewer`. Bei Bestehen Tag `wave-1` und `git push origin main --tags`, danach CI prüfen.
+1. Welle 2, Batch 2.1: T-DOM-001, T-DOM-002, T-DOM-005, T-DRW-002.
+2. Batch 2.2: T-DOM-003, T-DOM-004, T-DOM-006, T-DRW-001. Batch 2.3: T-RND-001, T-EXP-001, T-DOM-007, danach T-APP-001.
