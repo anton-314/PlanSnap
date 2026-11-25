@@ -100,6 +100,7 @@ Keine.
 - 2026-11-25: Nachreview Welle 2 auf `4c5f514`: `APPROVE`. Der hohe Befund ist in allen Pfaden behoben (Befehle, Evaluator, Szene, Undo/Redo, Ausgleich). Probetest (a) und (b) stimmen überein, der Property-Generator unterscheidet die alte von der neuen Logik (7 von 43 Basen). Niedrige Hinweise stehen in T-EDT-005 und im Backlog.
 - 2026-11-25: CR-W3-01 an `architect`: `@ApplicationScope` ist in `:app` deklariert und für `:feature:editor` nicht sichtbar. T-EDT-001 braucht den Scope (ARCHITECTURE §5). Vorab für Batch 3.1: `lifecycle-runtime-compose`, `coroutines-test` und `turbine` in den Modulen editor, projects und settings, `activity-compose` in projects für den Import per SAF.
 - 2026-11-25: Neue Sitzung. Die übernommenen Worktrees und `integration-w3` sind entfernt. Der abgebrochene Stand von T-FEX-001 ist als WIP-Commit `1fc20e6` gesichert. `:feature:export` bekommt core-ktx (FileProvider), lifecycle-runtime-compose und die Testabhängigkeiten (`668149d`). Die Verdrahtung des Editor-Einstiegs übernimmt T-EDT-004, nicht der Orchestrator, weil sie in `feature/editor/…/navigation/` liegt und von den neuen Blättern abhängt. Die Exporter bindet T-FEX-001 in einem neuen `ExportersModule` in `:app`. Dafür hat der Orchestrator genau diese Datei freigegeben.
+- 2026-11-25: Erster Lauf von `PdfExportInstrumentedTest` (T-EXP-003) auf dem Emulator, Stand `da14d37`: 8 von 8 grün, insgesamt instrumentiert 11 von 11. Die Schwellen bleiben unverändert.
 
 ## Wiedereinstieg (Stand 2026-11-25, Abend)
 
@@ -107,7 +108,7 @@ Keine.
 - **Läuft, Batch 3.3** (Basis `668149d`, neue Worktrees starten per `git merge --ff-only`):
   - T-FEX-001 (`ui-engineer`), Worktree `.claude/worktrees/agent-acee6e2b8c26a6c4d`, Branch `worktree-agent-acee6e2b8c26a6c4d`. Setzt den WIP-Stand `1fc20e6` des abgebrochenen Vorgängers fort (Branch `worktree-agent-aa27718540749198f`, kann nach dem Merge weg). Darf neu `app/.../di/ExportersModule.kt` anlegen und den Aufruf von `ExportEntry` im NavHost anpassen.
   - T-EDT-004 (`ui-engineer`), Worktree `.claude/worktrees/agent-a42fc978de4fcda6a`, Branch `worktree-agent-a42fc978de4fcda6a`. Verdrahtet zusätzlich `EditorEntry` mit ViewModel, `EditorScreen` und `PlanCanvas` (feature/editor/…/navigation/).
-- **Offen für Gate 3:** `PdfExportInstrumentedTest` (T-EXP-003) lief noch nie, Schwellen ggf. anpassen. Danach Gate: Build mit Kover, Architektur und Roborazzi, Pitest, instrumentiert, Review, Tag `wave-3`, Push.
+- **Gate 3 vorab:** `PdfExportInstrumentedTest` läuft auf `da14d37` grün (instrumentiert 11 von 11, davon 8 PDF). Gate: Build mit Kover, Architektur und Roborazzi, Pitest, instrumentiert, Review, Tag `wave-3`, Push.
 
 ## Nächste Schritte
 
