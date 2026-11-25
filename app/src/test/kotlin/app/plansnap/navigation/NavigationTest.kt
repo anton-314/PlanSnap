@@ -15,6 +15,8 @@ import app.plansnap.core.common.runtime.DispatcherProvider
 import app.plansnap.core.common.runtime.EpochClock
 import app.plansnap.core.common.runtime.IdGenerator
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
+import app.plansnap.core.document.DocumentCodec
+import app.plansnap.core.document.JsonDocumentCodec
 import app.plansnap.core.domain.repository.EditorDraftRepository
 import app.plansnap.core.domain.repository.ProjectRepository
 import app.plansnap.core.domain.repository.ProjectSaver
@@ -127,7 +129,7 @@ class NavigationTest {
         compose.onNodeWithText("Export").performClick()
         compose.waitForIdle()
         assertEquals(listOf("projects", "editor:p-1", "export:p-1"), backStackRoutes())
-        compose.onNodeWithText("No room yet").assertExists()
+        compose.onNodeWithText("The project could not be read. Try again.").assertExists()
     }
 
     @Test
@@ -173,6 +175,10 @@ class NavigationTest {
         @Provides
         @Singleton
         fun settingsRepository(): SettingsRepository = FakeSettingsRepository()
+
+        @Provides
+        @Singleton
+        fun documentCodec(): DocumentCodec = JsonDocumentCodec()
     }
 
     /** Deterministic runtime: unconfined test dispatcher, fixed clock, sequential ids. */

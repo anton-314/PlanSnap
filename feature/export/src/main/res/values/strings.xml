@@ -3,4 +3,70 @@
     <string name="export_title">Export</string>
     <string name="export_back">Back</string>
     <string name="export_empty_hint">No room yet</string>
+    <string name="export_loading">Preparing export</string>
+    <string name="export_retry">Try again</string>
+    <string name="export_dismiss">Dismiss</string>
+
+    <string name="export_section_format">Format</string>
+    <string name="export_format_pdf">PDF</string>
+    <string name="export_format_pdf_description">Scaled drawing for printing</string>
+    <string name="export_format_png">PNG</string>
+    <string name="export_format_png_description">Image of the scaled page, 200 dpi</string>
+    <string name="export_format_svg">SVG</string>
+    <string name="export_format_svg_description">Scaled vector image</string>
+    <string name="export_format_json">JSON</string>
+    <string name="export_format_json_description">Project file with all rooms, can be imported again</string>
+
+    <string name="export_section_page">Page</string>
+    <string name="export_scale_label">Scale</string>
+    <string name="export_scale_auto">Automatic</string>
+    <string name="export_scale_1_50">1:50</string>
+    <string name="export_scale_1_100">1:100</string>
+    <string name="export_scale_1_200">1:200</string>
+    <string name="export_paper_label">Paper</string>
+    <string name="export_paper_auto">Automatic</string>
+    <string name="export_paper_a4">A4</string>
+    <string name="export_paper_a3">A3</string>
+    <string name="export_orientation_label">Orientation</string>
+    <string name="export_orientation_portrait">Portrait</string>
+    <string name="export_orientation_landscape">Landscape</string>
+    <string name="export_orientation_hint">The orientation is always chosen to match the plan.</string>
+    <string name="export_orientation_pending">Shown as soon as the page is known.</string>
+    <string name="export_fit_checking">Checking the page</string>
+    <string name="export_fit_result">Result: scale %1$s on %2$s, %3$s</string>
+    <string name="export_title_block_hint">The scale bar and the scale are printed in the title block.</string>
+
+    <string name="export_section_warnings">Please note</string>
+    <string name="export_room_unnamed">Room %1$d</string>
+    <string name="export_room_list_separator">", "</string>
+    <plurals name="export_warning_omitted">
+        <item quantity="one">%1$d room is left out of the drawing because its shape is open or contradictory: %2$s.</item>
+        <item quantity="other">%1$d rooms are left out of the drawing because their shape is open or contradictory: %2$s.</item>
+    </plurals>
+    <plurals name="export_warning_unconfirmed">
+        <item quantity="one">%1$d room is marked \"shape not confirmed\" in the drawing: %2$s.</item>
+        <item quantity="other">%1$d rooms are marked \"shape not confirmed\" in the drawing: %2$s.</item>
+    </plurals>
+    <plurals name="export_warning_openings">
+        <item quantity="one">%1$d opening no longer fits on its wall in %2$s.</item>
+        <item quantity="other">%1$d openings no longer fit on their walls in %2$s.</item>
+    </plurals>
+    <string name="export_warning_opening_room">%1$s (%2$d)</string>
+    <string name="export_warning_empty">No room has a usable shape yet, so there is nothing to draw. PDF, PNG and SVG are not possible. JSON still contains all rooms.</string>
+
+    <string name="export_error_title">Export failed</string>
+    <string name="export_error_nothing_to_export">No room can be drawn yet. Close and confirm at least one room, or choose JSON.</string>
+    <string name="export_error_plan_too_large">The plan is too large. It does not fit on A3 even at 1:200.</string>
+    <string name="export_error_plan_does_not_fit">The plan does not fit with this scale and paper. Choose a smaller scale or a larger paper, or set both to automatic.</string>
+    <string name="export_error_write_failed">The file could not be written. Check the storage location and try again.</string>
+    <string name="export_error_encoding_failed">The file could not be created. Try again, or choose another format.</string>
+    <string name="export_error_no_space">There is not enough free storage space for the file.</string>
+    <string name="export_error_load_failed">The project could not be read. Try again.</string>
+    <string name="export_error_generic">The export did not work. Try again.</string>
+
+    <string name="export_action_share">Share</string>
+    <string name="export_action_save">Save as file</string>
+    <string name="export_running">Exporting</string>
+    <string name="export_saved">Saved as %1$s file.</string>
+    <string name="export_share_chooser_title">Share plan</string>
 </resources>
