@@ -418,4 +418,14 @@ Weitere Festlegungen:
 
 Umrechnung: `pt = mm_welt / M · 72 / 25,4`. Schrifthöhen der Szene sind Nennhöhen in Weltmillimetern (ADR 0008, Ergänzung CR-W2-04): Alle Beschriftungen werden mit demselben Faktor `f = max(1, 1,8 mm · M / 150 mm)` vergrößert, sodass Maßzahlen auf Papier mindestens 1,8 mm hoch sind (1:50 `f = 1`, 1:100 `f = 1,2`, 1:200 `f = 2,4`). Lage und Abstände der Maße ändern sich nicht. Jeder Plan enthält einen Maßstabsbalken mit Nennlänge. Der Titelblock liegt am unteren Rand des Bereichs innerhalb der 10-mm-Ränder, über die volle Breite und 25 mm hoch. Er enthält Maßstabsbalken und Maßstabsangabe. Der Plan wird im Zeichenbereich darüber zentriert: Die Mitte der Weltgrenzen liegt auf der Mitte des Zeichenbereichs (`PlotPlan.drawingAreaMm`, Titelblock `PlotPlan.titleBlockMm`). PNG wird mit 200 dpi auf der gewählten Seite gerendert.
 
-Räume mit `OPEN` oder `CONFLICT` werden in PDF, PNG und SVG weggelassen und in der Vorprüfung gemeldet. Bleibt kein Raum übrig, wird der Export mit `NOTHING_TO_EXPORT` abgelehnt. JSON enthält immer alle Räume.
+**Titelblock** (ADR 0022, `TitleBlockSpec`): Maße in Papiermillimetern relativ zum Titelblock, Innenabstand 5 mm, Rahmen und Balkenumrisse 0,25 mm.
+
+| Element | Lage und Größe |
+|---|---|
+| Projektname | links, Grundlinie 8 mm unter Oberkante, 5 mm Schrift, höchstens Blockbreite − 35 mm breit |
+| Maßstab `1:M` | rechtsbündig, gleiche Grundlinie, 5 mm Schrift |
+| Maßstabsbalken | links, Oberkante 12 mm unter Blockoberkante, 3 mm hoch, zwei gleiche Segmente (dunkel, hell) |
+| Nennlänge | 2 m bei 1:50, 5 m bei 1:100, 10 m bei 1:200 |
+| Balkenbeschriftung | `0` und Nennlänge in der Exporteinheit, mittig unter den Enden, 3 mm Schrift, Grundlinie 3 mm unter dem Balken |
+
+Räume mit `OPEN` oder `CONFLICT` werden in PDF, PNG und SVG weggelassen und in der Vorprüfung gemeldet. Der Plan selbst trägt keinen Hinweis auf sie (ADR 0022). Die Vorprüfung meldet außerdem nicht bestätigte Räume und Öffnungen exportierbarer Räume, deren Status in der Auswertung `OUT_OF_BOUNDS` ist. Bleibt kein Raum übrig, wird der Export mit `NOTHING_TO_EXPORT` abgelehnt. JSON enthält immer alle Räume.

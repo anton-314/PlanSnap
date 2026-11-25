@@ -28,3 +28,9 @@ Aus T-EXP-001 (`PlotLayout`) festgelegt:
 - **Exakter Vergleich:** Bestätigt. Die Passprüfung vergleicht mit `≤` ohne Toleranz. Eine Toleranz würde die Schwelle nur um ihren Betrag verschieben. Rauschen an der neuen Schwelle hätte dieselbe Wirkung, die Unstetigkeit verschwindet also nicht. Rauschen von `1e-7` mm fällt in die Größenordnung von Umrechnungsfehlern. Dass ein Plan dadurch auf das nächste Papier rückt, ist korrekt im Sinne der Regel und unschädlich. Die Szenengrenzen enthalten Maßketten und Beschriftungen, deshalb trifft eine reale Wohnung die Schwelle nur zufällig. Ein Test hält das Verhalten fest.
 
 Kein Verhalten der Umsetzung ändert sich.
+
+## Ergänzung 2026-11-25 (CR-W3-02)
+
+Titelblock und Maßstabsbalken sind jetzt festgelegt, nicht mehr nur ihr Ort. Die Maße stehen rein in `TitleBlockSpec` (`:core:drawing.plot`), aufgelöst in Seitenmillimetern über `PlotPlan.titleBlockLayout`. Projektname oben links, Maßstab `1:M` oben rechts, darunter der Maßstabsbalken mit 2 m bei 1:50, 5 m bei 1:100 und 10 m bei 1:200, in zwei Segmenten. Die Farben kommen aus `SceneStyleSheet` (`:core:render`). PDF, PNG und SVG zeichnen den Titelblock nur daraus. Einzelheiten und Begründung stehen in ADR 0022.
+
+Kein Verhalten der Umsetzung ändert sich, das SVG-Golden bleibt gleich.
