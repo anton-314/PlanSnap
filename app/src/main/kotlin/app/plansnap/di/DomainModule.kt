@@ -17,6 +17,10 @@ import app.plansnap.core.domain.snap.Snapper
 import app.plansnap.core.domain.validation.DefaultProjectValidator
 import app.plansnap.core.domain.validation.OpeningRules
 import app.plansnap.core.domain.validation.ProjectValidator
+import app.plansnap.core.drawing.scene.DefaultSceneBuilder
+import app.plansnap.core.drawing.scene.SceneBuilder
+import app.plansnap.core.export.ExportPreflight
+import app.plansnap.core.export.preflight.DefaultExportPreflight
 import app.plansnap.core.model.Project
 import dagger.Module
 import dagger.Provides
@@ -75,4 +79,14 @@ object DomainModule {
         resolver: DockPlacementResolver,
         dispatchers: DispatcherProvider,
     ): (Project) -> CommandHistory = { project -> DefaultCommandHistory(project, evaluator, resolver, dispatchers) }
+
+    /** Stateless scene builder of ADR 0008, shared by the editor and the exporters. */
+    @Provides
+    @Singleton
+    fun sceneBuilder(): SceneBuilder = DefaultSceneBuilder()
+
+    /** Findings shown before an export (DOMAIN section 12, ADR 0022). */
+    @Provides
+    @Singleton
+    fun exportPreflight(): ExportPreflight = DefaultExportPreflight()
 }

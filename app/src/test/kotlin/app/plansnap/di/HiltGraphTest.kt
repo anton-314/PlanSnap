@@ -26,6 +26,10 @@ import app.plansnap.core.domain.snap.Snapper
 import app.plansnap.core.domain.validation.DefaultProjectValidator
 import app.plansnap.core.domain.validation.OpeningRules
 import app.plansnap.core.domain.validation.ProjectValidator
+import app.plansnap.core.drawing.scene.DefaultSceneBuilder
+import app.plansnap.core.drawing.scene.SceneBuilder
+import app.plansnap.core.export.ExportPreflight
+import app.plansnap.core.export.preflight.DefaultExportPreflight
 import app.plansnap.core.model.Project
 import app.plansnap.core.model.ProjectId
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -81,6 +85,10 @@ class HiltGraphTest {
 
     @Inject lateinit var areaReport: AreaReportCalculator
 
+    @Inject lateinit var sceneBuilder: SceneBuilder
+
+    @Inject lateinit var exportPreflight: ExportPreflight
+
     @Inject lateinit var historyFactory: @JvmSuppressWildcards (Project) -> CommandHistory
 
     @Inject lateinit var dataStore: DataStore<Preferences>
@@ -110,6 +118,8 @@ class HiltGraphTest {
         assertNotNull(openingRules)
         assertNotNull(snapper)
         assertNotNull(areaReport)
+        assertTrue(sceneBuilder is DefaultSceneBuilder)
+        assertTrue(exportPreflight is DefaultExportPreflight)
     }
 
     @Test

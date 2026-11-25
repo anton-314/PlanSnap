@@ -9,17 +9,17 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.testing.TestNavHostController
 import androidx.navigation.toRoute
-import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.HiltTestActivity
+import app.plansnap.core.common.runtime.ApplicationScope
 import app.plansnap.core.common.runtime.DispatcherProvider
 import app.plansnap.core.common.runtime.EpochClock
 import app.plansnap.core.common.runtime.IdGenerator
+import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.domain.repository.EditorDraftRepository
 import app.plansnap.core.domain.repository.ProjectRepository
 import app.plansnap.core.domain.repository.ProjectSaver
 import app.plansnap.core.domain.repository.SettingsRepository
 import app.plansnap.core.model.ProjectId
-import app.plansnap.di.ApplicationScope
 import app.plansnap.di.DataModule
 import app.plansnap.di.RuntimeModule
 import app.plansnap.testing.fixtures.fakes.FakeEditorDraftRepository
@@ -37,11 +37,8 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import dagger.hilt.android.testing.UninstallModules
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import javax.inject.Singleton
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -49,6 +46,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import javax.inject.Singleton
 
 /**
  * Navigation graph hosted in a Hilt activity. Persistence and runtime services are replaced by the fakes of
@@ -196,8 +194,6 @@ class NavigationTest {
 
         @Provides
         @Singleton
-        @ApplicationScope
-        fun applicationScope(dispatchers: DispatcherProvider): CoroutineScope =
-            CoroutineScope(SupervisorJob() + dispatchers.default)
+        fun applicationScope(dispatchers: DispatcherProvider): ApplicationScope = ApplicationScope.create(dispatchers)
     }
 }
