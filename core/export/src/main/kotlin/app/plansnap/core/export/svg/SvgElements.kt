@@ -2,7 +2,6 @@ package app.plansnap.core.export.svg
 
 import app.plansnap.core.drawing.scene.LabelText
 import app.plansnap.core.drawing.scene.SceneElement
-import app.plansnap.core.drawing.scene.SceneStyle
 import app.plansnap.core.geometry.primitives.Vec2
 import app.plansnap.core.render.RenderTextRules
 import java.util.Locale
@@ -63,7 +62,7 @@ internal class SvgElementWriter(
             .append(d)
             .append('"')
         paint(out, look.fillArgb)
-        if (element.style != SceneStyle.WALL_BAND) stroke(out, look) else out.append(" stroke=\"none\"")
+        if (look.outlined) stroke(out, look) else out.append(" stroke=\"none\"")
         out.append("/>\n")
     }
 
