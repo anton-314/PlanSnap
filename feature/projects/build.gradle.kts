@@ -14,5 +14,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(project(":testing:fixtures"))
     testImplementation(libs.turbine)
 }

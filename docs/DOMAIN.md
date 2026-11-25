@@ -298,7 +298,7 @@ data class ClosureAdjustment(
 
 IDs und Wandstärken fließen nicht ein, weil sie die Form nicht bestimmen. Stimmt der Hash nicht mehr, ist das Overlay ungültig und der Raum wird nach §4 neu ausgewertet. Das Zurücknehmen entfernt nur das Overlay.
 
-**Strukturell gültig** ist ein Overlay, wenn es je Wand eine positive endliche Länge und eine endliche Drehung hat, sein Umriss bis `EXACT_CLOSURE_MM` schließt und einfach ist. Diese Prüfung läuft in §4 Schritt 2 vor jeder Neuberechnung.
+**Strukturell gültig** ist ein Overlay, wenn es je Wand eine positive endliche Länge und eine endliche Drehung hat, sein Umriss bis `EXACT_CLOSURE_MM` schließt und einfach ist. Diese Prüfung läuft in §4 Schritt 2 vor jeder Neuberechnung. Dieselbe Prüfung entscheidet, ob die wirksame Länge einer Öffnung aus dem Overlay kommt (§9, ADR 0021). Ein strukturell ungültiges Overlay mit passendem Fingerabdruck wird auch dort ignoriert.
 
 `solverVersion` dient der Nachvollziehbarkeit. Ein strukturell gültiges Overlay mit passendem Fingerabdruck bleibt auch bei abweichender Version und geänderter Toleranz gültig, damit ein App-Update eine bestätigte Geometrie nicht still verändert.
 
@@ -337,6 +337,9 @@ data class Opening(
 
 - `offset` zählt von `V_i` entlang der Wand. Die Bindung läuft über die stabile `WallId`.
 - Gültig, wenn `offset ≥ 0`, `width > 0` und `offset + width ≤ L_wirksam + EXACT_CLOSURE_MM`.
+- **`L_wirksam` (ADR 0021, CR-W2-06)** ist die Länge `adjustedLengthsMm[i]` des Overlays, wenn §4 Schritt 2 es annimmt, der Raum also geschlossen ist, der Fingerabdruck passt und das Overlay strukturell gültig ist (§6). In jedem anderen Fall ist es die Rohlänge: ohne Overlay, bei veraltetem oder strukturell ungültigem Overlay, bei `OPEN`, `CONFIRMED` und `CONFLICT` und ausdrücklich auch bei `NEEDS_ADJUSTMENT` und `PROPOSED` (A4 und B7), obwohl diese eine Vorschau- oder Solverform zeigen. `L_wirksam` hängt weder von der Toleranz noch von `solverVersion` ab und ist nicht zu verwechseln mit den Längen der angezeigten Form in §5.6 und §7.
+- `OpeningRules.statusOf` und `RoomEvaluation.openingStatuses` nutzen dieselbe Implementierung und liefern für jede Öffnung denselben Status. Befehle prüfen über `OpeningRules`, Szene und Export-Vorprüfung lesen nur `openingStatuses`. Der Status einer Öffnung ändert sich nur mit den Rohwerten oder dem angenommenen Overlay (`AcceptAdjustment`, `RevertAdjustment`, Undo, Redo), nie durch eine Vorschau oder einen Toleranzwechsel. Kürzt ein angenommenes Overlay eine Wand, wird eine Öffnung dort `OUT_OF_BOUNDS`. `AcceptAdjustment` wird dadurch nicht abgelehnt.
+- Gezeichnet wird eine Öffnung bei `offset` ab `V_i` auf der angezeigten Wand, ohne Skalierung. In einer Vorschau kann eine gültige Öffnung daher um höchstens die Korrektur der Wand plus `EXACT_CLOSURE_MM` über das angezeigte Wandende reichen.
 - Öffnungen derselben Wand dürfen sich nicht überlappen.
 - `sillHeight` nur für Fenster, `swing` nur für Türen.
 - `DoorSwing` hat die Werte `HINGE_LEFT_INWARD`, `HINGE_LEFT_OUTWARD`, `HINGE_RIGHT_INWARD`, `HINGE_RIGHT_OUTWARD`. `INWARD` öffnet in den Raum hinein, `OUTWARD` aus ihm heraus. Links und rechts folgen DIN 107 (CR-W2-04): Man steht auf der Seite, zu der die Tür aufschlägt, und blickt auf die Wand. Liegen die Bänder links, ist die Tür `HINGE_LEFT_*`, sonst `HINGE_RIGHT_*`. Bei `INWARD` steht der Betrachter also im Raum, bei `OUTWARD` außerhalb. Die Seite hängt damit nicht von der Messrichtung des Raums ab.

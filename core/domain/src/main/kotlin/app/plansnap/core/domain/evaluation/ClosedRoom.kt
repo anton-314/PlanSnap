@@ -53,7 +53,7 @@ internal class ClosedRoom(
     val observedTurnsRad: List<Double> =
         if (isClosingFixed) targetTurnsRad else ShapeRules.withDerivedClosing(windingSign, targetTurnsRad)
 
-    /** Conflict without a shape. Opening statuses use the raw lengths. */
+    /** Conflict without a shape. */
     fun conflict(
         reason: ConflictReason,
         diagonalIndex: Int? = null,
@@ -64,7 +64,7 @@ internal class ClosedRoom(
             reason = reason,
             diagonalId = diagonalIndex?.let { room.diagonals[it].id },
             worstObservation = worstObservation,
-            openingStatuses = room.openingStatuses(rawLengthsMm),
+            openingStatuses = EffectiveWallLength.statuses(room, overlay = null),
         )
 
     /** Confirmed [shape] with [control], `null` without rank analysis. */
@@ -72,7 +72,7 @@ internal class ClosedRoom(
         shape: EvaluatedShape,
         control: MeasurementControl?,
     ): RoomEvaluation.Confirmed =
-        RoomEvaluation.Confirmed(room.id, shape, room.openingStatuses(shape.lengthsMm), control)
+        RoomEvaluation.Confirmed(room.id, shape, EffectiveWallLength.statuses(room, overlay = null), control)
 
     /** Adjustment awaiting [confirmation], with the overlay of [adjusted] and its preview [shape]. */
     fun needsAdjustment(
@@ -102,7 +102,7 @@ internal class ClosedRoom(
             shape = shape,
             closureError = closureError,
             proposal = proposal,
-            openingStatuses = room.openingStatuses(shape.lengthsMm),
+            openingStatuses = EffectiveWallLength.statuses(room, overlay = null),
             measurementControl = control,
         )
     }
@@ -123,6 +123,6 @@ internal class ClosedRoom(
             ambiguity = ambiguity,
             rawLengthsMm = input.lengthsMm.toImmutableList(),
             correction = correction,
-            openingStatuses = room.openingStatuses(shape.lengthsMm),
+            openingStatuses = EffectiveWallLength.statuses(room, overlay = null),
         )
 }

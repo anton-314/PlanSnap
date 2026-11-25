@@ -18,7 +18,6 @@ import app.plansnap.core.geometry.traverse.DefaultTraverse
 import app.plansnap.core.geometry.traverse.Traverse
 import app.plansnap.core.model.ConflictReason
 import app.plansnap.core.model.Room
-import app.plansnap.core.model.isAdjustmentCurrent
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.withContext
 
@@ -78,8 +77,8 @@ class DefaultRoomEvaluator(
         signal: CancellationSignal,
     ): RoomEvaluation {
         if (!room.isClosed) return open(room)
-        val overlay = room.adjustment?.takeIf(room::isAdjustmentCurrent)?.let(shapes::overlayShape)
-        return overlay?.let { RoomEvaluation.Adjusted(room.id, it, room.openingStatuses(it.lengthsMm)) }
+        val overlay = shapes.acceptedOverlay(room)
+        return overlay?.let { RoomEvaluation.Adjusted(room.id, it.shape, EffectiveWallLength.statuses(room, it)) }
             ?: recompute(room, tolerance, signal)
     }
 
@@ -121,7 +120,7 @@ class DefaultRoomEvaluator(
         return RoomEvaluation.Open(
             roomId = room.id,
             chain = traverse.walk(lengths, room.enteredTurnsRad()).toImmutableList(),
-            openingStatuses = room.openingStatuses(lengths),
+            openingStatuses = EffectiveWallLength.statuses(room, overlay = null),
         )
     }
 

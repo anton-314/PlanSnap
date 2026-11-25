@@ -10,11 +10,7 @@ import app.plansnap.core.geometry.traverse.CornerInput
 import app.plansnap.core.geometry.traverse.DiagonalInput
 import app.plansnap.core.geometry.traverse.ShapeInput
 import app.plansnap.core.model.CornerSpec
-import app.plansnap.core.model.OpeningId
-import app.plansnap.core.model.OpeningStatus
 import app.plansnap.core.model.Room
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.toImmutableMap
 
 /**
  * Returns the first violation of the value limits of `GeometryTolerances` (DOMAIN section 4, step 1), or `null`.
@@ -79,21 +75,3 @@ internal fun Room.enteredTurnsRad(): List<Double> =
             CornerSpec.Unspecified -> 0.0
         }
     }
-
-/**
- * Derived status of every opening against the effective wall lengths (DOMAIN section 9), in the order of
- * [Room.openings]. An opening fits while `offset + width ≤ L_effective + EXACT_CLOSURE_MM`. Offset and width are
- * already non-negative and positive by construction of the model.
- *
- * @param effectiveLengthsMm one effective length per wall: the displayed shape, otherwise the raw lengths.
- */
-internal fun Room.openingStatuses(effectiveLengthsMm: List<Double>): ImmutableMap<OpeningId, OpeningStatus> {
-    val wallIndex = walls.withIndex().associate { (index, wall) -> wall.id to index }
-    val statuses = LinkedHashMap<OpeningId, OpeningStatus>(openings.size)
-    for (opening in openings) {
-        val limit = effectiveLengthsMm[wallIndex.getValue(opening.wallId)] + GeometryTolerances.EXACT_CLOSURE_MM
-        statuses[opening.id] =
-            if (opening.endOffset.mm.toDouble() <= limit) OpeningStatus.VALID else OpeningStatus.OUT_OF_BOUNDS
-    }
-    return statuses.toImmutableMap()
-}

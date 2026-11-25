@@ -426,12 +426,16 @@ class RoomEvaluatorStateTableTest {
     }
 
     @Test
-    fun `given an opening when the adjustment shortens its wall then it is out of bounds`() {
+    fun `given an opening when the preview shortens its wall then only the accepted overlay puts it out of bounds`() {
+        // ADR 0021: a preview never moves an opening's status, the raw length decides until the overlay is accepted.
         val base = OverdeterminedCases.GAP_30_MM.room
         val evaluation = evaluated(base.copy(openings = persistentListOf(opening(base, "door", 3200, 831))))
         val shortened = evaluation.shape!!.lengthsMm[0]
         assertTrue(shortened + GeometryTolerances.EXACT_CLOSURE_MM < 4031.0, "$shortened")
-        assertEquals(OpeningStatus.OUT_OF_BOUNDS, evaluation.openingStatuses[OpeningId("door")])
+        assertEquals(OpeningStatus.VALID, evaluation.openingStatuses[OpeningId("door")])
+        val adjusted = evaluated(accepted(base).copy(openings = persistentListOf(opening(base, "door", 3200, 831))))
+        assertEquals(ShapeStatus.ADJUSTED, adjusted.status)
+        assertEquals(OpeningStatus.OUT_OF_BOUNDS, adjusted.openingStatuses[OpeningId("door")])
     }
 
     @Test
