@@ -79,6 +79,11 @@ class ExportScreenshotTest {
     fun `given findings when the font scale is 2 then it matches the baseline`() =
         capture(ExportScreenStates.warnings, 2f, "export-warnings-fontscale-2.png")
 
+    @Test
+    @Config(qualifiers = "en-rUS-w360dp-h2400dp-port-notnight-mdpi")
+    fun `given the choice rows when the font scale is 2 then their texts are not clipped`() =
+        capture(ExportScreenStates.standard, 2f, "export-choices-fontscale-2.png")
+
     private fun capture(
         state: ExportUiState,
         fontScale: Float,
