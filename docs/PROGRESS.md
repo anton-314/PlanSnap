@@ -93,30 +93,17 @@ Keine.
 - 2026-11-25: Gate-Review Welle 2: `CHANGES_REQUESTED`. **Hoch:** Evaluator und `DefaultOpeningRules` verstehen unter `L_wirksam` Verschiedenes. Die Regeln nehmen das Overlay, wenn der Fingerabdruck passt, sonst die Rohlänge. Der Evaluator nimmt die angezeigte Form, bei `NEEDS_ADJUSTMENT` also die Vorschau und bei `PROPOSED` die Solverlänge, und verwirft strukturell ungültige Overlays. Ein Probetest belegt das in zwei Fällen. Folge: `AddOpening` nimmt Öffnungen an, die die Szene rot zeigt, oder umgekehrt. Fix als CR-W2-06 (Batch 2.4). **Mittel:** Der Prüfstand prüfte an der Schlussecke den Sollwert statt `τ_0,abgeleitet`. `flow.py` ist korrigiert, die Ausgabe ist bei voller Stichprobe identisch, README ergänzt. Drei niedrige Befunde stehen im Backlog. Ohne Befund: Historie, Property-Tests (alle `runBlocking<Unit>`), Unterdrückungen, Modulgrenzen, Sicherheit, Renderer-Speicher.
 - 2026-11-25: CR-W2-06 gemergt (`1d2b4a6`, ADR 0021). `L_wirksam` ist die Rohlänge. Nur bei `ADJUSTED` mit angenommenem, strukturell gültigem Overlay gilt die Overlay-Länge. Vorschauen (`NEEDS_ADJUSTMENT`, `PROPOSED`) zählen nie, so springen Öffnungsstatus nicht bei Vorschau oder Toleranzwechsel. Ein angenommenes Overlay, das eine Wand kürzt, macht Öffnungen `OUT_OF_BOUNDS`. Regeln und Evaluator teilen `EffectiveWallLength`. Konsistenz-Property über alle Katalog- und Referenzräume mit 2 400 Vergleichen. Die Review-Fälle waren vorher rot und sind jetzt grün. `:core:domain` hat 385 Tests. `ExportPreflight` darf nur `openingStatuses` lesen (an CR-W3-02 gegeben).
 - 2026-11-25: CR-W3-02 fertig (`fa4529e`, noch nicht gemergt, ADR 0022). `SceneStyleSheet` in `:core:render` ist die gemeinsame, android-freie Stilquelle. `StyleLook` und `SvgStyles` sind nur Sichten darauf, Goldens und Screenshots bleiben unverändert. `TitleBlockSpec` in `:core:drawing.plot` gibt die Titelblock-Lagen in Seiten-mm vor. `DefaultExportPreflight` liest Öffnungsstatus nur aus `openingStatuses`. Ausgelassene Räume werden nur in der Vorprüfung gemeldet, nicht auf dem Plan (REQ-EXP-006, DOMAIN §12). DI-Bindung von `ExportPreflight` folgt mit T-FEX-001.
+- 2026-11-25: T-EDT-001 fertig (`cdb4366`, 29 Tests). Bestätigte Arbeit läuft in einer geordneten Warteschlange im `ApplicationScope`, Vorschauen über `collectLatest`, `AcceptAdjustment` wird vor dem Befehl neu ausgewertet. Teilfunktionen ergänzen `EditorHandler` per `@IntoSet`. T-EXP-003 fertig (`5411796`, `:core:export` 70 Tests, 96,4 %). PNG mit 200 dpi und Pixelgrenze 8 Mio. PDF über `PdfDocument` mit exaktem Maßstab, Kalibrierung per `PdfRenderer` im instrumentierten Test. Robolectric kann kein echtes `PdfDocument` schreiben.
 - 2026-11-25: Nachreview Welle 2 auf `4c5f514`: `APPROVE`. Der hohe Befund ist in allen Pfaden behoben (Befehle, Evaluator, Szene, Undo/Redo, Ausgleich). Probetest (a) und (b) stimmen überein, der Property-Generator unterscheidet die alte von der neuen Logik (7 von 43 Basen). Niedrige Hinweise stehen in T-EDT-005 und im Backlog.
 - 2026-11-25: CR-W3-01 an `architect`: `@ApplicationScope` ist in `:app` deklariert und für `:feature:editor` nicht sichtbar. T-EDT-001 braucht den Scope (ARCHITECTURE §5). Vorab für Batch 3.1: `lifecycle-runtime-compose`, `coroutines-test` und `turbine` in den Modulen editor, projects und settings, `activity-compose` in projects für den Import per SAF.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
-- **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2:** CR-W2-06 gemergt (`1d2b4a6`). Es laufen das Nachreview durch `reviewer` und der erneute technische Gate-Lauf auf main. Danach folgen der Tag `wave-2` und der Push. Entfernbarer Worktree: `worktree-agent-a09c0220a46258b35`.
-- **Fertig, noch nicht gemergt** (erst nach dem Tag `wave-2`, in dieser Reihenfolge):
-  1. CR-W3-01 `a7fe3cd` (`worktree-agent-a04a982527ded745d`): ADR 0020, Typ `ApplicationScope`.
-  2. T-EXP-002 `fa64d28` (`worktree-agent-ad83b19f22e11d02f`): SVG- und JSON-Export.
-  3. T-PRJ-001 `5670e2f` (`worktree-agent-aefb5d4f01dbc172e`): Projektliste und Import.
-  4. T-SET-001 `175cca4` (`worktree-agent-a4e86fa327c86d9e2`): Einstellungen.
-
-  5. T-APP-002 `c6948dc` (`worktree-agent-ac800a7cb1753fe84`): enthält bereits T-PRJ-001, T-SET-001 und `77053d0`. NavigationTest läuft als `@HiltAndroidTest` mit Fakes, `HiltTestActivity` steht nur im Debug-Manifest, `:app` hat 16 von 16 Tests grün.
-
-  6. CR-W3-02 `fa4529e` (`worktree-agent-aaf22ecffd74dd3aa`): enthält T-EXP-002 und main bis `6d3b7d6`. Damit kann Punkt 2 entfallen.
-
-  Beim Merge nach CR-W3-01: `FakeRuntimeModule` in `NavigationTest` bindet den Qualifier `@ApplicationScope`. Den entfernt CR-W3-01, die Bindung muss auf den Typ `ApplicationScope` umgestellt werden.
-- **Läuft:**
-  - T-EXP-003 bei `feature-engineer` (Basis `fa4529e`).
-  - T-EDT-001 bei `feature-engineer` (Basis `a7fe3cd` + `09196ec`).
-  - Nachreview Welle 2 bei `reviewer` und Gate-Lauf auf `4c5f514`.
-- **Danach:** Batch 3.2 (T-EDT-002 und T-EDT-003 nach T-EDT-001, T-EXP-003 nach CR-W3-02).
-- Entfernen, sobald erlaubt: alte Worktrees `worktree-agent-a6060eb82b04453d6` (erster Review-Versuch, ohne Commits) und `worktree-agent-aca7ce9d2b1f3f62c` (Gate-Review, nur Probetest).
+- **Welle 2:** CR-W2-06 gemergt, Nachreview `APPROVE`. Der Gate-Lauf auf main (`4c5f514` + Doku) läuft: Build grün, Pitest und instrumentierte Tests laufen noch. Danach folgen der Tag `wave-2` auf dem letzten main-Commit vor der Integration, der Push und die CI-Prüfung. Nach einer Unterbrechung Pitest und `scripts/run-instrumented-tests.sh` auf main neu starten.
+- **Integration Welle 3:** Branch `integration-w3` im Worktree `../PlanSnap-int`, Stand `7c9aadd`. Er enthält CR-W3-01, T-PRJ-001, T-SET-001, T-APP-002, T-EXP-002, CR-W3-02, T-EDT-001 und T-EXP-003, dazu den Integrations-Commit `32d596b`: Typ `ApplicationScope` im NavigationTest, `SceneBuilder` und `ExportPreflight` in `DomainModule` gebunden, `EditorSceneModule` entfernt. Voller Build ohne T-EXP-003 grün. Nach dem Tag `wave-2`: `git merge --ff-only integration-w3` auf main, voller Build und Doku.
+- **Läuft** (Basis `7c9aadd`, Worktree-Branches `worktree-agent-*`): T-EDT-002 (`ui-engineer`, input/ und screen/EditorScreen mit Canvas-Slot), T-EDT-003 (`ui-engineer`, canvas/), T-FEX-001 (`ui-engineer`, feature/export, liefert DI-, Manifest- und FileProvider-Code für `:app`). Den Editor-Screen verdrahtet der Orchestrator beim Merge in `navigation/`.
+- **Offen für das nächste Gate:** Der instrumentierte `PdfExportInstrumentedTest` (T-EXP-003) lief noch nie, Schwellen ggf. anpassen. Die Exporter sind noch nicht in der DI gebunden (kommt mit T-FEX-001).
+- Entfernbare Worktrees (alle Inhalte übernommen): `agent-a6060eb82b04453d6`, `agent-aca7ce9d2b1f3f62c`, `agent-a42bb83f2e58fdaf8`, `agent-a09c0220a46258b35` sowie nach dem Merge der Integration die Worktrees von CR-W3-01, T-EXP-002, T-PRJ-001, T-SET-001, T-APP-002, CR-W3-02, T-EDT-001 und T-EXP-003.
 
 ## Nächste Schritte
 
