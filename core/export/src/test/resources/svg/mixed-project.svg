@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="297mm" height="210mm" viewBox="0 0 297 210" data-scale="1:50" data-paper="A4" data-orientation="LANDSCAPE" data-omitted-rooms="open">
+<title>Wohnung &lt;1&gt;</title>
+<rect id="page-background" x="0" y="0" width="297" height="210" fill="#FFFFFF"/>
+<g id="plan">
+<g id="room-0" data-room-id="confirmed" data-status="CONFIRMED">
+<path class="room-body" d="M108.544 122.5L188.544 122.5L188.544 62.5L108.544 62.5Z" fill="#1B5FAA" fill-opacity="0.149" stroke="#1F2A37" stroke-width="0.18"/>
+<path class="wall-band" d="M108.544 122.5L188.544 122.5L190.944 124.9L106.144 124.9Z" fill="#1F2A37" stroke="none"/>
+<path class="wall-band" d="M188.544 122.5L188.544 62.5L190.944 60.1L190.944 124.9Z" fill="#1F2A37" stroke="none"/>
+<path class="wall-band" d="M188.544 62.5L108.544 62.5L106.144 60.1L190.944 60.1Z" fill="#1F2A37" stroke="none"/>
+<path class="wall-band" d="M108.544 62.5L108.544 122.5L106.144 124.9L106.144 60.1Z" fill="#1F2A37" stroke="none"/>
+<path class="opening" d="M118.544 122.5L136.544 122.5L136.544 124.9L118.544 124.9Z" fill="#F8F9FC" stroke="#1F2A37" stroke-width="0.18"/>
+<path class="opening" d="M136.544 122.5L136.544 104.5" fill="none" stroke="#1F2A37" stroke-width="0.18"/>
+<path class="opening" d="M118.544 122.5A18 18 0 0 0 136.544 104.5" fill="none" stroke="#1F2A37" stroke-width="0.18"/>
+<path class="opening" d="M188.544 106.5L188.544 82.5L190.944 82.5L190.944 106.5Z" fill="#F8F9FC" stroke="#1F2A37" stroke-width="0.18"/>
+<path class="opening" d="M189.744 106.5L189.744 82.5" fill="none" stroke="#1F2A37" stroke-width="0.18"/>
+<path class="dimension" d="M108.544 130.9L188.544 130.9" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M108.544 125.9L108.544 132.4" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M188.544 125.9L188.544 132.4" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<text class="dimension" transform="translate(148.544 133.9) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="3" fill="#1B5FAA">400,0 cm</text>
+<path class="dimension" d="M196.944 122.5L196.944 62.5" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M191.944 122.5L198.444 122.5" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M191.944 62.5L198.444 62.5" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<text class="dimension" transform="translate(199.944 92.5) rotate(-90)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="3" fill="#1B5FAA">300,0 cm</text>
+<path class="dimension" d="M188.544 54.1L108.544 54.1" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M188.544 59.1L188.544 52.6" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M108.544 59.1L108.544 52.6" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<text class="dimension" transform="translate(148.544 51.1) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="3" fill="#1B5FAA">400,0 cm</text>
+<path class="dimension" d="M100.144 62.5L100.144 122.5" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M105.144 62.5L98.644 62.5" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M105.144 122.5L98.644 122.5" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<text class="dimension" transform="translate(97.144 92.5) rotate(-90)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="3" fill="#1B5FAA">300,0 cm</text>
+<text class="label" transform="translate(148.544 83.5) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="4" fill="#1F2A37">Küche &lt;&amp;&gt; "A"</text>
+<text class="label" transform="translate(148.544 89.5) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="4" fill="#1F2A37">Kitchen</text>
+<text class="label" transform="translate(148.544 95.5) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="4" fill="#1F2A37">12,00 m²</text>
+<text class="label" transform="translate(148.544 101.5) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="4" fill="#1F2A37">Notiz &amp; mehr</text>
+<circle class="wall-line" cx="108.544" cy="122.5" r="0.27" fill="#1F2A37" stroke="none"/>
+<circle class="wall-line" cx="188.544" cy="122.5" r="0.27" fill="#1F2A37" stroke="none"/>
+<circle class="wall-line" cx="188.544" cy="62.5" r="0.27" fill="#1F2A37" stroke="none"/>
+<circle class="wall-line" cx="108.544" cy="62.5" r="0.27" fill="#1F2A37" stroke="none"/>
+</g>
+<g id="room-1" data-room-id="gap" data-status="NEEDS_ADJUSTMENT">
+<path class="room-body-unconfirmed" d="M108.544 122.5L188.557 122.5L188.742 62.495L108.156 62.506Z" fill="#1B5FAA" fill-opacity="0.149" stroke="#1F2A37" stroke-width="0.27" stroke-dasharray="0.9 0.54"/>
+<path class="wall-band" d="M108.544 122.5L188.557 122.5L190.95 124.9L106.159 124.9Z" fill="#1F2A37" stroke="none"/>
+<path class="wall-band" d="M188.557 122.5L188.742 62.495L191.15 60.095L190.95 124.9Z" fill="#1F2A37" stroke="none"/>
+<path class="wall-band" d="M188.742 62.495L108.156 62.506L105.741 60.107L191.15 60.095Z" fill="#1F2A37" stroke="none"/>
+<path class="wall-band" d="M108.156 62.506L108.544 122.5L106.159 124.9L105.741 60.107Z" fill="#1F2A37" stroke="none"/>
+<path class="dimension" d="M108.544 130.9L188.557 130.9" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M108.544 125.9L108.544 132.4" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M188.557 125.9L188.557 132.4" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<text class="dimension" transform="translate(148.551 133.9) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="3" fill="#1B5FAA">400,1 cm</text>
+<path class="dimension" d="M196.957 122.526L197.142 62.521" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M191.957 122.51L198.457 122.531" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M192.142 62.506L198.642 62.526" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<text class="dimension" transform="translate(200.05 92.533) rotate(-89.823)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="3" fill="#1B5FAA">300,0 cm</text>
+<path class="dimension" d="M188.741 54.095L108.155 54.106" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M188.742 59.095L188.741 52.595" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M108.156 59.106L108.155 52.606" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<text class="dimension" transform="translate(148.448 51.101) rotate(-0.008)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="3" fill="#1B5FAA">402,9 cm</text>
+<path class="dimension" d="M99.756 62.56L100.144 122.554" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M104.756 62.528L98.256 62.57" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<path class="dimension" d="M105.144 122.522L98.644 122.564" fill="none" stroke="#1B5FAA" stroke-width="0.18"/>
+<text class="dimension" transform="translate(96.95 92.577) rotate(89.63)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="3" fill="#1B5FAA">300,0 cm</text>
+<text class="label" transform="translate(148.5 86.465) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="4" fill="#1F2A37">Bad</text>
+<text class="warning" transform="translate(148.5 92.465) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="4" fill="#8A5000">12,04 m²</text>
+<text class="warning" transform="translate(148.5 98.465) rotate(0)" text-anchor="middle" dy="0.35em" font-family="sans-serif" font-size="4" fill="#8A5000">Form nicht bestätigt</text>
+<circle class="wall-line" cx="108.544" cy="122.5" r="0.27" fill="#1F2A37" stroke="none"/>
+<circle class="wall-line" cx="188.557" cy="122.5" r="0.27" fill="#1F2A37" stroke="none"/>
+<circle class="wall-line" cx="188.742" cy="62.495" r="0.27" fill="#1F2A37" stroke="none"/>
+<circle class="wall-line" cx="108.156" cy="62.506" r="0.27" fill="#1F2A37" stroke="none"/>
+</g>
+</g>
+<g id="title-block" stroke="#1F2A37" fill="none" stroke-width="0.25">
+<rect id="title-frame" x="10" y="175" width="277" height="25"/>
+<text id="project-name" x="15" y="183" text-anchor="start" font-family="sans-serif" font-size="5" fill="#1F2A37" stroke="none">Wohnung &lt;1&gt;</text>
+<text id="scale-label" x="282" y="183" text-anchor="end" font-family="sans-serif" font-size="5" fill="#1F2A37" stroke="none">1:50</text>
+<g id="scale-bar">
+<rect x="15" y="187" width="20" height="3" fill="#1F2A37"/>
+<rect x="35" y="187" width="20" height="3" fill="#FFFFFF"/>
+<text id="scale-bar-start" x="15" y="193" text-anchor="middle" font-family="sans-serif" font-size="3" fill="#1F2A37" stroke="none">0</text>
+<text id="scale-bar-end" x="55" y="193" text-anchor="middle" font-family="sans-serif" font-size="3" fill="#1F2A37" stroke="none">200,0 cm</text>
+</g>
+</g>
+</svg>
