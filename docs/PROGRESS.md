@@ -104,11 +104,14 @@ Keine.
   3. T-PRJ-001 `5670e2f` (`worktree-agent-aefb5d4f01dbc172e`): Projektliste und Import.
   4. T-SET-001 `175cca4` (`worktree-agent-a4e86fa327c86d9e2`): Einstellungen.
 
-  T-PRJ-001 und T-SET-001 machen `:app` NavigationTest rot, weil sie `hiltViewModel()` ohne Hilt-Activity aufrufen. Deshalb nur zusammen mit T-APP-002 mergen.
+  5. T-APP-002 `c6948dc` (`worktree-agent-ac800a7cb1753fe84`): enthält bereits T-PRJ-001, T-SET-001 und `77053d0`. NavigationTest läuft als `@HiltAndroidTest` mit Fakes, `HiltTestActivity` steht nur im Debug-Manifest, `:app` hat 16 von 16 Tests grün.
+
+  Beim Merge nach CR-W3-01: `FakeRuntimeModule` in `NavigationTest` bindet den Qualifier `@ApplicationScope`. Den entfernt CR-W3-01, die Bindung muss auf den Typ `ApplicationScope` umgestellt werden.
 - **Läuft:**
   - CR-W3-02 bei `architect` (Basis `fa64d28` + `67e41c6`): gemeinsame Stiltabelle, Titelblock und `DefaultExportPreflight`, ADR 0022. Muss vor T-EXP-003 fertig sein.
-  - T-APP-002 bei `test-engineer` (Basis `5670e2f` + `77053d0` + `175cca4`): Hilt-fähiger NavigationTest.
-- **Danach:** T-EDT-001 (braucht CR-W3-01), Batch 3.2.
+  - T-EDT-001 bei `feature-engineer` (Basis `a7fe3cd` + `09196ec`).
+  - Nachreview Welle 2 bei `reviewer` und Gate-Lauf auf `4c5f514`.
+- **Danach:** Batch 3.2 (T-EDT-002 und T-EDT-003 nach T-EDT-001, T-EXP-003 nach CR-W3-02).
 - Entfernen, sobald erlaubt: alte Worktrees `worktree-agent-a6060eb82b04453d6` (erster Review-Versuch, ohne Commits) und `worktree-agent-aca7ce9d2b1f3f62c` (Gate-Review, nur Probetest).
 
 ## Nächste Schritte
