@@ -33,3 +33,5 @@
 - `SceneRenderer.kt:237`: Das ktlint-Artefakt `if (block ==\n null\n)` lesbar formatieren (Gate-Review Welle 2, niedrig).
 - `DefaultSnapper`: Listen und `Pair` je Aufruf vermeiden, weil das Einrasten beim Ziehen in jedem Frame läuft. Mit T-EDT umsetzen (Gate-Review Welle 2, niedrig).
 - Editor: Der Bestätigungsdialog von `AcceptAdjustment` könnte vorab nennen, welche Öffnungen durch das Annehmen `OUT_OF_BOUNDS` würden (aus CR-W2-06).
+- `DefaultOpeningRules` legt `ShapeBuilder` fest an, `DefaultRoomEvaluator` erhält ihn injiziert. Mit Fakes könnten beide auseinanderlaufen: optionalen Konstruktorparameter ergänzen (Nachreview Welle 2, niedrig).
+- `OpeningStatusConsistencyTest`: Die Property-Basis um veraltete sowie schließende, aber nicht einfache Overlays erweitern (Nachreview Welle 2, Hinweis).

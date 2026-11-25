@@ -92,6 +92,7 @@ Keine.
 - 2026-11-25: T-PRJ-001 fertig (37 Tests, 4 Baselines): Anlegen öffnet den Editor. Der Import schließt den Stream immer, ein Abbruch durch den Nutzer ist kein Fehler, `DomainError.Document` wird auf vier Meldungen abgebildet. T-SET-001 fertig (31 Tests, 5 Baselines): Die absolute Toleranz wird in der Anzeigeeinheit eingegeben und ist mindestens 1 mm, die relative in Prozent. Ungültige Werte werden nicht gespeichert und am Feld erklärt. Beide Screens nutzen `hiltViewModel()`, daher folgt T-APP-002 (Hilt-NavigationTest mit Fakes). `:testing:fixtures` ist jetzt Testabhängigkeit von `:app` und den Feature-Modulen.
 - 2026-11-25: Gate-Review Welle 2: `CHANGES_REQUESTED`. **Hoch:** Evaluator und `DefaultOpeningRules` verstehen unter `L_wirksam` Verschiedenes. Die Regeln nehmen das Overlay, wenn der Fingerabdruck passt, sonst die Rohlänge. Der Evaluator nimmt die angezeigte Form, bei `NEEDS_ADJUSTMENT` also die Vorschau und bei `PROPOSED` die Solverlänge, und verwirft strukturell ungültige Overlays. Ein Probetest belegt das in zwei Fällen. Folge: `AddOpening` nimmt Öffnungen an, die die Szene rot zeigt, oder umgekehrt. Fix als CR-W2-06 (Batch 2.4). **Mittel:** Der Prüfstand prüfte an der Schlussecke den Sollwert statt `τ_0,abgeleitet`. `flow.py` ist korrigiert, die Ausgabe ist bei voller Stichprobe identisch, README ergänzt. Drei niedrige Befunde stehen im Backlog. Ohne Befund: Historie, Property-Tests (alle `runBlocking<Unit>`), Unterdrückungen, Modulgrenzen, Sicherheit, Renderer-Speicher.
 - 2026-11-25: CR-W2-06 gemergt (`1d2b4a6`, ADR 0021). `L_wirksam` ist die Rohlänge. Nur bei `ADJUSTED` mit angenommenem, strukturell gültigem Overlay gilt die Overlay-Länge. Vorschauen (`NEEDS_ADJUSTMENT`, `PROPOSED`) zählen nie, so springen Öffnungsstatus nicht bei Vorschau oder Toleranzwechsel. Ein angenommenes Overlay, das eine Wand kürzt, macht Öffnungen `OUT_OF_BOUNDS`. Regeln und Evaluator teilen `EffectiveWallLength`. Konsistenz-Property über alle Katalog- und Referenzräume mit 2 400 Vergleichen. Die Review-Fälle waren vorher rot und sind jetzt grün. `:core:domain` hat 385 Tests. `ExportPreflight` darf nur `openingStatuses` lesen (an CR-W3-02 gegeben).
+- 2026-11-25: Nachreview Welle 2 auf `4c5f514`: `APPROVE`. Der hohe Befund ist in allen Pfaden behoben (Befehle, Evaluator, Szene, Undo/Redo, Ausgleich). Probetest (a) und (b) stimmen überein, der Property-Generator unterscheidet die alte von der neuen Logik (7 von 43 Basen). Niedrige Hinweise stehen in T-EDT-005 und im Backlog.
 - 2026-11-25: CR-W3-01 an `architect`: `@ApplicationScope` ist in `:app` deklariert und für `:feature:editor` nicht sichtbar. T-EDT-001 braucht den Scope (ARCHITECTURE §5). Vorab für Batch 3.1: `lifecycle-runtime-compose`, `coroutines-test` und `turbine` in den Modulen editor, projects und settings, `activity-compose` in projects für den Import per SAF.
 
 ## Wiedereinstieg (Stand 2026-11-25)
@@ -104,11 +105,14 @@ Keine.
   3. T-PRJ-001 `5670e2f` (`worktree-agent-aefb5d4f01dbc172e`): Projektliste und Import.
   4. T-SET-001 `175cca4` (`worktree-agent-a4e86fa327c86d9e2`): Einstellungen.
 
-  T-PRJ-001 und T-SET-001 machen `:app` NavigationTest rot, weil sie `hiltViewModel()` ohne Hilt-Activity aufrufen. Deshalb nur zusammen mit T-APP-002 mergen.
+  5. T-APP-002 `c6948dc` (`worktree-agent-ac800a7cb1753fe84`): enthält bereits T-PRJ-001, T-SET-001 und `77053d0`. NavigationTest läuft als `@HiltAndroidTest` mit Fakes, `HiltTestActivity` steht nur im Debug-Manifest, `:app` hat 16 von 16 Tests grün.
+
+  Beim Merge nach CR-W3-01: `FakeRuntimeModule` in `NavigationTest` bindet den Qualifier `@ApplicationScope`. Den entfernt CR-W3-01, die Bindung muss auf den Typ `ApplicationScope` umgestellt werden.
 - **Läuft:**
   - CR-W3-02 bei `architect` (Basis `fa64d28` + `67e41c6`): gemeinsame Stiltabelle, Titelblock und `DefaultExportPreflight`, ADR 0022. Muss vor T-EXP-003 fertig sein.
-  - T-APP-002 bei `test-engineer` (Basis `5670e2f` + `77053d0` + `175cca4`): Hilt-fähiger NavigationTest.
-- **Danach:** T-EDT-001 (braucht CR-W3-01), Batch 3.2.
+  - T-EDT-001 bei `feature-engineer` (Basis `a7fe3cd` + `09196ec`).
+  - Nachreview Welle 2 bei `reviewer` und Gate-Lauf auf `4c5f514`.
+- **Danach:** Batch 3.2 (T-EDT-002 und T-EDT-003 nach T-EDT-001, T-EXP-003 nach CR-W3-02).
 - Entfernen, sobald erlaubt: alte Worktrees `worktree-agent-a6060eb82b04453d6` (erster Review-Versuch, ohne Commits) und `worktree-agent-aca7ce9d2b1f3f62c` (Gate-Review, nur Probetest).
 
 ## Nächste Schritte
