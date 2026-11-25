@@ -1,7 +1,7 @@
 # Fortschritt
 
-**Aktuelle Phase:** 4 – Umsetzung, Welle 2
-**Letzte Aktualisierung:** 2026-11-24
+**Aktuelle Phase:** 4 – Umsetzung, Welle 3
+**Letzte Aktualisierung:** 2026-11-25
 
 ## Phasen
 
@@ -11,7 +11,7 @@
 | 1 – Umgebung | Fertig | `docs/ENVIRONMENT.md`, Emulator-Boot ausgeführt |
 | 2 – Spezifikation | Fertig | Vom Auftraggeber freigegeben am 2026-11-23 |
 | 3 – Fundament | Fertig | Gate 2026-11-24 auf `ebe15b1`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 381 JVM-Tests, Pitest Geometrie 82 %, 2 instrumentierte Tests, Review `APPROVE`. Vertragsfreeze, Tag `phase-3-foundation` |
-| 4 – Umsetzung | Welle 1 fertig | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1` |
+| 4 – Umsetzung | Wellen 1 und 2 fertig, Welle 3 läuft | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
 | 5 – Härtung | Offen | |
 | 6 – Release | Offen | |
 | 7 – Abschlussbericht | Offen | |
@@ -87,6 +87,7 @@ Keine.
 - 2026-11-25: T-APP-001 gemergt (`fb20aa9`, 29 Tests in `:app` und den Feature-Modulen). Die App startet auf dem Emulator: `MainActivityLaunchTest` erreicht mit dem Produktions-Graphen `RESUMED`, instrumentiert 3 von 3. Typsichere Routen, vollständiger Hilt-Graph, DataStore mit Corruption-Handler. Die Screens zeigen Titel und Leerzustände, „Neues Projekt“ ist bis T-PRJ-001 deaktiviert. Die History-Fabrik ist vorerst als Funktionstyp gebunden. Im Backlog stehen der Vertrag `CommandHistoryFactory` und Room als `api` in `:core:data`, um `DatabaseHolder` zu sparen.
 - 2026-11-25: CR-W2-05 gemergt (`bf7e082`). `SceneElement.Label.blockAnchor` ist additiv. Der Renderer setzt Blockzeilen auf `blockAnchor + k·(anchor − blockAnchor)`, mit `k` gleich dem Schriftfaktor. Der Zeilenabstand ist im Editor immer das 1,5-Fache der Textgröße. Ein Regressionstest belegt disjunkte Zeilen bei 1:50, 1:100 und 1:200 und bei fünf Zoomstufen. Die Baselines sind neu aufgenommen. Die gleiche Regel gilt für SVG (in T-EXP-002 eingetragen).
 - 2026-11-25: Welle 2 inhaltlich fertig, Wellen-Gate 2 gestartet.
+- 2026-11-25: **Wellen-Gate 2 bestanden** nach CR-W2-06: Build grün, 1 705 JVM-Tests, Pitest 86 % (1 661 von 1 927), instrumentiert 3 von 3, Nachreview `APPROVE`. Tag `wave-2`.
 - 2026-11-25: Wellen-Gate 2, technischer Teil auf `f23ee84`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün mit 1 697 JVM-Tests ohne Fehler und Überspringer. Pitest Geometrie 86 % (1 658 von 1 927, unverändert seit T-GEO-009). Instrumentiert 3 von 3. Das Review läuft.
 - 2026-11-25: T-EXP-002 fertig (`fa64d28`, noch nicht gemergt). Der SVG-Exporter rechnet Welt → Seite über `PlotLayout`, setzt Labels nach CR-W2-05 und schreibt Zahlen mit `Locale.ROOT`, die Ausgabe ist byte-deterministisch. JSON besteht den Roundtrip über den Codec. Folgepunkte: Die Stiltabelle ist gespiegelt, das Titelblock-Layout frei gewählt, und es gibt noch kein Default für `ExportPreflight`. Das geht an CR-W3-02. Die DI-Bindung der Exporter folgt mit T-FEX-001.
 - 2026-11-25: T-PRJ-001 fertig (37 Tests, 4 Baselines): Anlegen öffnet den Editor. Der Import schließt den Stream immer, ein Abbruch durch den Nutzer ist kein Fehler, `DomainError.Document` wird auf vier Meldungen abgebildet. T-SET-001 fertig (31 Tests, 5 Baselines): Die absolute Toleranz wird in der Anzeigeeinheit eingegeben und ist mindestens 1 mm, die relative in Prozent. Ungültige Werte werden nicht gespeichert und am Feld erklärt. Beide Screens nutzen `hiltViewModel()`, daher folgt T-APP-002 (Hilt-NavigationTest mit Fakes). `:testing:fixtures` ist jetzt Testabhängigkeit von `:app` und den Feature-Modulen.
@@ -99,8 +100,8 @@ Keine.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
-- **Welle 2:** CR-W2-06 gemergt, Nachreview `APPROVE`. Der Gate-Lauf auf main (`4c5f514` + Doku) läuft: Build grün, Pitest und instrumentierte Tests laufen noch. Danach folgen der Tag `wave-2` auf dem letzten main-Commit vor der Integration, der Push und die CI-Prüfung. Nach einer Unterbrechung Pitest und `scripts/run-instrumented-tests.sh` auf main neu starten.
-- **Integration Welle 3:** Branch `integration-w3` im Worktree `../PlanSnap-int`, Stand `7c9aadd`. Er enthält CR-W3-01, T-PRJ-001, T-SET-001, T-APP-002, T-EXP-002, CR-W3-02, T-EDT-001 und T-EXP-003, dazu den Integrations-Commit `32d596b`: Typ `ApplicationScope` im NavigationTest, `SceneBuilder` und `ExportPreflight` in `DomainModule` gebunden, `EditorSceneModule` entfernt. Voller Build ohne T-EXP-003 grün. Nach dem Tag `wave-2`: `git merge --ff-only integration-w3` auf main, voller Build und Doku.
+- **Welle 2:** fertig, Tag `wave-2`, gepusht. CI-Ergebnis siehe Log.
+- **Integration Welle 3:** Branch `integration-w3` im Worktree `../PlanSnap-int`, Stand `7c9aadd`. Er enthält CR-W3-01, T-PRJ-001, T-SET-001, T-APP-002, T-EXP-002, CR-W3-02, T-EDT-001 und T-EXP-003, dazu den Integrations-Commit `32d596b`: Typ `ApplicationScope` im NavigationTest, `SceneBuilder` und `ExportPreflight` in `DomainModule` gebunden, `EditorSceneModule` entfernt. Voller Build ohne T-EXP-003 grün. Als Nächstes `git merge --no-edit integration-w3` auf main, voller Build und Doku.
 - **Läuft** (Basis `7c9aadd`, Worktree-Branches `worktree-agent-*`): T-EDT-002 (`ui-engineer`, input/ und screen/EditorScreen mit Canvas-Slot), T-EDT-003 (`ui-engineer`, canvas/), T-FEX-001 (`ui-engineer`, feature/export, liefert DI-, Manifest- und FileProvider-Code für `:app`). Den Editor-Screen verdrahtet der Orchestrator beim Merge in `navigation/`.
 - **Offen für das nächste Gate:** Der instrumentierte `PdfExportInstrumentedTest` (T-EXP-003) lief noch nie, Schwellen ggf. anpassen. Die Exporter sind noch nicht in der DI gebunden (kommt mit T-FEX-001).
 - Entfernbare Worktrees (alle Inhalte übernommen): `agent-a6060eb82b04453d6`, `agent-aca7ce9d2b1f3f62c`, `agent-a42bb83f2e58fdaf8`, `agent-a09c0220a46258b35` sowie nach dem Merge der Integration die Worktrees von CR-W3-01, T-EXP-002, T-PRJ-001, T-SET-001, T-APP-002, CR-W3-02, T-EDT-001 und T-EXP-003.
