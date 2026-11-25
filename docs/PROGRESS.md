@@ -79,15 +79,15 @@ Keine.
 - 2026-11-25: Für T-APP-001 bereitet `build-engineer` das Build vor: Hilt über KSP als Konvention `plansnap.android.hilt`, Navigation, Serialisierung und Testabhängigkeiten in `:app` und den Feature-Modulen. Festlegung zum Umfang von T-APP-001: DI-Graph vollständig, typsichere Routen für alle Screens aus UX §1, `NavHost` und `MainActivity`. Jedes Feature-Modul stellt einen Einstiegspunkt (`NavGraphBuilder`-Erweiterung) mit dem Screen-Gerüst aus UX §1 bereit (Titel, Leerzustand). Den Inhalt der Screens liefern die Aufgaben aus Welle 3.
 - 2026-11-25: Build-Setup für T-APP-001 gemergt (`70d6911`): Konvention `plansnap.android.hilt` (KSP und Hilt), Navigation, Serialisierung, `hilt-android-testing`, `navigation-testing`. R8 läuft ohne zusätzliche Keep-Regeln. `core/data` nutzt das KSP-Plugin jetzt ohne Versionsangabe, weil es im Classpath von build-logic liegt.
 - 2026-11-25: T-DRW-001 gemergt (`cf62d97`, `:core:drawing` 155 Tests, Zeilenabdeckung 99,7 %). Der End-to-End-Test trifft mit echtem Evaluator jede Ecke, Wand, Öffnung, Diagonale und jedes Rauminnere. An `architect` als CR-W2-04: Abhängigkeit `:app` → `:core:designsystem` (Theme), eigener `SceneStyle` für das Rauminnere, Konfliktmarkierung am Raum, Auslegung von `DoorSwing` links/rechts, feste Beschriftungsgrößen in Weltmillimetern (150/200/300 mm).
+- 2026-11-25: T-GEO-009 gemergt (`afe6b16`). Der Fehler ist bestätigt. Bei gemessener Schlussecke prüfte die Solver-Auswahl den Sollwert `τ̂_0` statt der entstehenden Drehung. Das fiel auf, wenn die Schlusseckenzeile nicht erzwungen war oder bei überbestimmter Eingabe über alle Zeilen verfeinert wurde. Jetzt prüfen Auswahl und Alternativenfilter `τ_0,abgeleitet`. In 4 000 Fuzz-Fällen änderte sich nur das Flag `honorsDirections` (23 Fälle), keine Zahl und keine Auswahl. Pitest 86 %, Geometrie 631, Domain 377, Drawing 155 Tests grün. Der Prüfstand nutzt dieselbe Prüfung, das wird im Gate-Review bestätigt.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, Build-Setup T-APP-001.
+- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, T-GEO-009, Build-Setup T-APP-001.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
   - CR-W2-04 (`architect`), Basis `5fe66da`.
   - T-EXP-001 (PlotLayout), gleiche Basis.
-  - T-GEO-009 (Fix: Drehrichtung an der Schlussecke), Basis `5837c4b`. Commit `83bbd51` liegt vor, der Bericht steht aus.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
 
 ## Nächste Schritte
