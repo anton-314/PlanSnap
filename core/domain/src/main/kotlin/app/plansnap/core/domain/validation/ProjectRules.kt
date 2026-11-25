@@ -18,7 +18,14 @@ fun interface ProjectValidator {
     fun validate(project: Project): DomainResult<Unit>
 }
 
-/** Rules for openings on their wall (DOMAIN section 9). */
+/**
+ * Rules for openings on their wall (DOMAIN section 9, ADR 0021).
+ *
+ * Both functions measure against the effective wall length `L_effective`: the adjusted length while [Room.adjustment]
+ * is current and structurally valid in a closed room (DOMAIN section 4, step 2 and section 6), otherwise the raw
+ * length. It depends neither on the tolerance nor on a displayed preview, so [statusOf] always equals
+ * `RoomEvaluation.openingStatuses` of the same room.
+ */
 interface OpeningRules {
     /** Returns the derived status of the stored [opening] in [room] against the effective wall length. */
     fun statusOf(

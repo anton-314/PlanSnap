@@ -146,7 +146,12 @@ sealed interface RoomEvaluation {
     /** Displayed closed shape, `null` for [Open] and [Conflict]. */
     val shape: EvaluatedShape?
 
-    /** Derived status of every opening of the room (DOMAIN section 9). */
+    /**
+     * Derived status of every opening of the room (DOMAIN section 9, ADR 0021). It is measured against `L_effective`:
+     * the adjusted length for [Adjusted], the raw length for every other variant, also while [NeedsAdjustment] or
+     * [Proposed] displays a preview or solver shape. It always equals `OpeningRules.statusOf`, so the scene and the
+     * export preflight read it from here.
+     */
     val openingStatuses: ImmutableMap<OpeningId, OpeningStatus>
 
     /**

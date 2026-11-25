@@ -38,24 +38,21 @@ class DefaultOpeningRulesTest {
 
     private fun Room.with(vararg stored: Opening): Room = copy(openings = persistentListOf(*stored))
 
+    /** Current overlay of a closed rectangle `length0 × 3000`, structurally valid (DOMAIN section 6). */
     private fun Room.adjustedTo(length0: Double): Room =
+        withOverlay(listOf(length0, 3000.0, length0, 3000.0), List(4) { Math.PI / 2 })
+
+    private fun Room.withOverlay(
+        lengths: List<Double>,
+        turns: List<Double>,
+    ): Room =
         copy(
             adjustment =
                 ClosureAdjustment(
                     inputFingerprint = inputFingerprint(),
                     solverVersion = 1,
-                    adjustedLengthsMm =
-                        walls
-                            .mapIndexed { i, w ->
-                                if (i ==
-                                    0
-                                ) {
-                                    length0
-                                } else {
-                                    w.length.mm.toDouble()
-                                }
-                            }.toImmutableList(),
-                    adjustedTurnsRad = walls.map { 0.0 }.toImmutableList(),
+                    adjustedLengthsMm = lengths.toImmutableList(),
+                    adjustedTurnsRad = turns.toImmutableList(),
                 ),
         )
 
@@ -193,6 +190,23 @@ class DefaultOpeningRulesTest {
                     ),
             )
         assertEquals(OpeningStatus.VALID, rules.statusOf(stale, stored))
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource(
+        "outline does not close,3000.0,1.5707963267948966",
+        "outline is a straight line,3500.0,0.0",
+    )
+    fun `given a current but structurally invalid adjustment when asking for the status then the raw length decides`(
+        case: String,
+        length0: Double,
+        turn: Double,
+    ) {
+        val stored = opening("a", 3000, 1000)
+        val invalid = base.with(stored).withOverlay(listOf(length0, 3000.0, 4000.0, 3000.0), List(4) { turn })
+        assertEquals(OpeningStatus.VALID, rules.statusOf(invalid, stored), case)
+        assertEquals(success(), rules.check(invalid, stored), case)
+        assertEquals(OpeningStatus.OUT_OF_BOUNDS, rules.statusOf(invalid, opening("b", 3000, 1002)), case)
     }
 
     @Test
