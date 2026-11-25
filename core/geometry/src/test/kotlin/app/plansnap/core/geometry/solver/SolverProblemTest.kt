@@ -181,7 +181,12 @@ class SolverProblemTest {
         assertTrue(problem.violatesDirections(doubleArrayOf(0.0, 0.0, 0.0, -bad)))
         val measuredLeft =
             ShapeInput(listOf(1000, 1000, 1000), listOf(measured(60_000), measured(60_000), LEFT_RIGHT_ANGLE))
-        assertTrue(SolverProblem(measuredLeft).violatesDirections(doubleArrayOf(bad, 1.0, 1.0)))
+        // A measured closing corner is tested at τ_0,derived = 2π − Σ_{i≥1} τ_i, never at the stored τ_0 (T-GEO-009).
+        val closing = SolverProblem(measuredLeft)
+        val half = (SolverProblem.FULL_TURN - bad) / 2.0
+        assertTrue(closing.violatesDirections(doubleArrayOf(1.0, half, half)))
+        val third = SolverProblem.FULL_TURN / 3.0
+        assertFalse(closing.violatesDirections(doubleArrayOf(bad, third, third)))
     }
 
     private class ProblemCase(

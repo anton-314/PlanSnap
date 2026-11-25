@@ -86,6 +86,12 @@ internal fun SolverProblem.hardResidualMm(
 /**
  * Whether a corner with a direction `d` has `d · wrap(τ) < −ε` (DOMAIN section 3). Free corners and measured corners
  * with `α = 180°` have no direction.
+ *
+ * At the closing corner the test uses the turn that actually results, `τ_0,derived = 2π·s − Σ_{i≥1} τ_i`, never the
+ * target (T-GEO-009). For a free or declared closing corner, [candidateTurns] already holds `τ_0,derived` in
+ * `turns[0]`, so that value is used unchanged. For a measured one, `turns[0]` is the target `τ̂_0`, and the derived
+ * turn differs from it whenever the closing row is not enforced: outside `I`, or after the start refinement over all
+ * rows of an overdetermined input (DOMAIN section 5.3).
  */
 internal fun SolverProblem.violatesDirections(turns: DoubleArray): Boolean =
     input.corners.indices.any { i ->
@@ -95,7 +101,8 @@ internal fun SolverProblem.violatesDirections(turns: DoubleArray): Boolean =
                 is CornerInput.Measured -> if (corner.angle == Angle.STRAIGHT) 0 else corner.direction.sign
                 CornerInput.Free -> 0
             }
-        direction != 0 && direction * wrap(turns[i]) < -DIRECTION_TOLERANCE_RAD
+        val turn = if (i == 0 && closingMeasured) derivedClosingTurn(turns) else turns[i]
+        direction != 0 && direction * wrap(turn) < -DIRECTION_TOLERANCE_RAD
     }
 
 private fun SolverProblem.closingArcMm(turns: DoubleArray): Double = abs(closingResidual(turns)) * perimeter / FULL_TURN

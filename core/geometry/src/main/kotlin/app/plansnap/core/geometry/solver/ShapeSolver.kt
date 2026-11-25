@@ -47,7 +47,9 @@ sealed interface HardCondition {
  * @property outline resulting inner contour in room-local coordinates.
  * @property cost objective value `f`, finite and not negative.
  * @property start start value that produced this solution.
- * @property honorsDirections whether all declared and measured turn directions are kept.
+ * @property honorsDirections whether all declared and measured turn directions are kept (DOMAIN section 3). At the
+ * closing corner this is the turn that actually results, `τ_0,derived = 2π·s − Σ_{i≥1} τ_i`, also when [turnsRad]
+ * holds the measured target there.
  */
 data class ShapeSolution(
     val turnsRad: List<Double>,
