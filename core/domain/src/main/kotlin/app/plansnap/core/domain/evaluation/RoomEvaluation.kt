@@ -306,7 +306,9 @@ fun interface RoomEvaluator {
      *
      * Runs on the default dispatcher and passes [currentCancellationSignal] to solver and adjustment.
      *
-     * @return the evaluation, or `DomainError.InvalidValue` if a value violates the limits of `GeometryTolerances`.
+     * @return the evaluation, `DomainError.RuleViolation` with `DomainRule.TOO_MANY_WALLS` if [room] has more than
+     * `GeometryTolerances.MAX_WALLS_PER_ROOM` walls (checked first, as for `AddWall`), or `DomainError.InvalidValue`
+     * if a value violates the limits of `GeometryTolerances`.
      * @throws kotlinx.coroutines.CancellationException if cancelled.
      */
     suspend fun evaluate(
