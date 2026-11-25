@@ -112,9 +112,14 @@ Keine.
 
 ## Wiedereinstieg (Stand 2026-11-26)
 
-- **Welle 3:** fertig, Tag `wave-3`, gepusht. CI-Ergebnis siehe Log.
-- **Keine laufenden Agenten.** Bis auf `main` sind keine Worktrees oder Branches offen.
-- **Als Nächstes:** Welle 4, Batch 4.1: T-EDT-005, T-EDT-006, T-EDT-007, T-EDT-008, T-EDT-012. Höchstens 4 Agenten gleichzeitig. Vor dem Start die Besitzbereiche prüfen: Alle liegen in `:feature:editor` in getrennten Unterpaketen. Gemeinsame Einhängepunkte (`navigation/EditorNavigation.kt`, `EditorActions`) vergibt der Orchestrator je Batch an genau einen Agenten oder verdrahtet sie selbst beim Merge.
+- **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`). CI läuft.
+- **Läuft, Welle 4 / Batch 4.1** (Basis `0803790`, Branches `worktree-<Worktree>`):
+  - T-EDT-005 (`ui-engineer`, `opening/`): `.claude/worktrees/agent-a55ec4cd278005d3e`
+  - T-EDT-006 (`ui-engineer`, `rooms/` plus additiv `canvas/`): `.claude/worktrees/agent-a1029fa26f60a909a`
+  - T-EDT-007 (`ui-engineer`, `details/`): `.claude/worktrees/agent-ae348f7fc05e55f0f`
+  - T-EDT-012 (`ui-engineer`, `ShapeStatusCard` plus `statusCardMaxHeight`): `.claude/worktrees/agent-a93533e89632a2d8e`
+  - Wartet: T-EDT-008 (`history/`). Start, sobald ein Platz frei ist.
+- **Einhängeregel Batch 4.1:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator. Die Agenten liefern Handler per `@IntoSet`, `XxxHost(state, onIntent)`, ggf. `xxxTapIntent` und Menüeinträge als Daten. Der Orchestrator verdrahtet beim Merge (Top-Bar-Überlaufmenü ⋮) und testet die Integration.
 - Dem Nutzer wurde eine Debug-APK zur Ansicht in den Windows-Download-Ordner gelegt (`fee05ca`).
 
 ## Nächste Schritte
