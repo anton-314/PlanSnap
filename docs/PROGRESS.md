@@ -94,7 +94,7 @@ Keine.
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
 - **Welle 2:** Gate technisch grün (siehe Log). Offen ist das Review durch `reviewer` (Worktree-Branch `worktree-agent-*`, Basis `f23ee84`). Nach einer Unterbrechung nur das Review neu starten.
-- **Läuft:** CR-W3-01 bei `architect` (Worktree-Branch `worktree-agent-*`, Basis `8060d9f`).
+- **Läuft:** CR-W3-01 bei `architect` (Basis `8060d9f`). Aus Batch 3.1 vorgezogen, gemergt wird erst nach dem Tag `wave-2`: T-PRJ-001 bei `ui-engineer` und T-EXP-002 bei `feature-engineer` (Basis `da4f190`). Alle liegen in Worktree-Branches `worktree-agent-*`. Danach folgen T-SET-001 und T-EDT-001, Letzteres nach CR-W3-01.
 - Den alten Worktree `worktree-agent-a6060eb82b04453d6` aus dem abgebrochenen ersten Review kann man entfernen. Er hat keine Commits, nur einen nicht versionierten Probetest. Das Entfernen mit `--force` hat das Berechtigungssystem abgelehnt.
 
 ## Nächste Schritte
