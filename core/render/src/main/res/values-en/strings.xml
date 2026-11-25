@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="render_shape_not_confirmed">Shape not confirmed</string>
+    <string name="render_shape_conflict">Measurements contradict each other</string>
+    <string name="render_dimension_mm">%1$s mm</string>
+    <string name="render_dimension_cm">%1$s cm</string>
+    <string name="render_dimension_m">%1$s m</string>
+    <string name="render_area_m2">%1$s m²</string>
+    <string name="render_angle_degrees">%1$s°</string>
+</resources>
