@@ -4,4 +4,40 @@
     <string name="projects_open_settings">Einstellungen</string>
     <string name="projects_empty_explanation">Miss einen Raum Wand für Wand und PlanSnap zeichnet den Grundriss. Beginne mit einem neuen Projekt.</string>
     <string name="projects_new_project">Neues Projekt</string>
+    <string name="projects_import">Projekt importieren</string>
+    <string name="projects_importing">Projekt wird importiert…</string>
+    <string name="projects_loading">Projekte werden geladen…</string>
+    <string name="projects_retry">Erneut versuchen</string>
+    <string name="projects_more_actions">Weitere Aktionen für %1$s</string>
+    <string name="projects_open_project">%1$s öffnen</string>
+    <plurals name="projects_room_count">
+        <item quantity="one">%1$d Raum</item>
+        <item quantity="other">%1$d Räume</item>
+    </plurals>
+    <string name="projects_summary">%1$s · geändert %2$s</string>
+
+    <string name="projects_action_rename">Umbenennen</string>
+    <string name="projects_action_duplicate">Duplizieren</string>
+    <string name="projects_action_delete">Löschen</string>
+
+    <string name="projects_dialog_cancel">Abbrechen</string>
+    <string name="projects_dialog_create_title">Neues Projekt</string>
+    <string name="projects_dialog_create_confirm">Anlegen</string>
+    <string name="projects_dialog_rename_title">Projekt umbenennen</string>
+    <string name="projects_dialog_rename_confirm">Umbenennen</string>
+    <string name="projects_dialog_name_label">Projektname</string>
+    <string name="projects_dialog_delete_title">Projekt löschen?</string>
+    <string name="projects_dialog_delete_message">„%1$s“ und alle Räume werden gelöscht. Das lässt sich nicht rückgängig machen.</string>
+    <string name="projects_dialog_delete_confirm">Löschen</string>
+
+    <string name="projects_error_read_failed">Die Projekte konnten nicht gelesen werden. Versuche es erneut.</string>
+    <string name="projects_error_write_failed">Die Änderung konnte nicht gespeichert werden. Versuche es erneut.</string>
+    <string name="projects_error_no_space">Auf diesem Gerät ist nicht genug Speicher frei.</string>
+    <string name="projects_error_not_found">Dieses Projekt existiert nicht mehr.</string>
+    <string name="projects_error_invalid_name">Dieser Name ist nicht erlaubt. Wähle einen anderen Namen.</string>
+    <string name="projects_error_import_malformed">Diese Datei ist keine PlanSnap-Projektdatei.</string>
+    <string name="projects_error_import_unsupported_version">Diese Datei stammt aus einer neueren Version von PlanSnap. Aktualisiere die App, um sie zu öffnen.</string>
+    <string name="projects_error_import_too_large">Diese Datei ist zu groß für den Import.</string>
+    <string name="projects_error_import_invalid_values">Diese Projektdatei enthält unzulässige Werte und kann nicht importiert werden.</string>
+    <string name="projects_error_unknown">Etwas ist schiefgelaufen. Versuche es erneut.</string>
 </resources>
