@@ -54,10 +54,13 @@ enum class SceneStyle {
     /** Filled wall band. */
     WALL_BAND,
 
-    /** Wall of thickness zero or inner contour. */
+    /**
+     * Wall of thickness zero or inner contour. A [SceneElement.Fill] in this style with a [SceneTarget.RoomBody]
+     * target is the room interior: its outline is stroked as the inner contour, it is not filled with the wall color.
+     */
     WALL_LINE,
 
-    /** Unconfirmed, dashed outline. */
+    /** Unconfirmed, dashed outline. A room body [SceneElement.Fill] in this style is stroked dashed, not filled. */
     WALL_UNCONFIRMED,
 
     /** Opening symbol. */
