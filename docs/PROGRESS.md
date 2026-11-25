@@ -111,7 +111,7 @@ Keine.
 - **Läuft, Batch 3.3** (Basis `668149d`, neue Worktrees starten per `git merge --ff-only`):
   - T-FEX-001: gemergt (`b0b3d83`), Worktrees entfernt.
   - T-EDT-004: gemergt (`a475848`, Testfix `4e5152d`), Worktree entfernt.
-- **Wellen-Gate 3 auf `434ac37`:** Build grün (2 117 JVM-Tests). Review `CHANGES_REQUESTED` (H1, M1 bis M4). Pitest lief auf `434ac37`, Ergebnis siehe Log.
+- **Wellen-Gate 3 auf `434ac37`:** Build grün (2 117 JVM-Tests). Review `CHANGES_REQUESTED` (H1, M1 bis M4). Pitest auf `434ac37`: 86 % (1 658 von 1 927), unverändert, weil sich `:core:geometry` in Welle 3 nicht geändert hat.
 - **Läuft, Batch 3.4 (Gate-Fix)**, Basis `c55d485`:
   - T-EDT-010 (`feature-engineer`, H1, M1, M4 in `state/` und `shape/`), Worktree `.claude/worktrees/agent-abd13cf4380401d92`.
   - T-EDT-011 (`ui-engineer`, M3 in `screen/`, `input/`, `navigation/`), Worktree `.claude/worktrees/agent-ac2f25ba884771571`.
