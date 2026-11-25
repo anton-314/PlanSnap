@@ -17,6 +17,7 @@ import app.plansnap.core.drawing.viewport.DefaultViewportTransform
 import app.plansnap.core.drawing.viewport.Viewport
 import app.plansnap.core.drawing.viewport.ViewportTransform
 import app.plansnap.core.geometry.primitives.Vec2
+import kotlin.math.hypot
 import kotlin.math.min
 
 /**
@@ -231,13 +232,31 @@ class SceneRenderer(
             } else {
                 RenderTextRules.exportTextSizePt(element.heightMm, exportDenominator)
             }
+        val anchor = element.anchor
+        val block = element.blockAnchor
+        val spread =
+            if (block ==
+                null
+            ) {
+                0.0
+            } else {
+                RenderTextRules.blockSpread(textPaint.textSize, element.heightMm, mapping.unitsPerMm)
+            }
         val reference = if (element.text is LabelText.Dimension) lineReferencePx else roomReferencePx
-        if (inEditor && RenderTextRules.isHidden(textPaint.measureText(content), reference)) return
+        if (inEditor) {
+            if (RenderTextRules.isHidden(textPaint.measureText(content), reference)) return
+            if (block != null) {
+                val offset = hypot(anchor.x - block.x, anchor.y - block.y) * spread * mapping.unitsPerMm
+                if (RenderTextRules.isOutsideBlockBand(offset.toFloat(), textPaint.textSize, reference)) return
+            }
+        }
         textPaint.color = StyleLook.textColor(element.style, palette)
         val flip = if (mapping.mirrorsY) -1.0 else 1.0
         val baseline = -(textPaint.ascent() + textPaint.descent()) / 2f
+        val worldX = if (block == null) anchor.x else block.x + spread * (anchor.x - block.x)
+        val worldY = if (block == null) anchor.y else block.y + spread * (anchor.y - block.y)
         canvas.save()
-        canvas.translate(mapping.x(element.anchor.x), mapping.y(element.anchor.y))
+        canvas.translate(mapping.x(worldX), mapping.y(worldY))
         canvas.rotate((Math.toDegrees(element.rotationRad) * flip).toFloat())
         canvas.drawText(content, 0f, baseline, textPaint)
         canvas.restore()

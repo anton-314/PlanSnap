@@ -228,7 +228,19 @@ sealed interface SceneElement {
         }
     }
 
-    /** Text centered on [anchor], with its height in world millimeters. */
+    /**
+     * Text centered on [anchor], with its nominal height in world millimeters.
+     *
+     * A label with a [blockAnchor] is one line of a multi-line label block, such as the room label (ADR 0008, addendum
+     * CR-W2-05). All lines of a block share the same [blockAnchor], and [anchor] is the nominal position of the line
+     * for text drawn at exactly [heightMm]. A renderer that draws the text `k` times as large as [heightMm] in world
+     * terms, for example the enlarged export text or the constant screen size of the editor, places the line at
+     * `blockAnchor + k · (anchor − blockAnchor)`, so the lines keep their spacing relative to the text and never
+     * overlap. A label without [blockAnchor] is a single line, such as a dimension or angle, and stays at [anchor].
+     * Bounds and hit tests use the nominal [anchor].
+     *
+     * @property blockAnchor common anchor of the label block, `null` for a single-line label.
+     */
     data class Label(
         val anchor: Vec2,
         val text: LabelText,
@@ -236,6 +248,7 @@ sealed interface SceneElement {
         val heightMm: Double,
         override val style: SceneStyle,
         override val target: SceneTarget?,
+        val blockAnchor: Vec2? = null,
     ) : SceneElement {
         init {
             require(rotationRad.isFinite()) { "Label rotation must be finite" }

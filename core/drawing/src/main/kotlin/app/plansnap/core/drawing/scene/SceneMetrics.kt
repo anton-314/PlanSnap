@@ -6,7 +6,9 @@ package app.plansnap.core.drawing.scene
  *
  * The sizes stay in the scene for every output (ADR 0008, addendum CR-W2-04). Label heights are nominal: the editor
  * renderer draws text at a constant screen size in their ratio, and the export renderer enforces a minimum text
- * height on paper. Distances such as [DIMENSION_OFFSET_MM] are geometry and are never rescaled by a renderer.
+ * height on paper. Distances such as [DIMENSION_OFFSET_MM] are geometry and are never rescaled by a renderer. The
+ * only exception is [ROOM_LABEL_LINE_MM]: it is the nominal line spacing of a label block and scales with its text
+ * (ADR 0008, addendum CR-W2-05).
  */
 internal object SceneMetrics {
     /** Height of a wall or diagonal length label. */
@@ -24,7 +26,10 @@ internal object SceneMetrics {
     /** Height of a room label line: name, type, area, mark and notes. */
     const val ROOM_LABEL_HEIGHT_MM: Double = 200.0
 
-    /** Distance between the anchors of two consecutive room label lines. */
+    /**
+     * Nominal distance between the anchors of two consecutive room label lines, 1.5 times [ROOM_LABEL_HEIGHT_MM]. A
+     * renderer scales it by the same factor as the text, so the ratio and the gap between the lines stay.
+     */
     const val ROOM_LABEL_LINE_MM: Double = 300.0
 
     /** Height of an interior angle label. */

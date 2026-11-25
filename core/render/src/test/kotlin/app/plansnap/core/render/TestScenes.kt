@@ -46,6 +46,19 @@ internal object TestScenes {
         heightMm: Double = 150.0,
     ): SceneElement.Label = SceneElement.Label(Vec2(x, y), text, 0.0, heightMm, style, body)
 
+    /**
+     * A room label block around [anchor] like the scene builder makes it: lines of 200 mm, 300 mm apart, first on top,
+     * all sharing [anchor] as block anchor.
+     */
+    fun block(
+        anchor: Vec2,
+        vararg lines: Pair<LabelText, SceneStyle>,
+    ): List<SceneElement.Label> =
+        lines.mapIndexed { i, (text, style) ->
+            val shift = ((lines.size - 1) / 2.0 - i) * LINE_MM
+            SceneElement.Label(Vec2(anchor.x, anchor.y + shift), text, 0.0, ROOM_LABEL_MM, style, body, anchor)
+        }
+
     fun scene(
         status: ShapeStatus,
         elements: List<SceneElement>,
@@ -99,23 +112,31 @@ internal object TestScenes {
         elements += polyline(SceneStyle.DIMENSION, Vec2(-2000.0, -1900.0), Vec2(2000.0, -1900.0), target = wall(0))
         elements += label(0.0, -2050.0, LabelText.Dimension(4000.0), SceneStyle.DIMENSION).copy(target = wall(0))
         elements += polyline(SceneStyle.DIAGONAL, corners[0], corners[2], target = SceneTarget.Corner(roomId, 0))
-        elements += label(0.0, 500.0, LabelText.Literal("Küche"), SceneStyle.LABEL, heightMm = 200.0)
-        elements += label(0.0, 200.0, LabelText.RoomType(RoomTypeKey("kitchen")), SceneStyle.LABEL, heightMm = 200.0)
-        if (unconfirmed) {
-            elements +=
-                label(0.0, -100.0, LabelText.ShapeNotConfirmed, SceneStyle.WARNING, heightMm = 200.0)
-        }
-        if (status ==
-            ShapeStatus.CONFLICT
-        ) {
-            elements +=
-                label(0.0, -100.0, LabelText.ShapeConflict, SceneStyle.CONFLICT, heightMm = 200.0)
-        }
+        elements += roomLabel(status, unconfirmed)
         corners.forEachIndexed { i, c ->
             elements += polyline(SceneStyle.WALL_LINE, c, c, target = SceneTarget.Corner(roomId, i))
         }
         return scene(status, elements)
     }
 
+    /** Name and type, then the mark of an unconfirmed or conflict room, with the name at y = 500 mm. */
+    private fun roomLabel(
+        status: ShapeStatus,
+        unconfirmed: Boolean,
+    ): List<SceneElement.Label> {
+        val lines =
+            buildList {
+                add(LabelText.Literal("Küche") to SceneStyle.LABEL)
+                add(LabelText.RoomType(RoomTypeKey("kitchen")) to SceneStyle.LABEL)
+                if (unconfirmed) add(LabelText.ShapeNotConfirmed to SceneStyle.WARNING)
+                if (status == ShapeStatus.CONFLICT) add(LabelText.ShapeConflict to SceneStyle.CONFLICT)
+            }
+        val blockY = if (lines.size == 2) 350.0 else 200.0
+        return block(Vec2(0.0, blockY), *lines.toTypedArray())
+    }
+
     private fun wall(index: Int): SceneTarget = SceneTarget.Wall(roomId, WallId("w$index"))
+
+    private const val LINE_MM = 300.0
+    private const val ROOM_LABEL_MM = 200.0
 }

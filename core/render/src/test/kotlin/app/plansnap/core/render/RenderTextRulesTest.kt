@@ -46,4 +46,29 @@ class RenderTextRulesTest {
         assertFalse(RenderTextRules.isHidden(textWidthPx = 80f, referenceLengthPx = 80f))
         assertFalse(RenderTextRules.isHidden(textWidthPx = 80f, referenceLengthPx = 200f))
     }
+
+    @Test
+    fun `given export text when computing the block spread then it equals the export factor at every scale`() {
+        val pointsPerMm = 72.0 / 25.4
+        for (denominator in listOf(50, 100, 200)) {
+            val size = RenderTextRules.exportTextSizePt(200.0, denominator)
+            val spread = RenderTextRules.blockSpread(size, 200.0, pointsPerMm / denominator)
+            assertEquals("1:$denominator", RenderTextRules.exportFactor(denominator), spread, 1e-5)
+        }
+    }
+
+    @Test
+    fun `given editor text when computing the block spread then the screen line spacing does not depend on the zoom`() {
+        val size = RenderTextRules.editorTextSizePx(200.0, referencePx = 24f)
+        for (pixelsPerMm in listOf(0.005, 0.05, 0.5, 5.0)) {
+            val spacingPx = 300.0 * RenderTextRules.blockSpread(size, 200.0, pixelsPerMm) * pixelsPerMm
+            assertEquals("at $pixelsPerMm px/mm", 1.5 * size, spacingPx, 1e-3)
+        }
+    }
+
+    @Test
+    fun `given a block line when checking the band of its room then it is shown only while it fits`() {
+        assertFalse(RenderTextRules.isOutsideBlockBand(lineOffsetPx = 30f, textSizePx = 40f, referenceLengthPx = 100f))
+        assertTrue(RenderTextRules.isOutsideBlockBand(lineOffsetPx = 30f, textSizePx = 40f, referenceLengthPx = 99.9f))
+    }
 }

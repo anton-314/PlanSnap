@@ -337,6 +337,18 @@ class DefaultSceneBuilderTest {
     }
 
     @Test
+    fun `given a room label when built then its lines form one block and single-line labels have none`() {
+        val room = rectangle.copy(name = "Kitchen", typeKey = RoomTypeKey("kitchen"), notes = "Tiles")
+        val labels = scene(room, SceneOptions(includeNotes = true)).elements.filterIsInstance<SceneElement.Label>()
+        val (block, single) = labels.partition { it.target == SceneTarget.RoomBody(room.id) }
+        assertEquals(4, block.size)
+        val anchor = requireNotNull(block.map { it.blockAnchor }.distinct().single())
+        assertClose(Vec2(2000.0, 1500.0), anchor, 1e-9)
+        assertTrue(single.isNotEmpty())
+        assertTrue(single.all { it.blockAnchor == null }, "dimensions and angles are single lines")
+    }
+
+    @Test
     fun `given a U shape whose centroid lies outside when built then the room label lies inside`() {
         val reference = ReferenceRooms.U_SHAPE
         val area =

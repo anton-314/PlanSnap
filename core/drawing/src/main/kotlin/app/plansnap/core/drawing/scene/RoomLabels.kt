@@ -20,8 +20,9 @@ internal object RoomLabels {
     )
 
     /**
-     * Stacks [lines] vertically around [anchor], first line on top, upright in world coordinates. Every line selects
-     * the room body.
+     * Stacks [lines] vertically around [anchor], first line on top, upright in world coordinates. The lines form one
+     * label block with [anchor] as [SceneElement.Label.blockAnchor], so a renderer that enlarges the text spreads the
+     * lines by the same factor (ADR 0008, addendum CR-W2-05). Every line selects the room body.
      */
     fun stacked(
         anchor: Vec2,
@@ -37,6 +38,7 @@ internal object RoomLabels {
                 heightMm = ROOM_LABEL_HEIGHT_MM,
                 style = line.style,
                 target = target,
+                blockAnchor = anchor,
             )
         }
 

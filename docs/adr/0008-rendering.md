@@ -38,3 +38,18 @@ Aus T-DRW-001 (SceneBuilder) und T-APP-001 festgelegt:
 - **Feste Weltgrößen:** Die Größen in `SceneMetrics` (Maßzahl 150 mm, Raumbeschriftung 200 mm, Winkel 120 mm, Maßlinie 300 mm außen) bleiben in der Szene. Eine Szene für alle Ausgaben bleibt deterministisch und per Golden-Test prüfbar. Schrifthöhen sind Nennhöhen. Der Editor-Renderer zeichnet Text in konstanter Bildschirmgröße und im Verhältnis der Nennhöhen (Maßzahl 12 sp als Bezug für 150 mm) und blendet eine Beschriftung aus, deren Bezugselement auf dem Bildschirm kürzer als der Text ist. Der Export-Renderer vergrößert alle Beschriftungen mit `f = max(1, 1,8 mm · M / 150 mm)` (DOMAIN §12). Abstände wie die Maßlinie sind Geometrie und werden nie umskaliert. Der Renderer setzt das um, nicht `:core:drawing`.
 
 Verhaltensänderung der Umsetzung: Stil des Rauminneren, Konfliktmarke und Türanschlag. Die Weltgrößen der Szene ändern sich nicht.
+
+## Ergänzung 2026-11-25 (CR-W2-05)
+
+Problem: Die Zeilen der Raumbeschriftung (Name, Typ, Fläche, Marke, Notizen) lagen auf festen Weltabständen von 300 mm. Der Export vergrößert Text mit `f` (bei 1:200 `f = 2,4`), der Editor zeichnet ihn in konstanter Bildschirmgröße. Die Abstände wuchsen nicht mit, die Zeilen überlappten (1:200, Editor beim Herauszoomen).
+
+Entscheidung: **Beschriftungsblock über einen gemeinsamen Blockanker.**
+
+- **Vertrag (additiv):** `SceneElement.Label` erhält als letzten Parameter `blockAnchor: Vec2? = null`. Alle Zeilen eines Blocks tragen denselben `blockAnchor`. `anchor` bleibt die Nennlage der Zeile für Text in genau `heightMm`. Einzeilige Beschriftungen (Maßzahlen, Diagonalen, Winkel) haben `null` und bleiben unverändert auf `anchor`. Die Raumbeschriftung aus `RoomLabels.stacked` ist ein Block mit dem Innenpunkt bzw. Kettenmittel als Blockanker.
+- **Layout im Renderer:** Mit `k = gezeichnete Textgröße / (heightMm · Leinwandeinheiten je mm)` liegt eine Blockzeile bei `blockAnchor + k · (anchor − blockAnchor)`. Im Export ist `k = f`, im Editor hält `k` den Zeilenabstand bei jedem Zoom auf dem 1,5-Fachen der Textgröße (Verhältnis `ROOM_LABEL_LINE_MM / ROOM_LABEL_HEIGHT_MM`). Damit überlappen Zeilen nie, und bei 1:50 (`f = 1`) bleibt das Bild bitgleich.
+- **Ausblendregel im Editor:** Zusätzlich zur Breitenregel wird eine Blockzeile ausgeblendet, wenn `2 · Abstand zum Blockanker + Textgröße` auf dem Bildschirm die kleinere Raumseite übersteigt. Die mittleren Zeilen bleiben am längsten sichtbar, der Block läuft nicht über die Wände in Nachbarräume.
+- **Szene, Grenzen und Treffertest:** Die Szene bleibt rein, deterministisch und golden-test-fähig, `SceneBounds` und `DefaultHitTester` nutzen weiter die Nennlage `anchor` (Scheibe mit `heightMm` als Durchmesser, CR-W2-01). Die gezeichneten Zeilen liegen im Rauminneren, das über die `RoomBody`-Fläche ohnehin getroffen wird.
+
+Das ist Variante (b) des Change-Requests, mit dem Blockanker als Blockidentität. Verworfen: (a) ein neues Element `LabelBlock` mit geordneten Zeilen, das der Renderer selbst setzt. Es bricht jedes erschöpfende `when` über `SceneElement`, braucht eigene Regeln für Grenzen und Treffertest und legt die Zeilenhöhe in jeden Renderer (auch den späteren SVG-Schreiber), ohne mehr auszudrücken als der Blockanker. Ebenso verworfen: Blöcke im Renderer aus Ziel und Reihenfolge zu erraten, weil das an jeder neuen Beschriftungsart bricht.
+
+Offen: Im Export kann ein sehr kleiner Raum bei 1:200 einen Block haben, der über die Wände hinausreicht. Das gilt für den vergrößerten Text schon heute und bleibt ohne Ausblendung, weil der Export nichts ausblendet (DOMAIN §12).

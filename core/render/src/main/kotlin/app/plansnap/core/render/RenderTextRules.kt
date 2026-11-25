@@ -47,4 +47,32 @@ object RenderTextRules {
         textWidthPx: Float,
         referenceLengthPx: Float,
     ): Boolean = textWidthPx > referenceLengthPx
+
+    /**
+     * Spread factor `k` of a label block line (ADR 0008, addendum CR-W2-05): the drawn text size divided by the
+     * nominal height on the canvas. The line is drawn at `blockAnchor + k · (anchor − blockAnchor)`, so the spacing of
+     * the lines scales with the text. In the export `k` equals [exportFactor], in the editor it keeps the lines at a
+     * constant screen spacing at every zoom.
+     *
+     * @param textSize drawn text size in canvas units (pixels or points).
+     * @param heightMm nominal label height in world millimeters, positive.
+     * @param unitsPerMm canvas units per world millimeter, positive.
+     */
+    fun blockSpread(
+        textSize: Float,
+        heightMm: Double,
+        unitsPerMm: Double,
+    ): Double = textSize / (heightMm * unitsPerMm)
+
+    /**
+     * Whether an editor line of a label block is hidden because it leaves the band around the block anchor that its
+     * room offers: twice its distance [lineOffsetPx] from the block anchor plus its text size exceeds
+     * [referenceLengthPx], the smaller side of the room on the screen. Lines in the middle of the block are kept
+     * longest; it complements [isHidden], which limits the width.
+     */
+    fun isOutsideBlockBand(
+        lineOffsetPx: Float,
+        textSizePx: Float,
+        referenceLengthPx: Float,
+    ): Boolean = 2f * lineOffsetPx + textSizePx > referenceLengthPx
 }
