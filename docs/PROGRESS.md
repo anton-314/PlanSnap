@@ -120,7 +120,7 @@ Keine.
   - T-EDT-011: gemergt (`ec9dc41`), Worktree entfernt.
   - T-FEX-002: gemergt (`816ee14`), Worktree entfernt.
   - Branches jeweils `worktree-<Name>`. Die Probetests des Reviewers liegen nur im Scratchpad und gehen in T-EDT-010 auf.
-- **Danach:** Merge, voller Gate-Build, instrumentiert, Nachreview, Tag `wave-3`, Push.
+- **Gate 3, zweiter Lauf auf `b53c9cb`:** Build grün (2 140 JVM-Tests, 0 Fehler), instrumentiert 11 von 11. Das Nachreview läuft (`reviewer`, Worktree `.claude/worktrees/agent-a2aa61a7ee987e4cf`). Bei `APPROVE` folgen Tag `wave-3`, Push und CI-Prüfung.
 - **Vorab:** `PdfExportInstrumentedTest` läuft auf `da14d37` grün (instrumentiert 11 von 11, davon 8 PDF). Gate: Build mit Kover, Architektur und Roborazzi, Pitest, instrumentiert, Review, Tag `wave-3`, Push.
 
 ## Nächste Schritte
