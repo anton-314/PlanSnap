@@ -14,6 +14,7 @@ import app.plansnap.core.common.runtime.ApplicationScope
 import app.plansnap.core.common.runtime.DispatcherProvider
 import app.plansnap.core.common.runtime.EpochClock
 import app.plansnap.core.common.runtime.IdGenerator
+import app.plansnap.core.common.units.Length
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.document.DocumentCodec
 import app.plansnap.core.document.JsonDocumentCodec
@@ -21,7 +22,10 @@ import app.plansnap.core.domain.repository.EditorDraftRepository
 import app.plansnap.core.domain.repository.ProjectRepository
 import app.plansnap.core.domain.repository.ProjectSaver
 import app.plansnap.core.domain.repository.SettingsRepository
+import app.plansnap.core.model.Project
 import app.plansnap.core.model.ProjectId
+import app.plansnap.core.model.Room
+import app.plansnap.core.model.RoomId
 import app.plansnap.di.DataModule
 import app.plansnap.di.RuntimeModule
 import app.plansnap.testing.fixtures.fakes.FakeEditorDraftRepository
@@ -39,6 +43,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import dagger.hilt.android.testing.UninstallModules
 import dagger.hilt.components.SingletonComponent
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.junit.Assert.assertEquals
@@ -129,7 +134,7 @@ class NavigationTest {
         compose.onNodeWithText("Export").performClick()
         compose.waitForIdle()
         assertEquals(listOf("projects", "editor:p-1", "export:p-1"), backStackRoutes())
-        compose.onNodeWithText("The project could not be read. Try again.").assertExists()
+        compose.onNodeWithText("Format").assertExists()
     }
 
     @Test
@@ -155,7 +160,8 @@ class NavigationTest {
     object FakeDataModule {
         @Provides
         @Singleton
-        fun fakeProjectRepository(): FakeProjectRepository = FakeProjectRepository()
+        fun fakeProjectRepository(): FakeProjectRepository =
+            FakeProjectRepository(initialProjects = listOf(SEEDED_PROJECT))
 
         @Provides
         @Singleton
@@ -203,3 +209,14 @@ class NavigationTest {
         fun applicationScope(dispatchers: DispatcherProvider): ApplicationScope = ApplicationScope.create(dispatchers)
     }
 }
+
+/** The project behind the id `p-1` used by the navigation calls: one room without walls, so the editor loads. */
+private val SEEDED_PROJECT =
+    Project(
+        id = ProjectId("p-1"),
+        name = "Seeded",
+        defaultHeight = Length(2500),
+        rooms = persistentListOf(Room(RoomId("r-1"))),
+        createdAtEpochMs = 1L,
+        updatedAtEpochMs = 1L,
+    )
