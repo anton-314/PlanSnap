@@ -77,19 +77,21 @@ Keine.
 - 2026-11-25: CR-W2-03 gemergt (`3374c32`), mit Verhaltensänderung. Die eigene Wand belegt entlang der Wirtswand `[a, a + L_j]` ab `V_i` mit `a = hostOffset` (bei einer Öffnung `opening.offset + hostOffset`). Bei 0 liegt der Raum bündig am Wandanfang bzw. Öffnungsbeginn. Die Richtung der eigenen Wand folgt dem Umlaufsinn (`e_j = −s_W · s_G · e_i`), das Innere des Gastes liegt also immer außen am Wirt. Es gibt keine Spiegelung und keine neue Regel. Folgepunkt in T-EDT-006 aufgenommen.
 - 2026-11-25: T-DOM-007 gemergt (`5286a59`). `:core:domain` hat 377 Tests. Integrationstest ADR 0019 mit echter Historie, echtem Evaluator und echten Regeln: 4 von 4 grün. Kleinere Aufräumpunkte stehen in BACKLOG.
 - 2026-11-25: Für T-APP-001 bereitet `build-engineer` das Build vor: Hilt über KSP als Konvention `plansnap.android.hilt`, Navigation, Serialisierung und Testabhängigkeiten in `:app` und den Feature-Modulen. Festlegung zum Umfang von T-APP-001: DI-Graph vollständig, typsichere Routen für alle Screens aus UX §1, `NavHost` und `MainActivity`. Jedes Feature-Modul stellt einen Einstiegspunkt (`NavGraphBuilder`-Erweiterung) mit dem Screen-Gerüst aus UX §1 bereit (Titel, Leerzustand). Den Inhalt der Screens liefern die Aufgaben aus Welle 3.
+- 2026-11-25: Build-Setup für T-APP-001 gemergt (`70d6911`): Konvention `plansnap.android.hilt` (KSP und Hilt), Navigation, Serialisierung, `hilt-android-testing`, `navigation-testing`. R8 läuft ohne zusätzliche Keep-Regeln. `core/data` nutzt das KSP-Plugin jetzt ohne Versionsangabe, weil es im Classpath von build-logic liegt.
+- 2026-11-25: T-DRW-001 gemergt (`cf62d97`, `:core:drawing` 155 Tests, Zeilenabdeckung 99,7 %). Der End-to-End-Test trifft mit echtem Evaluator jede Ecke, Wand, Öffnung, Diagonale und jedes Rauminnere. An `architect` als CR-W2-04: Abhängigkeit `:app` → `:core:designsystem` (Theme), eigener `SceneStyle` für das Rauminnere, Konfliktmarkierung am Raum, Auslegung von `DoorSwing` links/rechts, feste Beschriftungsgrößen in Weltmillimetern (150/200/300 mm).
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007.
+- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, Build-Setup T-APP-001.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
-  - T-DRW-001 (SceneBuilder), Basis `5837c4b`, ungesicherte Dateien unter `core/drawing/…/scene/`.
-  - Build-Setup für T-APP-001 (`build-engineer`), Basis `394c1fd`.
+  - CR-W2-04 (`architect`), Basis siehe nächster Commit.
+  - T-EXP-001 (PlotLayout), gleiche Basis.
   - T-GEO-009 (Fix: Drehrichtung an der Schlussecke), Basis `5837c4b`. Commit `83bbd51` liegt vor, der Bericht steht aus.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
 
 ## Nächste Schritte
 
 1. Die laufenden Aufgaben prüfen und übernehmen.
-2. Danach T-RND-001 und T-EXP-001 (nach T-DRW-001), T-APP-001 (nach dem Build-Setup).
+2. Nach CR-W2-04: T-RND-001 und T-APP-001.
 3. Wellen-Gate 2 mit Review, Tag `wave-2`, Push, CI prüfen.
