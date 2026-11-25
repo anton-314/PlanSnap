@@ -83,3 +83,5 @@ Statuszahlen dürfen wegen des strengeren Gradienten leicht abweichen. Abweichun
 | Konvergenznorm des Ausgleichs | komponentenweise, Winkelsummenzeile in Radiant gegen `0,01` | `max(|(c_x, c_y)|, |c_τ| · U/(2π), max_k |c_k|)` in mm (DOMAIN §6, CR-W1-01) |
 
 Maßgeblich ist immer DOMAIN. Widerspricht der Prototyp DOMAIN, ist der Prototyp falsch.
+
+Seit dem Gate-Review von Welle 2 prüft `violated()` in `flow.py` bei gemessener Schlussecke die abgeleitete Drehung `τ_0 = 2π·s − Σ_{i≥1} τ_i`, wie der Solver nach T-GEO-009. Bei Seed 20261124 und 12 000 Fällen ist die Ausgabe mit dem alten Stand identisch, die Sollwerte oben bleiben gültig.

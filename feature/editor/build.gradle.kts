@@ -12,4 +12,9 @@ dependencies {
     implementation(project(":core:render"))
     implementation(project(":core:drawing"))
     implementation(project(":core:designsystem"))
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(project(":testing:fixtures"))
+    testImplementation(libs.turbine)
 }

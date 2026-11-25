@@ -35,6 +35,7 @@ graph LR
 | Welle 2 / 2.1 | T-DOM-001, T-DOM-002, T-DOM-005, T-DRW-002 |
 | Welle 2 / 2.2 | T-DOM-003, T-DOM-004, T-DOM-006, T-DRW-001, T-GEO-009 (Fix) |
 | Welle 2 / 2.3 | T-RND-001, T-EXP-001, T-APP-001, T-DOM-007 |
+| Welle 2 / 2.4 (Gate-Fix) | CR-W2-06 |
 | Welle 3 / 3.1 | T-EDT-001, T-PRJ-001, T-SET-001, T-EXP-002 |
 | Welle 3 / 3.2 | T-EDT-002, T-EDT-003, T-EXP-003 |
 | Welle 3 / 3.3 | T-EDT-004, T-FEX-001 |
@@ -558,6 +559,19 @@ graph LR
 - **Vertrag:** UX §1
 - **Akzeptanzkriterien:** Typsichere Navigation zwischen allen Screens, DI-Graph vollständig, Backup deaktiviert. Die Produktions-DataStore der Einstellungen wird mit `ReplaceFileCorruptionHandler { emptyPreferences() }` erzeugt, sonst liefert nach einer beschädigten Datei jedes `update` dauerhaft `WRITE_FAILED` (Gate-Review Welle 1). `RoomProjectRepository` erhält die `ProjectValidator`-Implementierung aus T-DOM-007. `DefaultProjectCommandFactory` erhält `DefaultOpeningRules` (T-DOM-003), `DefaultCommandHistory` den Resolver aus T-DOM-004. Anforderungen: REQ-DATA-003, REQ-NFR-004
 - **Tests:** Hilt-Graph-Test, Navigationstests
+
+### Batch 2.4 (Gate-Fix)
+
+#### CR-W2-06 – Fix: Einheitliche wirksame Wandlänge für Öffnungen
+
+- **Modul:** :core:domain
+- **Rolle/Modell:** architect
+- **Größe:** M
+- **Abhängigkeiten:** T-DOM-001, T-DOM-003
+- **Besitzbereich:** `core/domain/…/opening/`, `core/domain/…/evaluation/`, zugehörige Tests, `docs/DOMAIN.md` §9, KDoc von `OpeningRules`, ADR
+- **Vertrag:** DOMAIN §6 und §9, `OpeningRules`, `RoomEvaluation.openingStatuses`
+- **Akzeptanzkriterien:** `L_wirksam` ist für alle Stati verbindlich definiert, auch für `NEEDS_ADJUSTMENT`, `PROPOSED` (B7) und strukturell ungültige Overlays. Regeln und Evaluator nutzen dieselbe Implementierung. `DefaultOpeningRules.statusOf` und `RoomEvaluator.openingStatuses` liefern für jede Öffnung denselben Status. Die Fälle aus dem Gate-Review sind als Regressionstests vorher rot, danach grün. Befehl (`AddOpening`), Szene und Export-Vorprüfung sind konsistent.
+- **Tests:** Konsistenz-Property-Test Evaluator gegen `statusOf` über alle Katalogfälle mit zufälligen Öffnungen, Regressionstests aus dem Review
 
 ## Welle 3
 

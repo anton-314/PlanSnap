@@ -10,4 +10,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(project(":core:domain"))
     implementation(project(":core:designsystem"))
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(project(":testing:fixtures"))
+    testImplementation(libs.turbine)
 }

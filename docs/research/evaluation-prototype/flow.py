@@ -228,7 +228,8 @@ def violated(inp, t):
     for i, c in enumerate(inp.c):
         if c[0] == 'F' or (c[0] == 'M' and c[2] == 180000):
             continue
-        if c[1] * wrap(t[i]) < -DIR_EPS:
+        turn = (TAU * inp.s - sum(t[1:])) if (i == 0 and c[0] == 'M') else t[i]
+        if c[1] * wrap(turn) < -DIR_EPS:
             out.append(i)
     return out
 
