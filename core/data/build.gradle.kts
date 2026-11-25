@@ -1,7 +1,7 @@
 plugins {
     id("plansnap.android.library")
     id("plansnap.android.robolectric")
-    alias(libs.plugins.ksp)
+    id("com.google.devtools.ksp")
 }
 
 android {

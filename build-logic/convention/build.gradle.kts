@@ -25,6 +25,8 @@ dependencies {
     implementation(libs.kover.gradle.plugin)
     implementation(libs.pitest.gradle.plugin)
     implementation(libs.roborazzi.gradle.plugin)
+    implementation(libs.ksp.gradle.plugin)
+    implementation(libs.hilt.gradle.plugin)
 
     testImplementation(gradleTestKit())
     testImplementation(platform(libs.junit.bom))
@@ -52,6 +54,10 @@ gradlePlugin {
         register("androidCompose") {
             id = "plansnap.android.compose"
             implementationClass = "AndroidComposeConventionPlugin"
+        }
+        register("androidHilt") {
+            id = "plansnap.android.hilt"
+            implementationClass = "AndroidHiltConventionPlugin"
         }
         register("androidRobolectric") {
             id = "plansnap.android.robolectric"
