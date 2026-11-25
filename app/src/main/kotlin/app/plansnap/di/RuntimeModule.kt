@@ -1,5 +1,6 @@
 package app.plansnap.di
 
+import app.plansnap.core.common.runtime.ApplicationScope
 import app.plansnap.core.common.runtime.DispatcherProvider
 import app.plansnap.core.common.runtime.EpochClock
 import app.plansnap.core.common.runtime.IdGenerator
@@ -8,17 +9,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import java.util.UUID
-import javax.inject.Qualifier
 import javax.inject.Singleton
-
-/** Qualifier of the [CoroutineScope] that lives as long as the process (ARCHITECTURE section 5). */
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class ApplicationScope
 
 /** Production [DispatcherProvider] on the platform dispatchers. */
 class SystemDispatcherProvider : DispatcherProvider {
@@ -47,12 +40,10 @@ object RuntimeModule {
     fun ids(): IdGenerator = IdGenerator { UUID.randomUUID().toString() }
 
     /**
-     * Scope for confirmed commands and saving. A failing child does not cancel its siblings, and the scope is never
-     * cancelled, so work outlives the screen that started it.
+     * The single process-wide scope for confirmed commands and saving (ADR 0020). A failing child does not cancel its
+     * siblings, and the scope is never cancelled, so work outlives the screen that started it.
      */
     @Provides
     @Singleton
-    @ApplicationScope
-    fun applicationScope(dispatchers: DispatcherProvider): CoroutineScope =
-        CoroutineScope(SupervisorJob() + dispatchers.default)
+    fun applicationScope(dispatchers: DispatcherProvider): ApplicationScope = ApplicationScope.create(dispatchers)
 }

@@ -3,6 +3,7 @@ package app.plansnap.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import app.plansnap.core.common.result.DomainResult
+import app.plansnap.core.common.runtime.ApplicationScope
 import app.plansnap.core.common.units.Length
 import app.plansnap.core.data.repository.RoomEditorDraftRepository
 import app.plansnap.core.data.repository.RoomProjectRepository
@@ -31,8 +32,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -84,8 +85,9 @@ class HiltGraphTest {
 
     @Inject lateinit var dataStore: DataStore<Preferences>
 
-    @Inject @ApplicationScope
-    lateinit var applicationScope: CoroutineScope
+    @Inject lateinit var applicationScope: ApplicationScope
+
+    @Inject lateinit var scopeConsumer: ApplicationScopeConsumer
 
     @Before
     fun inject() = hilt.inject()
@@ -117,6 +119,14 @@ class HiltGraphTest {
     }
 
     @Test
+    fun applicationScopeIsOneSupervisedInstanceForConstructorInjection() {
+        assertSame(applicationScope, scopeConsumer.scope)
+        val failure = runBlocking { runCatching { applicationScope.async { error("boom") }.await() }.exceptionOrNull() }
+        assertTrue(failure is IllegalStateException)
+        assertTrue(applicationScope.coroutineContext[Job]!!.isActive)
+    }
+
+    @Test
     fun repositoryAndSettingsWorkAgainstTheRealStorage() =
         runBlocking {
             assertTrue(projects.observeProjects().first().isEmpty())
@@ -144,3 +154,10 @@ class HiltGraphTest {
         assertEquals(0, first.state.undoDepth)
     }
 }
+
+/** Stands in for a feature-module class that receives the application scope by constructor injection. */
+class ApplicationScopeConsumer
+    @Inject
+    constructor(
+        val scope: ApplicationScope,
+    )
