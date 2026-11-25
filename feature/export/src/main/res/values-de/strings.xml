@@ -3,4 +3,70 @@
     <string name="export_title">Export</string>
     <string name="export_back">Zurück</string>
     <string name="export_empty_hint">Noch kein Raum</string>
+    <string name="export_loading">Export wird vorbereitet</string>
+    <string name="export_retry">Erneut versuchen</string>
+    <string name="export_dismiss">Schließen</string>
+
+    <string name="export_section_format">Format</string>
+    <string name="export_format_pdf">PDF</string>
+    <string name="export_format_pdf_description">Maßstäbliche Zeichnung zum Drucken</string>
+    <string name="export_format_png">PNG</string>
+    <string name="export_format_png_description">Bild der maßstäblichen Seite, 200 dpi</string>
+    <string name="export_format_svg">SVG</string>
+    <string name="export_format_svg_description">Maßstäbliches Vektorbild</string>
+    <string name="export_format_json">JSON</string>
+    <string name="export_format_json_description">Projektdatei mit allen Räumen, kann wieder importiert werden</string>
+
+    <string name="export_section_page">Seite</string>
+    <string name="export_scale_label">Maßstab</string>
+    <string name="export_scale_auto">Automatisch</string>
+    <string name="export_scale_1_50">1:50</string>
+    <string name="export_scale_1_100">1:100</string>
+    <string name="export_scale_1_200">1:200</string>
+    <string name="export_paper_label">Papier</string>
+    <string name="export_paper_auto">Automatisch</string>
+    <string name="export_paper_a4">A4</string>
+    <string name="export_paper_a3">A3</string>
+    <string name="export_orientation_label">Ausrichtung</string>
+    <string name="export_orientation_portrait">Hochformat</string>
+    <string name="export_orientation_landscape">Querformat</string>
+    <string name="export_orientation_hint">Die Ausrichtung wird immer passend zum Plan gewählt.</string>
+    <string name="export_orientation_pending">Wird angezeigt, sobald die Seite feststeht.</string>
+    <string name="export_fit_checking">Seite wird geprüft</string>
+    <string name="export_fit_result">Ergebnis: Maßstab %1$s auf %2$s, %3$s</string>
+    <string name="export_title_block_hint">Maßstabsbalken und Maßstab stehen im Titelblock.</string>
+
+    <string name="export_section_warnings">Bitte beachten</string>
+    <string name="export_room_unnamed">Raum %1$d</string>
+    <string name="export_room_list_separator">", "</string>
+    <plurals name="export_warning_omitted">
+        <item quantity="one">%1$d Raum fehlt in der Zeichnung, weil seine Form offen oder widersprüchlich ist: %2$s.</item>
+        <item quantity="other">%1$d Räume fehlen in der Zeichnung, weil ihre Form offen oder widersprüchlich ist: %2$s.</item>
+    </plurals>
+    <plurals name="export_warning_unconfirmed">
+        <item quantity="one">%1$d Raum ist in der Zeichnung mit „Form nicht bestätigt“ gekennzeichnet: %2$s.</item>
+        <item quantity="other">%1$d Räume sind in der Zeichnung mit „Form nicht bestätigt“ gekennzeichnet: %2$s.</item>
+    </plurals>
+    <plurals name="export_warning_openings">
+        <item quantity="one">%1$d Öffnung passt nicht mehr auf ihre Wand in %2$s.</item>
+        <item quantity="other">%1$d Öffnungen passen nicht mehr auf ihre Wände in %2$s.</item>
+    </plurals>
+    <string name="export_warning_opening_room">%1$s (%2$d)</string>
+    <string name="export_warning_empty">Noch kein Raum hat eine verwendbare Form, es gibt also nichts zu zeichnen. PDF, PNG und SVG sind nicht möglich. JSON enthält weiterhin alle Räume.</string>
+
+    <string name="export_error_title">Export fehlgeschlagen</string>
+    <string name="export_error_nothing_to_export">Noch kein Raum kann gezeichnet werden. Schließe und bestätige mindestens einen Raum oder wähle JSON.</string>
+    <string name="export_error_plan_too_large">Der Plan ist zu groß. Er passt auch bei 1:200 nicht auf A3.</string>
+    <string name="export_error_plan_does_not_fit">Der Plan passt nicht mit diesem Maßstab und Papier. Wähle einen kleineren Maßstab oder ein größeres Papier oder stelle beides auf automatisch.</string>
+    <string name="export_error_write_failed">Die Datei konnte nicht geschrieben werden. Prüfe den Speicherort und versuche es erneut.</string>
+    <string name="export_error_encoding_failed">Die Datei konnte nicht erzeugt werden. Versuche es erneut oder wähle ein anderes Format.</string>
+    <string name="export_error_no_space">Für die Datei ist nicht genug Speicherplatz frei.</string>
+    <string name="export_error_load_failed">Das Projekt konnte nicht gelesen werden. Versuche es erneut.</string>
+    <string name="export_error_generic">Der Export hat nicht geklappt. Versuche es erneut.</string>
+
+    <string name="export_action_share">Teilen</string>
+    <string name="export_action_save">Als Datei speichern</string>
+    <string name="export_running">Export läuft</string>
+    <string name="export_saved">Als %1$s-Datei gespeichert.</string>
+    <string name="export_share_chooser_title">Plan teilen</string>
 </resources>

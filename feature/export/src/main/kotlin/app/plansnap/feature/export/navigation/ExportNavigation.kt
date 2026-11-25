@@ -1,61 +1,71 @@
 package app.plansnap.feature.export.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import app.plansnap.core.designsystem.component.PlanSnapIconButton
-import app.plansnap.core.designsystem.component.PlanSnapIcons
-import app.plansnap.core.designsystem.theme.PlanSnapTheme
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.plansnap.core.export.ExportFormat
 import app.plansnap.feature.export.R
+import app.plansnap.feature.export.data.ShareIntents
+import app.plansnap.feature.export.data.mimeType
+import app.plansnap.feature.export.ui.ExportActions
+import app.plansnap.feature.export.ui.ExportEvent
+import app.plansnap.feature.export.ui.ExportScreen
+import app.plansnap.feature.export.ui.ExportUiState
+import app.plansnap.feature.export.ui.ExportViewModel
 
 /**
- * Public entry point of the export feature: the screen frame of docs/UX.md section 1 with the empty state.
+ * Public entry point of the export feature (docs/UX.md section 1): format, scale and paper, warnings before the export,
+ * sharing and saving.
  *
- * The project to export is read from the navigation arguments by the export ViewModel (T-EXP-002).
+ * The project to export comes from the navigation argument `projectId`, which the export view model reads.
  *
  * @param onBack Returns to the previous screen.
  * @param modifier Modifier for the screen.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExportEntry(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: ExportViewModel = hiltViewModel(),
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.export_title)) },
-                navigationIcon = {
-                    PlanSnapIconButton(
-                        icon = PlanSnapIcons.Back,
-                        contentDescription = stringResource(R.string.export_back),
-                        onClick = onBack,
-                    )
-                },
-            )
-        },
-    ) { padding ->
-        Box(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(PlanSnapTheme.spacing.l),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = stringResource(R.string.export_empty_hint),
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-            )
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val chooserTitle = stringResource(R.string.export_share_chooser_title)
+    val format = (state as? ExportUiState.Ready)?.format ?: ExportFormat.PDF
+    val documentPicker =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(format.mimeType)) {
+            viewModel.onDocumentChosen(it)
+        }
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is ExportEvent.Share -> context.startActivity(ShareIntents.chooser(event.request, chooserTitle))
+                is ExportEvent.ChooseDocument -> documentPicker.launch(event.fileName)
+            }
         }
     }
+    ExportScreen(
+        state = state,
+        actions =
+            ExportActions(
+                onFormatSelected = viewModel::onFormatSelected,
+                onScaleSelected = viewModel::onScaleSelected,
+                onPaperSelected = viewModel::onPaperSelected,
+                onShare = viewModel::onShare,
+                onSave = viewModel::onSave,
+                onRetry = viewModel::onRetry,
+                onRetryLoad = viewModel::onRetryLoad,
+                onErrorDismissed = viewModel::onErrorDismissed,
+                onNoticeDismissed = viewModel::onNoticeDismissed,
+            ),
+        onBack = onBack,
+        modifier = modifier,
+    )
 }
