@@ -85,7 +85,7 @@ Keine.
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
 - **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, Build-Setup T-APP-001.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
-  - CR-W2-04 (`architect`), Basis siehe nächster Commit.
+  - CR-W2-04 (`architect`), Basis `5fe66da`.
   - T-EXP-001 (PlotLayout), gleiche Basis.
   - T-GEO-009 (Fix: Drehrichtung an der Schlussecke), Basis `5837c4b`. Commit `83bbd51` liegt vor, der Bericht steht aus.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
