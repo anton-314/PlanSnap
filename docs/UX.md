@@ -58,7 +58,9 @@ Alle Messaktionen liegen in der unteren Hälfte. Andere Geräteformen erhalten d
 | Exakt | Grüner Haken, Fläche | Weiter |
 | Kleine Lücke | Lücke in cm und Vorschau | `Ausgleichen`, `Maße prüfen` |
 | Formabweichung | Gestrichelter Umriss, „Form nicht bestätigt“ | Empfohlene Diagonale oder Winkel eintragen |
-| Unmöglich | Rot markierte Maße, Erklärung | Maß ändern |
+| Unmöglich | Rote Wände und Diagonale, Raummarke „Maße widersprüchlich“, Erklärung | Maß ändern |
+
+**Statusmarken im Plan (CR-W2-04):** Ein Raum mit Form zeigt sein Inneres leicht getönt mit durchgezogener Innenkontur, ein nicht bestätigter Raum mit gestrichelter Kontur und der Marke „Form nicht bestätigt“ (EN „Shape not confirmed“) unter der Fläche, beide in `warning`. Ein Raum im Konflikt zeigt seine Wände in `error` und unter Name und Typ die Marke „Maße widersprüchlich“ (EN „Measurements conflict“), ebenfalls in `error`. Die Erklärung des Grundes steht nicht im Plan, sondern im Editor unter dem Plan. So ist kein Status nur über Farbe erkennbar (§6).
 
 Ein Tipp auf eine Wand, Ecke oder Öffnung wählt sie aus und öffnet ihre Bearbeitung. Langes Drücken auf einen Raum startet das Verschieben. Änderungen laufen immer über Befehle und sind rückgängig machbar.
 

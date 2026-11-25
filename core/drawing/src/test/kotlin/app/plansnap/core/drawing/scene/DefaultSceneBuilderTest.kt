@@ -88,6 +88,17 @@ class DefaultSceneBuilderTest {
     }
 
     @Test
+    fun `given an unconfirmed room with thin walls when built then walls and body are in unconfirmed styles`() {
+        val proposed = SceneFixtures.proposed
+        val thin = proposed.copy(walls = proposed.walls.map { it.copy(thickness = Length.ZERO) }.toImmutableList())
+        val built = scene(thin)
+        val wallStyles = built.elements.filter { it.target is SceneTarget.Wall && it.style != SceneStyle.DIMENSION }
+        assertEquals(setOf(SceneStyle.WALL_UNCONFIRMED), wallStyles.map { it.style }.toSet())
+        val body = built.of(SceneTarget.RoomBody(thin.id)).filterIsInstance<SceneElement.Fill>()
+        assertEquals(listOf(SceneStyle.ROOM_BODY_UNCONFIRMED), body.map { it.style })
+    }
+
+    @Test
     fun `given a room when built then the body is the inner contour selecting the room`() {
         val body = scene(rectangle).of(SceneTarget.RoomBody(rectangle.id)).filterIsInstance<SceneElement.Fill>()
         assertEquals(1, body.size)
@@ -95,10 +106,12 @@ class DefaultSceneBuilderTest {
     }
 
     @Test
-    fun `given an inward door with left hinge when built then leaf and swing open into the room from the start`() {
+    fun `given an inward door with DIN right hinge when built then seen from inside the hinge is at the start`() {
+        // Wall 0 runs from (0, 0) to (4000, 0) with the room above it. Seen from inside, the viewer faces -y and has
+        // the start of the wall on the right.
         val room =
             rectangle.copy(
-                openings = persistentListOf(opening("d", OpeningType.DOOR, 1000L..1800L, DoorSwing.HINGE_LEFT_INWARD)),
+                openings = persistentListOf(opening("d", OpeningType.DOOR, 1000L..1800L, DoorSwing.HINGE_RIGHT_INWARD)),
             )
         val elements = scene(room).of(SceneTarget.Opening(room.id, OpeningId("d")))
         assertEquals(listOf(SceneStyle.OPENING), elements.map { it.style }.distinct())
@@ -118,7 +131,7 @@ class DefaultSceneBuilderTest {
     }
 
     @Test
-    fun `given an outward door with right hinge when built then it swings out from the outer face at the end`() {
+    fun `given an outward door with DIN right hinge when built then seen from outside it swings out at the end`() {
         val room =
             rectangle.copy(
                 openings =
@@ -141,7 +154,7 @@ class DefaultSceneBuilderTest {
         val cases =
             mapOf(
                 DoorSwing.HINGE_LEFT_OUTWARD to Triple(Vec2(1000.0, -120.0), 0.0, -PI / 2.0),
-                DoorSwing.HINGE_RIGHT_INWARD to Triple(Vec2(1800.0, 0.0), PI, -PI / 2.0),
+                DoorSwing.HINGE_LEFT_INWARD to Triple(Vec2(1800.0, 0.0), PI, -PI / 2.0),
             )
         cases.forEach { (swing, expected) ->
             val room = rectangle.copy(openings = persistentListOf(opening("d", OpeningType.DOOR, 1000L..1800L, swing)))
@@ -150,6 +163,53 @@ class DefaultSceneBuilderTest {
             assertEquals(expected.second, arc.startRad, 1e-12, "$swing")
             assertEquals(expected.third, arc.sweepRad, 1e-12, "$swing")
         }
+    }
+
+    @Test
+    fun `given the same door in a room measured clockwise when built then hinge leaf and arc stay in place`() {
+        // The rectangle measured clockwise from (4000, 0): placed with half a turn it covers the same area, and its
+        // wall 0 is the bottom wall of the reference, run from (4000, 0) to (0, 0).
+        val clockwise =
+            Room(
+                id = RoomId("cw"),
+                walls = SceneFixtures.walls("cw", 4000, 3000, 4000, 3000),
+                corners =
+                    persistentListOf(
+                        CornerSpec.Unspecified,
+                        CornerSpec.DeclaredRight(TurnDirection.RIGHT),
+                        CornerSpec.DeclaredRight(TurnDirection.RIGHT),
+                        CornerSpec.DeclaredRight(TurnDirection.RIGHT),
+                    ),
+                isClosed = true,
+                placement = RoomPlacement(4000.0, 0.0, PI, null),
+            )
+        DoorSwing.entries.forEach { swing ->
+            val reference =
+                scene(rectangle.copy(openings = persistentListOf(opening("d", OpeningType.DOOR, 1000L..1800L, swing))))
+            val mirrored =
+                scene(
+                    clockwise.copy(
+                        openings =
+                            persistentListOf(
+                                opening("d", OpeningType.DOOR, 2200L..3000L, swing, WallId("cw-w0")),
+                            ),
+                    ),
+                )
+            val expected = reference.elements.filterIsInstance<SceneElement.Arc>().single()
+            val actual = mirrored.elements.filterIsInstance<SceneElement.Arc>().single()
+            assertClose(expected.center, actual.center, 1e-6)
+            assertEquals(expected.radiusMm, actual.radiusMm, 1e-9)
+            assertClose(arcPoint(expected, 0.0), arcPoint(actual, 0.0), 1e-6)
+            assertClose(arcPoint(expected, 1.0), arcPoint(actual, 1.0), 1e-6)
+        }
+    }
+
+    private fun arcPoint(
+        arc: SceneElement.Arc,
+        fraction: Double,
+    ): Vec2 {
+        val angle = arc.startRad + arc.sweepRad * fraction
+        return arc.center + Vec2(kotlin.math.cos(angle), kotlin.math.sin(angle)) * arc.radiusMm
     }
 
     @Test

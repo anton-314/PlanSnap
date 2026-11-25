@@ -3,6 +3,10 @@ package app.plansnap.core.drawing.scene
 /**
  * Fixed drawing sizes of [DefaultSceneBuilder] in world millimeters. At the export scale 1:50 a label of 150 mm is
  * 3 mm high on paper, at 1:100 it is 1.5 mm.
+ *
+ * The sizes stay in the scene for every output (ADR 0008, addendum CR-W2-04). Label heights are nominal: the editor
+ * renderer draws text at a constant screen size in their ratio, and the export renderer enforces a minimum text
+ * height on paper. Distances such as [DIMENSION_OFFSET_MM] are geometry and are never rescaled by a renderer.
  */
 internal object SceneMetrics {
     /** Height of a wall or diagonal length label. */

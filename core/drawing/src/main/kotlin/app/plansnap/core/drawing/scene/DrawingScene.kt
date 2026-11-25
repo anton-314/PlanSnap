@@ -54,13 +54,10 @@ enum class SceneStyle {
     /** Filled wall band. */
     WALL_BAND,
 
-    /**
-     * Wall of thickness zero or inner contour. A [SceneElement.Fill] in this style with a [SceneTarget.RoomBody]
-     * target is the room interior: its outline is stroked as the inner contour, it is not filled with the wall color.
-     */
+    /** Wall of thickness zero, drawn as a solid line. */
     WALL_LINE,
 
-    /** Unconfirmed, dashed outline. A room body [SceneElement.Fill] in this style is stroked dashed, not filled. */
+    /** Wall of thickness zero of an unconfirmed room, drawn as a dashed line (UX section 3). */
     WALL_UNCONFIRMED,
 
     /** Opening symbol. */
@@ -83,6 +80,18 @@ enum class SceneStyle {
 
     /** Conflict mark. */
     CONFLICT,
+
+    /**
+     * Interior of a room with a confirmed or adjusted shape (ADR 0008, CR-W2-04): a light interior tint, never the wall
+     * color, and the inner contour stroked as a solid line.
+     */
+    ROOM_BODY,
+
+    /**
+     * Interior of a room whose shape is not confirmed (ADR 0008, CR-W2-04): the same tint as [ROOM_BODY] and the inner
+     * contour stroked as a dashed line (UX section 3).
+     */
+    ROOM_BODY_UNCONFIRMED,
 }
 
 /** Model object an element belongs to, used for selection. */
@@ -165,6 +174,12 @@ sealed interface LabelText {
 
     /** The mark "shape not confirmed" (REQ-EXP-006). */
     data object ShapeNotConfirmed : LabelText
+
+    /**
+     * The mark "measurements contradict each other" of a `CONFLICT` room (UX section 3, CR-W2-04). The explanation of
+     * the reason belongs to the editor, not to the plan.
+     */
+    data object ShapeConflict : LabelText
 }
 
 /** Drawing primitive in world coordinates. */

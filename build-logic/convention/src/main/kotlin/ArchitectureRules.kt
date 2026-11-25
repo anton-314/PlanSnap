@@ -45,6 +45,8 @@ internal object ArchitectureRules {
                     ":feature:settings",
                     DATA,
                     EXPORT,
+                    // The app shell wraps the navigation host in the app theme (CR-W2-04, ADR 0001).
+                    DESIGNSYSTEM,
                 ),
             ":feature:projects" to setOf(DOMAIN, DESIGNSYSTEM),
             ":feature:editor" to setOf(DOMAIN, RENDER, DRAWING, DESIGNSYSTEM),

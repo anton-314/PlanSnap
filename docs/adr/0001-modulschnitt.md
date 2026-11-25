@@ -17,3 +17,7 @@ Angepasster Schnitt laut `docs/ARCHITECTURE.md`. Neu sind `:core:domain`, `:core
 ## Konsequenzen
 
 Alle fachlichen Module bis `:core:drawing` laufen als reine JVM-Module und sind schnell testbar. Ein Architekturtest erzwingt die Abhängigkeitsrichtung.
+
+## Ergänzung 2026-11-25 (CR-W2-04)
+
+`:app` darf direkt von `:core:designsystem` abhängen. `MainActivity` legt das App-Theme um den `NavHost`, und das Theme ist Sache der App-Hülle, nicht eines Features. Der Umweg über ein Feature-Modul würde ein Feature zum Träger des globalen Themes machen und die Gleichrangigkeit der Features aufweichen. `:core:designsystem` hat keine Projektabhängigkeiten, die neue Kante kann also keinen Zyklus und keinen Durchgriff auf Fachlogik erzeugen. `ArchitectureRules.allowedDependencies`, sein Test und das Diagramm in ARCHITECTURE §2 sind angepasst. Andere Kerne bleiben für `:app` gesperrt.

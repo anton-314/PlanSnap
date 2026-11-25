@@ -35,7 +35,7 @@ class DefaultSceneBuilderStatusTest {
             Row(
                 SceneFixtures.confirmed,
                 ShapeStatus.CONFIRMED,
-                SceneStyle.WALL_LINE,
+                SceneStyle.ROOM_BODY,
                 null,
                 SceneStyle.LABEL,
                 false,
@@ -44,7 +44,7 @@ class DefaultSceneBuilderStatusTest {
             Row(
                 SceneFixtures.needsAdjustment,
                 ShapeStatus.NEEDS_ADJUSTMENT,
-                SceneStyle.WALL_UNCONFIRMED,
+                SceneStyle.ROOM_BODY_UNCONFIRMED,
                 null,
                 SceneStyle.WARNING,
                 true,
@@ -53,7 +53,7 @@ class DefaultSceneBuilderStatusTest {
             Row(
                 SceneFixtures.adjusted,
                 ShapeStatus.ADJUSTED,
-                SceneStyle.WALL_LINE,
+                SceneStyle.ROOM_BODY,
                 null,
                 SceneStyle.LABEL,
                 false,
@@ -62,7 +62,7 @@ class DefaultSceneBuilderStatusTest {
             Row(
                 SceneFixtures.proposed,
                 ShapeStatus.PROPOSED,
-                SceneStyle.WALL_UNCONFIRMED,
+                SceneStyle.ROOM_BODY_UNCONFIRMED,
                 null,
                 SceneStyle.WARNING,
                 true,
@@ -95,6 +95,12 @@ class DefaultSceneBuilderStatusTest {
                     marks.map { it.style },
                 )
                 assertTrue(marks.all { it.target == SceneTarget.RoomBody(row.room.id) })
+                val conflictMarks = labels.filter { it.text == LabelText.ShapeConflict }
+                assertEquals(
+                    if (row.status == ShapeStatus.CONFLICT) listOf(SceneStyle.CONFLICT) else emptyList<SceneStyle>(),
+                    conflictMarks.map { it.style },
+                )
+                assertTrue(conflictMarks.all { it.target == SceneTarget.RoomBody(row.room.id) })
                 val corners = scene.elements.filter { it.target is SceneTarget.Corner && it is SceneElement.Polyline }
                 assertEquals(
                     row.room.walls.indices

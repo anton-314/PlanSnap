@@ -29,10 +29,12 @@ import app.plansnap.core.common.units.Angle as RawAngle
  * **Room with a shape** (`CONFIRMED`, `NEEDS_ADJUSTMENT`, `ADJUSTED`, `PROPOSED`), elements in drawing order:
  *
  * 1. The room body: a [SceneElement.Fill] of the inner contour with a [SceneTarget.RoomBody] target, in
- *    [SceneStyle.WALL_LINE], or in [SceneStyle.WALL_UNCONFIRMED] for an unconfirmed room. It is the stroked inner
- *    contour, the dashed outline of an unconfirmed room (UX section 3), and makes the interior hittable.
+ *    [SceneStyle.ROOM_BODY], or in [SceneStyle.ROOM_BODY_UNCONFIRMED] for an unconfirmed room. It is the tinted
+ *    interior with the stroked inner contour, dashed for an unconfirmed room (UX section 3), and makes the interior
+ *    hittable.
  * 2. One band per wall from [WallBandBuilder] (DOMAIN section 8): a [SceneStyle.WALL_BAND] fill for a positive
- *    thickness, otherwise a polyline in the style of the room body. Each selects its wall.
+ *    thickness, otherwise a polyline in [SceneStyle.WALL_LINE], or in [SceneStyle.WALL_UNCONFIRMED] for an
+ *    unconfirmed room. Each selects its wall.
  * 3. Bevel triangles in [SceneStyle.WALL_BAND], selecting their corner.
  * 4. Openings after [OpeningSymbols], in [SceneStyle.OPENING_OUT_OF_BOUNDS] if their derived status is
  *    [OpeningStatus.OUT_OF_BOUNDS], otherwise in [SceneStyle.OPENING].
@@ -48,7 +50,9 @@ import app.plansnap.core.common.units.Angle as RawAngle
  * **Room without a shape** (`OPEN`, `CONFLICT`): the chain walked with the raw lengths and the entered turns, for
  * `OPEN` the chain of the evaluation. Walls are lines without bands, in [SceneStyle.WALL_LINE], or in
  * [SceneStyle.CONFLICT] for a conflict, which also marks the impossible diagonal. Openings, diagonals, dimensions with
- * the raw lengths, name, type and notes at the mean of the chain points and the corner markers follow as above. There
+ * the raw lengths, name, type, for a conflict the mark [LabelText.ShapeConflict] in [SceneStyle.CONFLICT], and notes at
+ * the mean of the chain points and the corner markers follow as above, so a conflict is never shown by color alone
+ * (UX section 6). There
  * is no room body, because there is no closed outline. The outer side of a chain follows the orientation `s` of the
  * entered turns (DOMAIN section 3).
  *
@@ -115,13 +119,14 @@ class DefaultSceneBuilder(
         val sign = shape.winding.sign
         val unconfirmed = evaluation.status.isUnconfirmed
         val lineStyle = if (unconfirmed) SceneStyle.WALL_UNCONFIRMED else SceneStyle.WALL_LINE
+        val bodyStyle = if (unconfirmed) SceneStyle.ROOM_BODY_UNCONFIRMED else SceneStyle.ROOM_BODY
         val thicknesses = room.walls.map { it.thickness.mm }
         val walls =
             wallFrames(room.walls.map { it.id }, vertices, sign, thicknesses.map { it.toDouble() }, shape.lengthsMm)
         val layout = bandBuilder.build(BandInput(outline, shape.winding, thicknesses))
         val body = SceneTarget.RoomBody(room.id)
         return buildList {
-            add(SceneElement.Fill(outline, lineStyle, body))
+            add(SceneElement.Fill(outline, bodyStyle, body))
             layout.bands.forEach { add(band(room.id, walls, it, lineStyle)) }
             layout.corners.forEach { corner ->
                 corner.fill?.let {
@@ -186,7 +191,7 @@ class DefaultSceneBuilder(
                 addAll(Annotations.diagonal(room.id, it, points[it.fromCorner], points[it.toCorner], style))
             }
             walls.forEach { addAll(Annotations.dimension(room.id, it)) }
-            val lines = labelLines(room, options, areaMm2 = null, unconfirmed = false)
+            val lines = labelLines(room, options, areaMm2 = null, unconfirmed = false, conflict = conflict != null)
             addAll(RoomLabels.stacked(RoomLabels.mean(points), lines, SceneTarget.RoomBody(room.id)))
             walls.forEach { add(Annotations.cornerMarker(room.id, it.index, it.start)) }
         }
@@ -228,6 +233,7 @@ class DefaultSceneBuilder(
         options: SceneOptions,
         areaMm2: Double?,
         unconfirmed: Boolean,
+        conflict: Boolean = false,
     ): List<RoomLabels.Line> =
         buildList {
             if (room.name.isNotBlank()) add(RoomLabels.Line(LabelText.Literal(room.name), SceneStyle.LABEL))
@@ -235,6 +241,7 @@ class DefaultSceneBuilder(
             val markStyle = if (unconfirmed) SceneStyle.WARNING else SceneStyle.LABEL
             areaMm2?.let { add(RoomLabels.Line(LabelText.Area(it), markStyle)) }
             if (unconfirmed) add(RoomLabels.Line(LabelText.ShapeNotConfirmed, SceneStyle.WARNING))
+            if (conflict) add(RoomLabels.Line(LabelText.ShapeConflict, SceneStyle.CONFLICT))
             if (options.includeNotes && room.notes.isNotBlank()) {
                 add(RoomLabels.Line(LabelText.Literal(room.notes), SceneStyle.LABEL))
             }

@@ -16,6 +16,7 @@ graph TD
   app --> fsettings[":feature:settings"]
   app --> data[":core:data"]
   app --> export[":core:export"]
+  app --> ds[":core:designsystem"]
   fprojects --> domain[":core:domain"]
   feditor --> domain
   feditor --> render[":core:render"]
@@ -58,7 +59,7 @@ graph TD
 | `:feature:editor` | Android | Messbildschirm, Plan, Öffnungen, Räume |
 | `:feature:export` | Android | Exportdialog, Vorprüfung, Teilen und Speichern |
 | `:feature:settings` | Android | Einheiten, Toleranzen, Hinweise |
-| `:app` | Android | Navigation, DI-Wurzel, Application |
+| `:app` | Android | Navigation, DI-Wurzel, Application, App-Theme um den NavHost (über `:core:designsystem`) |
 | `:testing:fixtures` | JVM | Generatoren, Fakes, Referenzräume, Golden-Dateien |
 | `:benchmark` | Android-Test | Baseline Profile, Start- und Frame-Messung |
 

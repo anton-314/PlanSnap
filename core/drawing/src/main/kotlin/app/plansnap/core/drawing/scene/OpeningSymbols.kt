@@ -1,6 +1,7 @@
 package app.plansnap.core.drawing.scene
 
 import app.plansnap.core.geometry.primitives.Polygon2
+import app.plansnap.core.geometry.primitives.Vec2
 import app.plansnap.core.model.DoorSwing
 import app.plansnap.core.model.Opening
 import app.plansnap.core.model.OpeningType
@@ -14,9 +15,10 @@ import kotlin.math.PI
  * segment on that line. A window adds a line along the middle of the band. A door with a swing adds its leaf and a
  * quarter arc around the hinge.
  *
- * Left and right apply in wall direction `V_i → V_{i+1}`: the left hinge lies at the start `offset`, the right hinge at
- * the end `offset + width`. An inward door opens into the room from the inner face, an outward door out of the room
- * from the outer face of the band.
+ * Left and right follow DIN 107 (DOMAIN section 9, CR-W2-04): seen from the side the door opens to, looking at the
+ * wall, the hinge is on the left or right. An inward door is seen from inside the room, it opens into the room from
+ * the inner face. An outward door is seen from outside, it opens out of the room from the outer face of the band. The
+ * hinge side therefore does not depend on the direction in which the room was measured.
  */
 internal object OpeningSymbols {
     fun elements(
@@ -55,10 +57,15 @@ internal object OpeningSymbols {
         val hingeLeft = swing == DoorSwing.HINGE_LEFT_INWARD || swing == DoorSwing.HINGE_LEFT_OUTWARD
         val inward = swing == DoorSwing.HINGE_LEFT_INWARD || swing == DoorSwing.HINGE_RIGHT_INWARD
         val face = if (inward) 0.0 else wall.thicknessMm
-        val hinge = wall.at(if (hingeLeft) startMm else endMm, face)
-        val jamb = wall.at(if (hingeLeft) endMm else startMm, face)
-        val widthMm = endMm - startMm
         val side = if (inward) wall.outward * -1.0 else wall.outward
+        // The viewer stands on the swing side and faces the wall, so the viewing direction is -side and the viewer's
+        // left is that direction turned by +90°: (side.y, -side.x). It is parallel to the wall direction.
+        val viewerLeft = Vec2(side.y, -side.x)
+        val leftAtEnd = viewerLeft.dot(wall.direction) > 0.0
+        val hingeAtEnd = leftAtEnd == hingeLeft
+        val hinge = wall.at(if (hingeAtEnd) endMm else startMm, face)
+        val jamb = wall.at(if (hingeAtEnd) startMm else endMm, face)
+        val widthMm = endMm - startMm
         val leafEnd = hinge + side * widthMm
         val closed = jamb - hinge
         val sweep = if (closed.cross(side) > 0.0) PI / 2.0 else -PI / 2.0

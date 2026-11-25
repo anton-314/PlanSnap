@@ -339,7 +339,8 @@ data class Opening(
 - Gültig, wenn `offset ≥ 0`, `width > 0` und `offset + width ≤ L_wirksam + EXACT_CLOSURE_MM`.
 - Öffnungen derselben Wand dürfen sich nicht überlappen.
 - `sillHeight` nur für Fenster, `swing` nur für Türen.
-- `DoorSwing` hat die Werte `HINGE_LEFT_INWARD`, `HINGE_LEFT_OUTWARD`, `HINGE_RIGHT_INWARD`, `HINGE_RIGHT_OUTWARD`. Links und rechts gelten in Wandrichtung `V_i → V_{i+1}`, `INWARD` öffnet in den Raum hinein.
+- `DoorSwing` hat die Werte `HINGE_LEFT_INWARD`, `HINGE_LEFT_OUTWARD`, `HINGE_RIGHT_INWARD`, `HINGE_RIGHT_OUTWARD`. `INWARD` öffnet in den Raum hinein, `OUTWARD` aus ihm heraus. Links und rechts folgen DIN 107 (CR-W2-04): Man steht auf der Seite, zu der die Tür aufschlägt, und blickt auf die Wand. Liegen die Bänder links, ist die Tür `HINGE_LEFT_*`, sonst `HINGE_RIGHT_*`. Bei `INWARD` steht der Betrachter also im Raum, bei `OUTWARD` außerhalb. Die Seite hängt damit nicht von der Messrichtung des Raums ab.
+- Geometrie: Mit der Wandrichtung `d_i` und der Außennormale `n_i` (§8) ist die Aufschlagseite `a = −n_i` für `INWARD` und `a = n_i` für `OUTWARD`. Die linke Hand des Betrachters zeigt in Richtung `l = (a.y, −a.x)`. Ist `l · d_i > 0`, liegt das linke Band am Ende `offset + width`, sonst am Anfang `offset`. Das rechte Band liegt jeweils gegenüber. Beispiel: Wand von `(0, 0)` nach `(4000, 0)`, Raum darüber. `HINGE_LEFT_INWARD` hat das Band am Ende, `HINGE_LEFT_OUTWARD` am Anfang.
 - Wird eine Wand so geändert, dass eine Öffnung ungültig ist, bleibt die Öffnung gespeichert. Sie erhält den abgeleiteten Status `OUT_OF_BOUNDS`, wird rot markiert und vor dem Export gemeldet. Es wird nichts still gelöscht oder verschoben.
 
 ## 10. Mehrere Räume
@@ -412,6 +413,6 @@ Weitere Festlegungen:
 - 13,5 × 13,0 m: Bei 1:50 fasst A4 hoch 9,5 × 12,6 m und A4 quer 13,85 × 8,25 m, beide zu klein. A3 hoch fasst 13,85 × 18,75 m und passt, A3 quer mit 20,0 × 12,6 m nicht. Ergebnis: **1:50, A3 hoch**.
 - 9,25 × 8,5 m: Bei 1:50 passt A4 hoch (9,5 × 12,6 m), A4 quer nicht (Höhe 8,5 > 8,25 m). Ergebnis: **1:50, A4 hoch**.
 
-Umrechnung: `pt = mm_welt / M · 72 / 25,4`. Jeder Plan enthält einen Maßstabsbalken mit Nennlänge. Der Titelblock liegt am unteren Rand des Bereichs innerhalb der 10-mm-Ränder, über die volle Breite und 25 mm hoch. PNG wird mit 200 dpi auf der gewählten Seite gerendert.
+Umrechnung: `pt = mm_welt / M · 72 / 25,4`. Schrifthöhen der Szene sind Nennhöhen in Weltmillimetern (ADR 0008, Ergänzung CR-W2-04): Alle Beschriftungen werden mit demselben Faktor `f = max(1, 1,8 mm · M / 150 mm)` vergrößert, sodass Maßzahlen auf Papier mindestens 1,8 mm hoch sind (1:50 `f = 1`, 1:100 `f = 1,2`, 1:200 `f = 2,4`). Lage und Abstände der Maße ändern sich nicht. Jeder Plan enthält einen Maßstabsbalken mit Nennlänge. Der Titelblock liegt am unteren Rand des Bereichs innerhalb der 10-mm-Ränder, über die volle Breite und 25 mm hoch. PNG wird mit 200 dpi auf der gewählten Seite gerendert.
 
 Räume mit `OPEN` oder `CONFLICT` werden in PDF, PNG und SVG weggelassen und in der Vorprüfung gemeldet. Bleibt kein Raum übrig, wird der Export mit `NOTHING_TO_EXPORT` abgelehnt. JSON enthält immer alle Räume.

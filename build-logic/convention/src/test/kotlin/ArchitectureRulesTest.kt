@@ -47,6 +47,17 @@ class ArchitectureRulesTest {
     }
 
     @Test
+    fun `given the app depends on the design system when checked then there is no violation`() {
+        assertEquals(emptyList<String>(), deps(":app", "implementation" to ":core:designsystem", jvm = false))
+    }
+
+    @Test
+    fun `given the app depends on a core module outside the diagram when checked then it is a violation`() {
+        assertEquals(1, deps(":app", "implementation" to ":core:drawing", jvm = false).size)
+        assertEquals(1, deps(":app", "implementation" to ":core:domain", jvm = false).size)
+    }
+
+    @Test
     fun `given a feature depends on core data when checked then it is a violation`() {
         assertEquals(1, deps(":feature:projects", "implementation" to ":core:data", jvm = false).size)
     }

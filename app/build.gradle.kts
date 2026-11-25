@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":feature:settings"))
     implementation(project(":core:data"))
     implementation(project(":core:export"))
+    implementation(project(":core:designsystem"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
