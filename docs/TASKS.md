@@ -692,7 +692,7 @@ graph LR
 - **Abhängigkeiten:** T-EDT-004, T-DOM-003
 - **Besitzbereich:** `feature/editor/…/opening/`
 - **Vertrag:** UX §3, DOMAIN §9
-- **Akzeptanzkriterien:** Tür, Fenster und Durchgang anlegen und ändern. Konflikte sind sichtbar. Anforderungen: REQ-MOD-001, REQ-MOD-002, REQ-MOD-003
+- **Akzeptanzkriterien:** Tür, Fenster und Durchgang anlegen und ändern. Konflikte sind sichtbar. Beim Ziehen kommt die Rückmeldung aus `RoomEvaluation.openingStatuses` bzw. aus einem einmal je Geste gecachten Overlay. `OpeningRules.statusOf` nicht je Frame aufrufen, das kostet O(n²) (Gate-Review Welle 2). In einer Vorschau darf eine gültige Öffnung um die Korrektur über das angezeigte Wandende ragen (ADR 0021). Anforderungen: REQ-MOD-001, REQ-MOD-002, REQ-MOD-003
 - **Tests:** ViewModel, Compose-UI
 
 #### T-EDT-006 – Mehrraum, Andocken, Einrasten
