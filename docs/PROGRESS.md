@@ -90,7 +90,7 @@ Keine.
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
 - **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, T-GEO-009, T-EXP-001, CR-W2-04, T-RND-001, Build-Setup T-APP-001.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
-  - CR-W2-05 (Überlappung mehrzeiliger Beschriftungen im Export, `architect`), Basis siehe nächster Commit.
+  - CR-W2-05 (Überlappung mehrzeiliger Beschriftungen im Export, `architect`), Basis `64ca286`.
   - T-APP-001 (Navigation und DI), gleiche Basis.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
 
