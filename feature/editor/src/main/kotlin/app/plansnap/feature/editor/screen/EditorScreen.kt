@@ -39,7 +39,13 @@ import app.plansnap.feature.editor.state.EditorLoadState
 import app.plansnap.feature.editor.state.EditorUiState
 import app.plansnap.feature.editor.state.ReloadProject
 
-private const val INPUT_AREA_MAX_FRACTION = 0.65f
+/**
+ * Smallest height the plan keeps in portrait (UX section 2). The input bar and the status card give way to it: the
+ * bar scrolls and the card scrolls inside itself. With 56 dp keys the bar needs about 400 dp, so on a 640 dp high
+ * phone the plan keeps about 175 dp and on a 740 dp high phone about 275 dp, the largest share that is possible
+ * without making the keys smaller than UX section 2 allows.
+ */
+internal val PLAN_MIN_HEIGHT = 96.dp
 
 /**
  * Taps of the editor screen.
@@ -120,7 +126,7 @@ private fun LoadedBody(
                 extraKeys = extraKeys,
                 modifier =
                     Modifier
-                        .heightIn(max = this@BoxWithConstraints.maxHeight * INPUT_AREA_MAX_FRACTION)
+                        .heightIn(max = (this@BoxWithConstraints.maxHeight - PLAN_MIN_HEIGHT).coerceAtLeast(0.dp))
                         .verticalScroll(rememberScrollState()),
             )
         }

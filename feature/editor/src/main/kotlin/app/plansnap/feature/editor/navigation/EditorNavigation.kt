@@ -16,6 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -30,6 +32,7 @@ import app.plansnap.feature.editor.canvas.PlanCanvas
 import app.plansnap.feature.editor.input.ExtraKey
 import app.plansnap.feature.editor.screen.EditorActions
 import app.plansnap.feature.editor.screen.EditorScreen
+import app.plansnap.feature.editor.screen.PLAN_MIN_HEIGHT
 import app.plansnap.feature.editor.shape.ShapeIntent
 import app.plansnap.feature.editor.shape.ShapeSheetHost
 import app.plansnap.feature.editor.shape.ShapeStatusCard
@@ -44,7 +47,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-private const val STATUS_CARD_MAX_FRACTION = 0.5f
+private const val STATUS_CARD_MAX_FRACTION = 0.35f
+private val STATUS_CARD_MIN_HEIGHT = 64.dp
 
 /**
  * Public entry point of the editor feature: the real editor with the plan, the input bar, the shape sheets and the
@@ -173,7 +177,13 @@ private fun EditorCanvas(
                 modifier =
                     Modifier
                         .padding(PlanSnapTheme.spacing.s)
-                        .heightIn(max = this@BoxWithConstraints.maxHeight * STATUS_CARD_MAX_FRACTION),
+                        .heightIn(
+                            max =
+                                statusCardMaxHeight(
+                                    this@BoxWithConstraints.maxHeight,
+                                    PlanSnapTheme.spacing.s * 2,
+                                ),
+                        ),
             )
         }
     }
@@ -186,3 +196,13 @@ private fun evaluationOf(
 ): DomainResult<RoomEvaluation>? =
     state.evaluationErrors[roomId]?.let { DomainResult.Failure(it) }
         ?: state.evaluations[roomId]?.let { DomainResult.Success(it) }
+
+/**
+ * The most the status card may take of a plan area of [slot] with [padding] around the card: 35 percent of it, and
+ * never so much that the plan falls below [PLAN_MIN_HEIGHT]. The card keeps [STATUS_CARD_MIN_HEIGHT] and scrolls
+ * inside itself when that is all it gets.
+ */
+internal fun statusCardMaxHeight(
+    slot: Dp,
+    padding: Dp,
+): Dp = minOf(slot * STATUS_CARD_MAX_FRACTION, slot - PLAN_MIN_HEIGHT - padding).coerceAtLeast(STATUS_CARD_MIN_HEIGHT)
