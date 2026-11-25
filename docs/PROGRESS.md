@@ -91,7 +91,8 @@ Keine.
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2:** alle Aufgaben und CRs gemergt. Das Wellen-Gate 2 läuft (Build, Pitest, instrumentierte Tests im Hintergrund, Review durch `reviewer` im Worktree). Nach einer Unterbrechung das Gate neu starten.
+- **Welle 2:** alle Aufgaben und CRs gemergt. Das Wellen-Gate 2 wurde auf `f23ee84` neu gestartet: Build, Pitest und instrumentierte Tests laufen nacheinander im Hintergrund, Review durch `reviewer` im Worktree. Nach einer Unterbrechung das Gate neu starten.
+- Der Worktree `worktree-agent-a6060eb82b04453d6` stammt vom abgebrochenen ersten Review. Er hat keine Commits, nur einen nicht versionierten Probetest. Er kann mit `git worktree remove --force` entfernt werden. Das Entfernen wurde in dieser Sitzung vom Berechtigungssystem abgelehnt.
 
 ## Nächste Schritte
 
