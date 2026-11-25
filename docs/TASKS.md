@@ -663,7 +663,7 @@ graph LR
 - **Abhängigkeiten:** T-EXP-002, T-EXP-003, T-APP-001
 - **Besitzbereich:** `feature/export/`
 - **Vertrag:** UX §1
-- **Akzeptanzkriterien:** Format, Maßstab, Papier, Warnung vor dem Export. Teilen und Speichern für jedes Format. Anforderungen: REQ-EXP-002, REQ-EXP-005, REQ-EXP-006
+- **Akzeptanzkriterien:** Format, Maßstab, Papier, Warnung vor dem Export. Teilen und Speichern für jedes Format. Der Dialog überschreibt nur Maßstab und Papier, die Ausrichtung wird angezeigt (CR-W2-04). Maßstabsbalken und Maßstabsangabe stehen im Titelblock. Anforderungen: REQ-EXP-002, REQ-EXP-005, REQ-EXP-006
 - **Tests:** ViewModel, Compose-UI, FileProvider-Test
 
 ## Welle 4

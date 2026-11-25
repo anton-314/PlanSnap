@@ -82,13 +82,13 @@ Keine.
 - 2026-11-25: T-GEO-009 gemergt (`afe6b16`). Der Fehler ist bestätigt. Bei gemessener Schlussecke prüfte die Solver-Auswahl den Sollwert `τ̂_0` statt der entstehenden Drehung. Das fiel auf, wenn die Schlusseckenzeile nicht erzwungen war oder bei überbestimmter Eingabe über alle Zeilen verfeinert wurde. Jetzt prüfen Auswahl und Alternativenfilter `τ_0,abgeleitet`. In 4 000 Fuzz-Fällen änderte sich nur das Flag `honorsDirections` (23 Fälle), keine Zahl und keine Auswahl. Pitest 86 %, Geometrie 631, Domain 377, Drawing 155 Tests grün. Der Prüfstand nutzt dieselbe Prüfung, das wird im Gate-Review bestätigt.
 - 2026-11-25: T-EXP-001 gemergt (`2add1c0`, `:core:drawing` 226 Tests). Die Passprüfung ist ganzzahlig exakt und folgt der Reihenfolge Maßstab, Papier, Ausrichtung aus DOMAIN §12. Es gibt `PLAN_DOES_NOT_FIT_SELECTION` und `PLAN_TOO_LARGE`. Der Plan wird zentriert, der Titelblock liegt unten. CR-W2-04 klärt zusätzlich: Platzierung auf der Seite, additive API `PageRectMm`, Ausrichtungsauswahl in `PlotSelection` und exakter Vergleich ohne Toleranz.
 - 2026-11-25: CR-W2-04, Szenenteil, gemergt (`71a32b4`). Neu erlaubt ist die Abhängigkeit `:app` → `:core:designsystem` (ARCHITECTURE §2, ADR 0001). Neu sind die Stile `ROOM_BODY` und `ROOM_BODY_UNCONFIRMED` sowie die Marke `LabelText.ShapeConflict`. `DoorSwing` folgt jetzt DIN 107: Links und rechts gelten von der Aufschlagseite aus gesehen, unabhängig vom Umlaufsinn (DOMAIN §9). Feste Nennhöhen in der Szene, die Skalierung übernimmt der Renderer (ADR 0008). Folgepunkte sind in T-RND-001 eingetragen. Der Plotteil (Punkte 6 bis 8) folgt als zweiter Commit.
+- 2026-11-25: CR-W2-04, Plotteil, gemergt. Der Plan wird zentriert. `PageRectMm`, `drawingAreaMm` und `titleBlockMm` sind als additive API bestätigt. Es gibt keine Überschreibung der Ausrichtung, weil REQ-EXP-002 nur Maßstab und Papier verlangt. Die Passprüfung bleibt exakt `≤`. Maßstabsbalken und Maßstabsangabe stehen im Titelblock (DOMAIN §12, ADR 0009). Folgepunkt in T-FEX-001 eingetragen.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, T-GEO-009, T-EXP-001, Build-Setup T-APP-001.
+- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, T-GEO-009, T-EXP-001, CR-W2-04, Build-Setup T-APP-001.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
-  - CR-W2-04, Plotteil (`architect`): zweiter Commit auf `a338ede` und `2add1c0`. Der erste Commit ist schon gemergt (`71a32b4`), nur den neuen übernehmen.
   - T-RND-001 (Canvas-Renderer), Basis `c4aae29`.
   - T-APP-001 (Navigation und DI), gleiche Basis.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
