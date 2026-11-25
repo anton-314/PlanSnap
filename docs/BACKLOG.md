@@ -29,3 +29,6 @@
 - KDoc von `DoorSwing` in `core/model/…/Opening.kt` auf DIN 107 und DOMAIN §9 verweisen (Lesart nach CR-W2-04).
 - `:core:domain`: Vertrag `fun interface CommandHistoryFactory` statt des Funktionstyps `(Project) -> CommandHistory` im DI-Graph (aus T-APP-001).
 - `:core:data`: Room-Runtime als `api`, damit `:app` ohne `DatabaseHolder` auskommt (aus T-APP-001).
+- `SceneRenderer`: Die Längenreferenz zum Ausblenden von Maßtexten hängt am Stil (`DIMENSION`, `DIAGONAL`). Bei einer Konfliktdiagonale (Stil `CONFLICT`) wird ihr Maß gegen die falsche Linie geprüft. Die Referenz sollte am Ziel (`SceneTarget.Wall/Diagonal`) hängen (Gate-Review Welle 2, niedrig, `SceneRenderer.kt:185`).
+- `SceneRenderer.kt:237`: Das ktlint-Artefakt `if (block ==\n null\n)` lesbar formatieren (Gate-Review Welle 2, niedrig).
+- `DefaultSnapper`: Listen und `Pair` je Aufruf vermeiden, weil das Einrasten beim Ziehen in jedem Frame läuft. Mit T-EDT umsetzen (Gate-Review Welle 2, niedrig).
