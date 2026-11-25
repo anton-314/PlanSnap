@@ -60,6 +60,9 @@ object PlotPageMetrics {
 /**
  * User override of the automatic choice (REQ-EXP-002). A `null` value is chosen automatically.
  *
+ * The orientation is always chosen automatically (ADR 0009, addendum CR-W2-04). If only one orientation fits, it is
+ * taken, so an override could only swap one fitting orientation for the other, which no requirement asks for.
+ *
  * @property scale fixed scale.
  * @property paper fixed paper.
  */

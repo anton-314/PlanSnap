@@ -59,6 +59,8 @@ class DefaultPlotLayoutTest {
         "19001, 25200, ONE_TO_100 A3 PORTRAIT",
         "27700, 16500, ONE_TO_100 A4 LANDSCAPE",
         "27700, 16501, ONE_TO_100 A3 LANDSCAPE",
+        // The comparison is exact (CR-W2-04): rounding noise beyond the usable width moves the plan on.
+        "27700.0000001, 16500, ONE_TO_100 A3 LANDSCAPE",
         // 1:100 A3 portrait 27700 x 37500 and landscape 40000 x 25200.
         "27700, 37500, ONE_TO_100 A3 PORTRAIT",
         "27700, 37501, ONE_TO_200 A4 PORTRAIT",
