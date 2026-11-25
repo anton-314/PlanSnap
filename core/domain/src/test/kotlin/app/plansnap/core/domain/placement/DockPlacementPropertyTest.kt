@@ -121,7 +121,10 @@ class DockPlacementPropertyTest {
         val alongMm: Map<RoomId, Double>,
     )
 
-    /** Random tree: room `i > 0` docks to a random earlier room, possibly through an opening. */
+    /**
+     * Random tree: room `i > 0` docks to a random earlier room, possibly through an opening. Each outline is
+     * clockwise or counter-clockwise at random, so docking is checked for equal and for different windings.
+     */
     private fun randomTree(random: SeededRandom): Tree {
         val count = random.nextInt(2..MAX_ROOMS)
         val outlines = HashMap<RoomId, List<Vec2>>()
@@ -129,7 +132,7 @@ class DockPlacementPropertyTest {
         val rooms = ArrayList<Room>()
         for (i in 0 until count) {
             val id = "r$i"
-            val outline = randomOutline(random)
+            val outline = randomOutline(random).let { if (random.nextBoolean()) reversed(it) else it }
             outlines[RoomId(id)] = outline
             val thickness = random.nextInt(0..MAX_THICKNESS).toLong()
             val openingWall = random.nextInt(outline.size)

@@ -34,8 +34,8 @@ class DockPlacementResolverTest {
     fun `given guest docked to top wall of host when resolved then it sits exactly the thickness above`() {
         val outlines = outlines("h", "g")
         val host = rawRoom("h", 4)
-        // Host w2 runs from (4000, 3000) to (0, 3000). Offset 4000 puts the own start V_0 at (0, 3000 + 120).
-        val guest = rawRoom("g", 4).dockedBy(link("h", 2, "g", 0, 4000))
+        // Host w2 runs from (4000, 3000) to (0, 3000). Offset 0 puts the own end V_1 at (4000, 3000 + 120).
+        val guest = rawRoom("g", 4).dockedBy(link("h", 2, "g", 0, 0))
 
         val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
 
@@ -46,15 +46,15 @@ class DockPlacementResolverTest {
         val world = worldOutline(project.room("g"), rect)
         assertTrue(world[0].isCloseTo(Vec2(0.0, 3120.0), EPS_MM))
         assertTrue(world[2].isCloseTo(Vec2(4000.0, 6120.0), EPS_MM))
-        assertDocked(project, outlines, "g", 4000.0)
+        assertDocked(project, outlines, "g", 0.0)
     }
 
     @Test
     fun `given guest on right wall when resolved then it continues the row with the host thickness gap`() {
         val outlines = outlines("h", "g")
         val host = rawRoom("h", 4, thicknessMm = { 240L })
-        // Own w3 runs from (0, 3000) to (0, 0), antiparallel to host w1 without rotation.
-        val guest = rawRoom("g", 4).dockedBy(link("h", 1, "g", 3, 3000))
+        // Own w3 runs from (0, 3000) to (0, 0), antiparallel to host w1 without rotation, flush at offset 0.
+        val guest = rawRoom("g", 4).dockedBy(link("h", 1, "g", 3, 0))
 
         val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
 
@@ -73,21 +73,22 @@ class DockPlacementResolverTest {
         val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
 
         assertDocked(project, outlines, "g", 0.0)
-        // Own w0 points down after docking, so the guest lies right of x = 4000 + 365.
+        // Own w0 points down after docking, so the guest lies right of x = 4000 + 365, from y = 0 to y = 4000.
         val world = worldOutline(project.room("g"), rect)
         assertTrue(world.all { it.x >= 4365.0 - EPS_MM }, "$world")
-        assertEquals(4365.0, world[0].x, EPS_MM)
+        assertTrue(world[0].isCloseTo(Vec2(4365.0, 4000.0), EPS_MM), "${world[0]}")
+        assertTrue(world[1].isCloseTo(Vec2(4365.0, 0.0), EPS_MM), "${world[1]}")
     }
 
     @Test
     fun `given rotated and translated host when resolved then docking follows the host frame`() {
         val outlines = outlines("h", "g")
         val host = rawRoom("h", 4, placement = RoomPlacement(1000.0, -2000.0, Math.PI / 2, null))
-        val guest = rawRoom("g", 4).dockedBy(link("h", 2, "g", 0, 4000))
+        val guest = rawRoom("g", 4).dockedBy(link("h", 2, "g", 0, 0))
 
         val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
 
-        assertDocked(project, outlines, "g", 4000.0)
+        assertDocked(project, outlines, "g", 0.0)
         val placement = project.room("g").placement
         // In the host frame the guest origin is (0, 3120). Rotating by 90° maps it to (-3120, 0).
         assertEquals(1000.0 - 3120.0, placement.originX, EPS_MM)
@@ -96,26 +97,62 @@ class DockPlacementResolverTest {
     }
 
     @Test
-    fun `given clockwise host outline when resolved then the outward normal follows the winding`() {
-        val clockwise = listOf(Vec2(0.0, 0.0), Vec2(0.0, 3000.0), Vec2(4000.0, 3000.0), Vec2(4000.0, 0.0))
+    fun `given clockwise host and counter-clockwise guest when resolved then the guest lies outside the host`() {
+        val clockwise = reversed(rect)
         val outlines = mapOf(RoomId("h") to clockwise, RoomId("g") to rect)
         val host = rawRoom("h", 4)
-        // Host w0 runs up along x = 0. For a clockwise outline its outward side is -x.
-        val guest = rawRoom("g", 4).dockedBy(link("h", 0, "g", 0, 3000))
+        // Host w0 runs up along x = 0. For a clockwise outline its outward side is -x. Different windings make the
+        // own w0 run up as well, rotated by 90°, with its start V_0 flush at (-120, 0).
+        val guest = rawRoom("g", 4).dockedBy(link("h", 0, "g", 0, 0))
 
         val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
 
-        assertDocked(project, outlines, "g", 3000.0)
+        assertDocked(project, outlines, "g", 0.0)
+        assertEquals(Math.PI / 2, project.room("g").placement.rotationRad, EPS_UNIT)
         val world = worldOutline(project.room("g"), rect)
-        assertEquals(-120.0, world[0].x, EPS_MM)
+        assertTrue(world[0].isCloseTo(Vec2(-120.0, 0.0), EPS_MM), "${world[0]}")
+        assertTrue(world.all { it.x <= -120.0 + EPS_MM }, "no overlap with the host: $world")
+    }
+
+    @Test
+    fun `given counter-clockwise host and clockwise guest when resolved then the guest lies outside the host`() {
+        val outlines = mapOf(RoomId("h") to rect, RoomId("g") to reversed(rect))
+        val host = rawRoom("h", 4, thicknessMm = { 240L })
+        // Reversed own w0 runs from (0, 0) to (0, 3000). It is turned parallel to host w1, never antiparallel, because
+        // that would put the clockwise guest into the host.
+        val guest = rawRoom("g", 4).dockedBy(link("h", 1, "g", 0, 500))
+
+        val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
+
+        assertDocked(project, outlines, "g", 500.0)
+        val world = worldOutline(project.room("g"), reversed(rect))
+        assertTrue(world[0].isCloseTo(Vec2(4240.0, 500.0), EPS_MM), "${world[0]}")
+        assertTrue(world[1].isCloseTo(Vec2(4240.0, 3500.0), EPS_MM), "${world[1]}")
+        assertTrue(world.all { it.x >= 4240.0 - EPS_MM }, "no overlap with the host: $world")
+        assertEquals(8240.0, world.maxOf { it.x }, EPS_MM)
+    }
+
+    @Test
+    fun `given two clockwise rooms when resolved then the guest is antiparallel and outside`() {
+        val outlines = mapOf(RoomId("h") to reversed(rect), RoomId("g") to reversed(rect))
+        val host = rawRoom("h", 4)
+        // Reversed w0 of both rooms runs from (0, 0) to (0, 3000), the host outward side is -x.
+        val guest = rawRoom("g", 4).dockedBy(link("h", 0, "g", 0, 0))
+
+        val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
+
+        assertDocked(project, outlines, "g", 0.0)
+        val world = worldOutline(project.room("g"), reversed(rect))
+        assertTrue(world[1].isCloseTo(Vec2(-120.0, 0.0), EPS_MM), "own end V_1 is the reference point: ${world[1]}")
+        assertTrue(world.all { it.x <= -120.0 + EPS_MM }, "no overlap with the host: $world")
     }
 
     @Test
     fun `given a chain when the root moves then every docked room follows`() {
         val outlines = outlines("a", "b", "c")
         val a = rawRoom("a", 4)
-        val b = rawRoom("b", 4).dockedBy(link("a", 1, "b", 3, 3000))
-        val c = rawRoom("c", 4).dockedBy(link("b", 1, "c", 3, 3000))
+        val b = rawRoom("b", 4).dockedBy(link("a", 1, "b", 3, 0))
+        val c = rawRoom("c", 4).dockedBy(link("b", 1, "c", 3, 0))
         val evaluator = FakeShapeEvaluator(outlines)
 
         val first = resolve(listOf(a, b, c), evaluator).value()
@@ -125,15 +162,15 @@ class DockPlacementResolverTest {
         val second = resolve(listOf(moved, first.room("b"), first.room("c")), evaluator).value()
         assertEquals(8740.0, second.room("c").placement.originX, EPS_MM)
         assertEquals(700.0, second.room("c").placement.originY, EPS_MM)
-        assertDocked(second, outlines, "b", 3000.0)
-        assertDocked(second, outlines, "c", 3000.0)
+        assertDocked(second, outlines, "b", 0.0)
+        assertDocked(second, outlines, "c", 0.0)
     }
 
     @Test
     fun `given dependents listed before their host when resolved then topological order is used`() {
         val outlines = outlines("a", "b", "c")
-        val c = rawRoom("c", 4).dockedBy(link("b", 1, "c", 3, 3000))
-        val b = rawRoom("b", 4).dockedBy(link("a", 1, "b", 3, 3000))
+        val c = rawRoom("c", 4).dockedBy(link("b", 1, "c", 3, 0))
+        val b = rawRoom("b", 4).dockedBy(link("a", 1, "b", 3, 0))
         val a = rawRoom("a", 4, placement = RoomPlacement(-100.0, 0.0, 0.0, null))
 
         val project = resolve(listOf(c, b, a), FakeShapeEvaluator(outlines)).value()
@@ -151,6 +188,9 @@ class DockPlacementResolverTest {
 
         val first = resolve(listOf(host, guest), evaluator).value()
         assertDocked(first, outlines, "g", 1000.0)
+        val world = worldOutline(first.room("g"), rect)
+        assertEquals(1000.0, world.minOf { it.x }, EPS_MM, "the guest starts at the door")
+        assertEquals(5000.0, world.maxOf { it.x }, EPS_MM)
 
         val shifted =
             host.copy(
@@ -159,6 +199,40 @@ class DockPlacementResolverTest {
         val second = resolve(listOf(shifted, first.room("g")), evaluator).value()
         assertDocked(second, outlines, "g", 1500.0)
         assertEquals(first.room("g").placement.originX + 500.0, second.room("g").placement.originX, EPS_MM)
+    }
+
+    @Test
+    fun `given guest flush with a door at offset 0 when resolved then its wall covers the door`() {
+        val outlines = outlines("h", "g")
+        val host = rawRoom("h", 4, openings = listOf(door("d", wallId("h", 0), 0)))
+        // Own w2 runs from (4000, 3000) to (0, 3000), antiparallel to host w0, so its end V_3 is the reference point.
+        val guest = rawRoom("g", 4).dockedBy(link("h", 0, "g", 2, 0).viaOpening("d"))
+
+        val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
+
+        assertDocked(project, outlines, "g", 0.0)
+        val world = worldOutline(project.room("g"), rect)
+        assertTrue(world[3].isCloseTo(Vec2(0.0, -120.0), EPS_MM), "${world[3]}")
+        assertTrue(world[2].isCloseTo(Vec2(4000.0, -120.0), EPS_MM), "${world[2]}")
+        // The door spans x = 0 to 900 on the host wall, the own wall x = 0 to 4000 directly below it.
+        assertTrue(world[3].x <= EPS_MM && world[2].x >= 900.0 - EPS_MM, "the door must be covered: $world")
+        assertTrue(world.all { it.y <= -120.0 + EPS_MM }, "no overlap with the host: $world")
+    }
+
+    @Test
+    fun `given clockwise guest flush with a door at offset 0 when resolved then its wall covers the door`() {
+        val outlines = mapOf(RoomId("h") to rect, RoomId("g") to reversed(rect))
+        val host = rawRoom("h", 4, openings = listOf(door("d", wallId("h", 1), 0)))
+        val guest = rawRoom("g", 4).dockedBy(link("h", 1, "g", 1, 0).viaOpening("d"))
+
+        val project = resolve(listOf(host, guest), FakeShapeEvaluator(outlines)).value()
+
+        assertDocked(project, outlines, "g", 0.0)
+        val world = worldOutline(project.room("g"), reversed(rect))
+        // Different windings: the own start V_1 is the reference point and the own wall runs up with host w1.
+        assertTrue(world[1].isCloseTo(Vec2(4120.0, 0.0), EPS_MM), "${world[1]}")
+        assertTrue(world[2].isCloseTo(Vec2(4120.0, 4000.0), EPS_MM), "the door must be covered: ${world[2]}")
+        assertTrue(world.all { it.x >= 4120.0 - EPS_MM }, "no overlap with the host: $world")
     }
 
     @Test
@@ -210,7 +284,7 @@ class DockPlacementResolverTest {
             listOf(
                 rawRoom("a", 4),
                 rawRoom("b", 4, placement = kept),
-                rawRoom("c", 4).dockedBy(link("b", 1, "c", 3, 3000)),
+                rawRoom("c", 4).dockedBy(link("b", 1, "c", 3, 0)),
             )
 
         val project = resolve(rooms, FakeShapeEvaluator(outlines, open = setOf(RoomId("a")))).value()
@@ -223,11 +297,11 @@ class DockPlacementResolverTest {
     @Test
     fun `given adjusted host when resolved then its displayed outline is used`() {
         val outlines = outlines("h", "g")
-        val rooms = listOf(rawRoom("h", 4), rawRoom("g", 4).dockedBy(link("h", 1, "g", 3, 3000)))
+        val rooms = listOf(rawRoom("h", 4), rawRoom("g", 4).dockedBy(link("h", 1, "g", 3, 0)))
 
         val project = resolve(rooms, FakeShapeEvaluator(outlines, adjusted = setOf(RoomId("h")))).value()
 
-        assertDocked(project, outlines, "g", 3000.0)
+        assertDocked(project, outlines, "g", 0.0)
     }
 
     @Test
@@ -247,9 +321,9 @@ class DockPlacementResolverTest {
         val rooms =
             listOf(
                 rawRoom("h", 4),
-                rawRoom("a", 4).dockedBy(link("h", 0, "a", 2, 4000)),
-                rawRoom("b", 4).dockedBy(link("h", 1, "b", 3, 3000)),
-                rawRoom("c", 4).dockedBy(link("h", 2, "c", 0, 4000)),
+                rawRoom("a", 4).dockedBy(link("h", 0, "a", 2, 0)),
+                rawRoom("b", 4).dockedBy(link("h", 1, "b", 3, 0)),
+                rawRoom("c", 4).dockedBy(link("h", 2, "c", 0, 0)),
             )
 
         resolve(rooms, evaluator).value()

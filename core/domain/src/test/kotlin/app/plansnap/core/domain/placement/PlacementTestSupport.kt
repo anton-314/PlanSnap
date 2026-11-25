@@ -217,9 +217,11 @@ fun worldOutline(
 fun RoomPlacement.toLocal(world: Vec2): Vec2 = (world - Vec2(originX, originY)).rotated(-rotationRad)
 
 /**
- * Asserts the docking geometry of DOMAIN section 10 for room [roomId] in [project], computed independently from the
- * world outlines: the own wall is antiparallel to the host wall, both own wall ends lie exactly the host wall thickness
- * outside the host inner contour and the own start point lies [expectedAlongMm] along the host wall from `V_i`.
+ * Asserts the docking geometry of DOMAIN section 10 (CR-W2-03) for room [roomId] in [project], computed independently
+ * from the world outlines: the own wall is parallel to the host wall line, both own wall ends lie exactly the host wall
+ * thickness outside the host inner contour, the inward normal of the own wall, taken from the winding of the world
+ * outline, is the outward normal of the host wall, and along the host wall the own wall covers
+ * `[expectedAlongMm, expectedAlongMm + L_j]` counted from `V_i`.
  */
 fun assertDocked(
     project: Project,
@@ -240,14 +242,21 @@ fun assertDocked(
     val q = ownWorld[(ownIndex + 1) % ownWorld.size]
     val u = (b - a) * (1.0 / (b - a).length())
     val v = (q - p) * (1.0 / (q - p).length())
-    val sign = if (shapeOf(outlines.getValue(host.id)).winding == Winding.COUNTER_CLOCKWISE) 1.0 else -1.0
-    val normal = Vec2(u.y, -u.x) * sign
+    val hostSign = if (shapeOf(hostWorld).winding == Winding.COUNTER_CLOCKWISE) 1.0 else -1.0
+    val ownSign = if (shapeOf(ownWorld).winding == Winding.COUNTER_CLOCKWISE) 1.0 else -1.0
+    val outward = Vec2(u.y, -u.x) * hostSign
+    val ownInward = Vec2(-v.y, v.x) * ownSign
     val thickness =
         host.walls[hostIndex]
             .thickness.mm
             .toDouble()
-    assertTrue(u.isCloseTo(v * -1.0, EPS_UNIT), "own wall must be antiparallel: $u vs $v")
-    assertEquals(thickness, (p - a).dot(normal), EPS_MM, "distance of the own start")
-    assertEquals(thickness, (q - a).dot(normal), EPS_MM, "distance of the own end")
-    assertEquals(expectedAlongMm, (p - a).dot(u), EPS_MM, "position along the host wall")
+    assertTrue(ownInward.isCloseTo(outward, EPS_UNIT), "room must lie outside the host wall: $ownInward vs $outward")
+    assertEquals(thickness, (p - a).dot(outward), EPS_MM, "distance of the own start")
+    assertEquals(thickness, (q - a).dot(outward), EPS_MM, "distance of the own end")
+    val along = listOf((p - a).dot(u), (q - a).dot(u))
+    assertEquals(expectedAlongMm, along.min(), EPS_MM, "start of the covered interval along the host wall")
+    assertEquals(expectedAlongMm + (q - p).length(), along.max(), EPS_MM, "end of the covered interval")
 }
+
+/** Returns [outline] in the opposite winding, keeping `V_0`: wall `w_k` of the result is wall `w_{n-1-k}` reversed. */
+fun reversed(outline: List<Vec2>): List<Vec2> = listOf(outline.first()) + outline.drop(1).reversed()

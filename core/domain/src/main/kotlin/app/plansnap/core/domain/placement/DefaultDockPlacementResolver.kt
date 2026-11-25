@@ -21,10 +21,11 @@ import kotlinx.coroutines.ensureActive
  * [DockPlacementResolver] of DOMAIN section 10 and ADR 0015.
  *
  * Docked rooms are resolved in [DockTopology.resolutionOrder], so a room is always aligned to the already resolved
- * placement of its host. The displayed outline from [evaluator] is authoritative. The own wall is turned antiparallel
- * to the host wall and its start point `V_j` lies [DockLink.hostOffset] along the host wall from `V_i`, or from the
- * start of the host opening if [DockLink.hostOpeningId] is set, and exactly the host wall thickness outside the host
- * inner contour. A room whose host or own evaluation has no shape (`OPEN`, `CONFLICT`) keeps its last placement
+ * placement of its host. The displayed outline from [evaluator] is authoritative. The own wall lies exactly the host
+ * wall thickness outside the host inner contour, oriented so that the room lies on the outward side of the host wall
+ * whatever the windings of both rooms (CR-W2-03). Along the host wall it covers `[a, a + L_j]` with
+ * `a =` [DockLink.hostOffset] counted from `V_i`, or from the start of the host opening if [DockLink.hostOpeningId] is
+ * set. A room whose host or own evaluation has no shape (`OPEN`, `CONFLICT`) keeps its last placement
  * including the dock link.
  *
  * Only rooms that take part in a dock link are evaluated, each at most once per call. The result is deterministic and

@@ -62,6 +62,8 @@ Alle Messaktionen liegen in der unteren Hälfte. Andere Geräteformen erhalten d
 
 Ein Tipp auf eine Wand, Ecke oder Öffnung wählt sie aus und öffnet ihre Bearbeitung. Langes Drücken auf einen Raum startet das Verschieben. Änderungen laufen immer über Befehle und sind rückgängig machbar.
 
+**Andocken (CR-W2-03):** Der Nutzer wählt eine Wand oder Öffnung des Wirtsraums und eine eigene Wand. Der Raum legt sich mit dieser Wand bündig an den Anfang der Wirtswand oder an den Beginn der Öffnung, immer auf die Außenseite des Wirts und im Abstand der Wirtswandstärke, unabhängig davon, in welcher Richtung beide Räume gemessen wurden. Der Versatz (Vorbelegung 0) verschiebt ihn entlang der Wirtswand in deren Laufrichtung (Messrichtung des Wirts, von `V_i` nach `V_{i+1}`). Eine Tür, die nicht breiter als die eigene Wand ist, liegt bei Versatz 0 vollständig vor ihr. Die Geometrie regelt DOMAIN §10.
+
 ## 4. Gesten
 
 | Geste | Wirkung |

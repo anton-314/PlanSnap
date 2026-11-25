@@ -352,9 +352,14 @@ data class DockLink(
 )
 ```
 
-**Andocken:** Die eigene Wand wird antiparallel zur Wirtswand ausgerichtet. Ihr Startpunkt wird so gelegt, dass der Abstand zwischen den Innenkonturen genau der Stärke der Wirtswand entspricht. `hostOffset` verschiebt den Raum entlang der Wand.
+**Andocken (CR-W2-03):** Die Wirtswand `w_i` läuft von `V_i` nach `V_{i+1}` mit der Einheitsrichtung `e_i` in Weltkoordinaten, der äußeren Normale `n_i` (§8) und der Stärke `t_i`. Die eigene Wand `w_j` mit der angezeigten Länge `L_j` wird so gelegt:
 
-**Andocken an eine Tür oder Öffnung:** Ist `hostOpeningId` gesetzt, muss die Öffnung auf `hostWallId` liegen, und `hostOffset` zählt ab dem Beginn der Öffnung statt ab `V_i`. Der Raum folgt damit einer verschobenen Öffnung. Wird die Öffnung gelöscht, bleibt die Weltposition erhalten: `hostOpeningId` wird `null` und `hostOffset` wird auf den entsprechenden Abstand ab `V_i` umgerechnet.
+- **Lage:** Beide Enden von `w_j` liegen auf der um `t_i` nach außen versetzten Wandlinie, also genau `t_i` in Richtung `n_i` von der Innenkontur des Wirts entfernt. Die Trennwandstärke ist die Stärke der Wirtswand (ADR 0013).
+- **Richtung:** Das Innere des Gastes liegt auf der Außenseite der Wirtswand, seine nach innen zeigende Normale an `w_j` ist `n_i`. Daraus folgt die Richtung `e_j = −s_W · s_G · e_i` mit dem Umlaufsinn `s_W` des Wirts und `s_G` des Gastes (§3). Bei gleichem Umlaufsinn läuft `w_j` gegenläufig zur Wirtswand, bei verschiedenem gleichläufig. Der Raum wird nur gedreht und verschoben, nie gespiegelt. Die Platzierung ist starr (§2), ein Spiegeln würde die gemessene Form in ihr Spiegelbild verfälschen. Ein Andocken wird deshalb wegen des Umlaufsinns nie abgelehnt.
+- **Bezugspunkt von `hostOffset`:** Entlang der Wirtswand, gezählt von `V_i` in Richtung `e_i`, belegt `w_j` das Intervall `[a, a + L_j]` mit `a = hostOffset`. Bezugspunkt ist also das Ende von `w_j`, das `V_i` am nächsten liegt: `V_{j+1}` bei gleichem, `V_j` bei verschiedenem Umlaufsinn. `hostOffset = 0` setzt den Gast bündig an den Anfang der Wirtswand. `hostOffset` darf negativ sein oder über `L_i` hinausführen, der Gast steht dann über das Wandende hinaus.
+- Die Regel stellt nur sicher, dass der Gast an der Andockwand auf der Außenseite des Wirts liegt. Bei nicht konvexen Formen oder überstehenden Gästen kann es an anderer Stelle Überschneidungen geben. Sie werden nicht geprüft und nicht abgelehnt.
+
+**Andocken an eine Tür oder Öffnung:** Ist `hostOpeningId` gesetzt, muss die Öffnung auf `hostWallId` liegen, und `hostOffset` zählt ab dem Beginn der Öffnung statt ab `V_i`: `a = opening.offset + hostOffset`. Bei `hostOffset = 0` beginnt `w_j` bündig mit der Öffnung und überdeckt sie vollständig, wenn `L_j ≥ width`. Der Raum folgt damit einer verschobenen Öffnung. Wird die Öffnung gelöscht, bleibt die Weltposition erhalten: `hostOpeningId` wird `null` und `hostOffset` wird zu `hostOffset + opening.offset`, dem Abstand ab `V_i`.
 
 - Ändert sich der Wirtsraum, berechnet `DockPlacementResolver` die Platzierung abhängiger Räume in topologischer Reihenfolge neu (ADR 0015). Maßgeblich ist der angezeigte Umriss. Ist der Wirtsraum oder der eigene Raum `OPEN` oder `CONFLICT`, bleibt die letzte Platzierung des Raums einschließlich Dock-Link erhalten.
 - Andockungen dürfen keinen Zyklus bilden. Ein solcher Befehl wird abgelehnt.

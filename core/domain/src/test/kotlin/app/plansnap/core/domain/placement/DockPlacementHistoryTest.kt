@@ -47,11 +47,11 @@ class DockPlacementHistoryTest {
             val docked =
                 history
                     .execute(
-                        factory.create(ProjectEdit.DockRoom(RoomId("g"), link("h", 1, "g", 3, 3000))),
+                        factory.create(ProjectEdit.DockRoom(RoomId("g"), link("h", 1, "g", 3, 0))),
                         TOLERANCE,
                     ).value()
 
-            assertDocked(docked, outlines, "g", 3000.0)
+            assertDocked(docked, outlines, "g", 0.0)
             assertEquals(1, history.state.undoDepth)
             assertEquals(ReconcileOutcome.UNCHANGED, history.reconcile(TOLERANCE).value())
             assertEquals(1, history.state.undoDepth)
@@ -61,7 +61,7 @@ class DockPlacementHistoryTest {
     fun `given docked room when the host moves then it follows and moving it freely releases the link`() =
         runBlocking<Unit> {
             val outlines = mapOf(RoomId("h") to rect, RoomId("g") to rect)
-            val rooms = listOf(rawRoom("h", 4), rawRoom("g", 4).dockedBy(link("h", 1, "g", 3, 3000)))
+            val rooms = listOf(rawRoom("h", 4), rawRoom("g", 4).dockedBy(link("h", 1, "g", 3, 0)))
             val history = history(rooms, FakeShapeEvaluator(outlines))
 
             val moved =
@@ -139,7 +139,7 @@ class DockPlacementHistoryTest {
             val rooms =
                 ids.mapIndexed { i, id ->
                     val room = rawRoom(id, 4)
-                    if (i == 0) room else room.dockedBy(link(ids[i - 1], 1, id, 3, 3000))
+                    if (i == 0) room else room.dockedBy(link(ids[i - 1], 1, id, 3, 0))
                 }
             val history = history(rooms, FakeShapeEvaluator(outlines))
             history.reconcile(TOLERANCE).value()
@@ -158,7 +158,7 @@ class DockPlacementHistoryTest {
             val shift = (RUNS - 1).toDouble()
             ids.forEachIndexed { i, id ->
                 assertEquals(shift + i * 4120.0, project.room(id).placement.originX, EPS_MM)
-                if (i > 0) assertDocked(project, outlines, id, 3000.0)
+                if (i > 0) assertDocked(project, outlines, id, 0.0)
             }
             println("T-DOM-004: 30-room chain, execute with resolve averaged $averageMs ms over $RUNS runs")
             assertTrue(averageMs < MAX_AVERAGE_MS, "average $averageMs ms")
