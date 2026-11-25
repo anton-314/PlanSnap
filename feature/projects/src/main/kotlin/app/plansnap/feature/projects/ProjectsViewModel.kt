@@ -149,7 +149,7 @@ class ProjectsViewModel
             mutableState.update { it.copy(error = null) }
         }
 
-        @Suppress("SwallowedException")
+        @Suppress("SwallowedException") // The cause is not shown to the user; every read error maps to READ_FAILED.
         private suspend fun importFrom(source: ImportSource): DomainResult<ProjectId> =
             try {
                 val stream = source.open()

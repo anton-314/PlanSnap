@@ -20,7 +20,7 @@ class EditorViewModelLifecycleTest {
     private fun ViewModelStore.adopt(viewModel: EditorViewModel): EditorViewModel {
         val factory =
             object : ViewModelProvider.Factory {
-                @Suppress("UNCHECKED_CAST")
+                @Suppress("UNCHECKED_CAST") // The factory only ever serves the one EditorViewModel of this test.
                 override fun <T : ViewModel> create(
                     modelClass: KClass<T>,
                     extras: CreationExtras,

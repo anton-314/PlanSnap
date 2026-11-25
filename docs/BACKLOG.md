@@ -38,3 +38,7 @@
 - `:core:designsystem`: `PlanSnapNumericKey` mit Parameter `contentPadding` (feste 24 dp schneiden bei 200 % Schrift ab), `NumericKeyTextStyle` öffentlich, `error` in `PlanSnapTheme.colors`. Danach den eigenen Ziffernblock aus T-EDT-002 auf die Designsystem-Taste umstellen.
 - `EditorUiState.kt:176`: veraltetes `PersistentMap.put` durch `putting()` ersetzen.
 - Editor: Bei 200 % Schrift bricht der Titel der Top-Bar mitten im Wort um (`screen-fontscale-2.png`).
+- Einstellungen: Der Text der absoluten Toleranz sollte `drafts` synchron setzen, mit der Einheit aus `state.value`. Bisher läuft je Tastendruck eine eigene Coroutine nach `settings.first()` (Gate-Review Welle 3, N1, `SettingsViewModel.kt:63-70`).
+- Export: `NO_SPACE` wird beim Schreiben nie gemeldet, `PageExportFlow` und `JsonExporter` machen aus jeder `IOException` `WRITE_FAILED` (Gate-Review Welle 3, N3).
+- Editor und Export lesen beim Öffnen das Repository, während ein Job im ApplicationScope noch speichert. Das kann einen veralteten Stand ergeben, und der nächste Speichervorgang überschreibt dann die letzte Wand. Laden soll auf den Saver warten (Gate-Review Welle 3, N4). Mit T-EDT-008 oder in Phase 5 umsetzen.
+- Szene: Maßbeschriftungen benachbarter Räume überlappen (`canvas-rooms.png`, Gate-Review Welle 3, N6).

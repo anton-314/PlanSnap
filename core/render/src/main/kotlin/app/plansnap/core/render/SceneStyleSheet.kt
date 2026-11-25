@@ -203,7 +203,7 @@ object SceneStyleSheet {
             }
         }
 
-    @Suppress("LongParameterList")
+    @Suppress("LongParameterList") // Named defaults per SceneStyleSpec field keep the table readable.
     private fun spec(
         stroke: PlanInk,
         units: Double,

@@ -39,6 +39,7 @@ graph LR
 | Welle 3 / 3.1 | T-EDT-001, T-PRJ-001, T-SET-001, T-EXP-002 |
 | Welle 3 / 3.2 | T-EDT-002, T-EDT-003, T-EXP-003 |
 | Welle 3 / 3.3 | T-EDT-004, T-FEX-001 |
+| Welle 3 / 3.4 (Gate-Fix) | T-EDT-010, T-EDT-011, T-FEX-002 |
 | Welle 4 / 4.1 | T-EDT-005, T-EDT-006, T-EDT-007, T-EDT-008 |
 | Welle 4 / 4.2 | T-EDT-009, T-UX-001 |
 | Welle 5 / 5.1 | T-A11-001, T-L10-001, T-UX-002, T-PRF-001 |
@@ -679,6 +680,41 @@ graph LR
 - **Vertrag:** UX §1
 - **Akzeptanzkriterien:** Format, Maßstab, Papier, Warnung vor dem Export über `ExportPreflight` (`DefaultExportPreflight`, ADR 0022). Teilen und Speichern für jedes Format. Der Dialog überschreibt nur Maßstab und Papier, die Ausrichtung wird angezeigt (CR-W2-04). Maßstabsbalken und Maßstabsangabe stehen im Titelblock. Anforderungen: REQ-EXP-002, REQ-EXP-005, REQ-EXP-006
 - **Tests:** ViewModel, Compose-UI, FileProvider-Test
+
+### Batch 3.4 (Gate-Fix)
+
+#### T-EDT-010 – Fix: Ausgleich bestätigt genau den angezeigten Vorschlag, keine doppelte Wand, SavedState auf Main
+
+- **Modul:** :feature:editor
+- **Rolle/Modell:** feature-engineer
+- **Größe:** M
+- **Abhängigkeiten:** T-EDT-001, T-EDT-004
+- **Besitzbereich:** `feature/editor/…/state/`, `feature/editor/…/shape/` und zugehörige Tests
+- **Vertrag:** DOMAIN §5.5, ADR 0019, ARCHITECTURE §5
+- **Akzeptanzkriterien:** (H1) `CoreIntent.AcceptAdjustment` trägt den angezeigten `AdjustmentProposal`, der unverändert an `ProjectEdit.AcceptAdjustment` geht. Ein inzwischen geänderter Vorschlag wird mit `ADJUSTMENT_NOT_AVAILABLE` abgelehnt und nie still ersetzt, auch bei EXPLICIT. (M1) Zweimal schnell OK fügt die Wand nur einmal ein. Die Eingabe gilt ab dem Einreihen bzw. direkt nach `execute` als übernommen, nicht erst nach dem Speichern. (M4) `SavedStateHandle` wird nur vom Main-Thread geschrieben. Die Probetests aus dem Gate-Review werden mit umgekehrten Assertions zu Regressionstests: vorher rot, danach grün.
+- **Tests:** Regressionstests „Vorschlag geändert, aber weiter `NeedsAdjustment`“ (SIMPLE und EXPLICIT), „doppeltes OK bei verzögertem Speichern“, Thread-Prüfung der Handle-Schreibzugriffe
+
+#### T-EDT-011 – Fix: Eingabeleiste und Statuskarte im Hochformat
+
+- **Modul:** :feature:editor
+- **Rolle/Modell:** ui-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-EDT-002, T-EDT-004
+- **Besitzbereich:** `feature/editor/…/screen/`, `feature/editor/…/input/`, `feature/editor/…/navigation/` und zugehörige Tests und Baselines
+- **Vertrag:** UX §2
+- **Akzeptanzkriterien:** (M3) Bei 360 × 640 dp und 360 × 740 dp mit normaler Schrift liegen alle Tasten einschließlich OK ohne Scrollen sichtbar und vollständig in der Daumenzone. Der Plan behält ungefähr 50 % der Höhe (UX §2), die Statuskarte verdrängt ihn nicht unter eine dokumentierte Mindesthöhe. Bei 200 % Schrift bleibt die Leiste scrollbar. Tasten mindestens 56 dp.
+- **Tests:** Roborazzi bei 360 × 640 und 360 × 740 dp, mit und ohne Statuskarte, Schrift 100 % und 200 %. Compose-Test, dass OK vollständig angezeigt wird.
+
+#### T-FEX-002 – Fix: Exportdialog übersteht Prozess-Tod, Maßstabsauswahl bei großer Schrift
+
+- **Modul:** :feature:export
+- **Rolle/Modell:** ui-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-FEX-001
+- **Besitzbereich:** `feature/export/`
+- **Vertrag:** UX §1
+- **Akzeptanzkriterien:** (M2) Format, Maßstab, Papier und die laufende Dateiauswahl liegen im `SavedStateHandle`. Eine nach Prozess-Tod gelieferte URI wird bis zum Laden zurückgestellt und dann exportiert. Kann sie nicht bedient werden, sieht der Nutzer einen Fehler und das leere Dokument wird verworfen. Nie still abbrechen. (N5) Bei 200 % Schrift sind die Texte der Maßstabsauswahl nicht abgeschnitten.
+- **Tests:** ViewModel-Test mit neu erzeugtem ViewModel aus gespeichertem Zustand und früh gelieferter URI, Roborazzi bei 200 % Schrift
 
 ## Welle 4
 

@@ -57,7 +57,7 @@ class ShareAndFilesTest {
             assertTrue(chooser.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
             assertEquals(uri, chooser.clipData?.getItemAt(0)?.uri)
 
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION") // The typed getParcelableExtra needs API 33, minSdk is lower.
             val send = chooser.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
             assertNotNull(send)
             send!!
@@ -65,7 +65,7 @@ class ShareAndFilesTest {
             assertEquals(expected.getValue(format), send.type)
             assertEquals(expected.getValue(format), format.mimeType)
 
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION") // The typed getParcelableExtra needs API 33, minSdk is lower.
             assertEquals(uri, send.getParcelableExtra<Uri>(Intent.EXTRA_STREAM))
             assertTrue(send.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
             assertEquals(uri, send.clipData?.getItemAt(0)?.uri)
