@@ -604,7 +604,7 @@ graph LR
 - **Abhängigkeiten:** T-DRW-001, T-EXP-001, T-DOC-001
 - **Besitzbereich:** `core/export/…/svg/`, `core/export/…/json/`
 - **Vertrag:** `Exporter`
-- **Akzeptanzkriterien:** SVG ist gültig und vollständig, mit Kennzeichnung. JSON ist wieder importierbar. Anforderungen: REQ-EXP-003, REQ-EXP-004, REQ-EXP-006
+- **Akzeptanzkriterien:** SVG ist gültig und vollständig, mit Kennzeichnung. JSON ist wieder importierbar. Mehrzeilige Beschriftungen werden wie im Renderer gesetzt: `blockAnchor + k·(anchor − blockAnchor)` (ADR 0008, CR-W2-05). Anforderungen: REQ-EXP-003, REQ-EXP-004, REQ-EXP-006
 - **Tests:** Golden, XML-Validierung, Roundtrip
 
 ### Batch 3.2

@@ -85,17 +85,15 @@ Keine.
 - 2026-11-25: CR-W2-04, Plotteil, gemergt. Der Plan wird zentriert. `PageRectMm`, `drawingAreaMm` und `titleBlockMm` sind als additive API bestätigt. Es gibt keine Überschreibung der Ausrichtung, weil REQ-EXP-002 nur Maßstab und Papier verlangt. Die Passprüfung bleibt exakt `≤`. Maßstabsbalken und Maßstabsangabe stehen im Titelblock (DOMAIN §12, ADR 0009). Folgepunkt in T-FEX-001 eingetragen.
 - 2026-11-25: T-RND-001 gemergt (`135a450`, 38 Tests, 14 Roborazzi-Referenzbilder). Alle 12 Stile sind abgebildet. Die Allokationsmessung ergibt etwa 100 bis 200 B je Frame, unabhängig von der Zahl der Elemente. `:core:render` bekommt die Farben als `RenderPalette` (ARGB), weil es nicht von `:core:designsystem` abhängen darf. Raumtypnamen kommen über eine Lambda vom Aufrufer. Mangel im Referenzbild `export-1-200.png`: Mehrzeilige Beschriftungen überlappen, weil die Zeilenabstände fest in der Szene stehen und die Schrift im Export bis Faktor 2,4 skaliert wird. Wird als CR-W2-05 vor dem Gate behoben.
 - 2026-11-25: T-APP-001 gemergt (`fb20aa9`, 29 Tests in `:app` und den Feature-Modulen). Die App startet auf dem Emulator: `MainActivityLaunchTest` erreicht mit dem Produktions-Graphen `RESUMED`, instrumentiert 3 von 3. Typsichere Routen, vollständiger Hilt-Graph, DataStore mit Corruption-Handler. Die Screens zeigen Titel und Leerzustände, „Neues Projekt“ ist bis T-PRJ-001 deaktiviert. Die History-Fabrik ist vorerst als Funktionstyp gebunden. Im Backlog stehen der Vertrag `CommandHistoryFactory` und Room als `api` in `:core:data`, um `DatabaseHolder` zu sparen.
+- 2026-11-25: CR-W2-05 gemergt (`bf7e082`). `SceneElement.Label.blockAnchor` ist additiv. Der Renderer setzt Blockzeilen auf `blockAnchor + k·(anchor − blockAnchor)`, mit `k` gleich dem Schriftfaktor. Der Zeilenabstand ist im Editor immer das 1,5-Fache der Textgröße. Ein Regressionstest belegt disjunkte Zeilen bei 1:50, 1:100 und 1:200 und bei fünf Zoomstufen. Die Baselines sind neu aufgenommen. Die gleiche Regel gilt für SVG (in T-EXP-002 eingetragen).
+- 2026-11-25: Welle 2 inhaltlich fertig, Wellen-Gate 2 gestartet.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, T-GEO-009, T-EXP-001, CR-W2-04, T-RND-001, T-APP-001.
-- **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
-  - CR-W2-05 (Überlappung mehrzeiliger Beschriftungen im Export, `architect`), Basis `64ca286`.
-  - T-APP-001 (Navigation und DI), gleiche Basis.
-- Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
+- **Welle 2:** alle Aufgaben und CRs gemergt. Das Wellen-Gate 2 läuft (Build, Pitest, instrumentierte Tests im Hintergrund, Review durch `reviewer` im Worktree). Nach einer Unterbrechung das Gate neu starten.
 
 ## Nächste Schritte
 
-1. Die laufenden Aufgaben prüfen und übernehmen.
-2. Wellen-Gate 2 mit Review, Tag `wave-2`, Push, CI prüfen.
+1. Wellen-Gate 2 auswerten. Bei kritischen oder hohen Befunden Fix-Aufgaben anlegen. Sonst Tag `wave-2`, Push, CI prüfen.
+2. Welle 3, Batch 3.1: T-EDT-001, T-PRJ-001, T-SET-001, T-EXP-002.
