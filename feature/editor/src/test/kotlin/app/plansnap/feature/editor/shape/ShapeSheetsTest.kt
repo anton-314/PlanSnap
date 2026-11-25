@@ -168,7 +168,7 @@ class ShapeSheetsTest {
         compose.onNodeWithText("Apply adjustment").performClick()
         compose.waitForIdle()
         assertEquals(
-            listOf(CoreIntent.AcceptAdjustment(SHAPE_ROOM, AdjustmentConfirmation.SIMPLE)),
+            listOf(CoreIntent.AcceptAdjustment(SHAPE_ROOM, proposalOf(room), AdjustmentConfirmation.SIMPLE)),
             editor.sent<CoreIntent.AcceptAdjustment>(),
         )
         assertNull(editor.host.shape.sheet)
@@ -199,13 +199,14 @@ class ShapeSheetsTest {
 
     @Test
     fun `given the dialog when the correction is applied then exactly one explicit confirmation is sent`() {
-        val editor = show(stateOf(largeCorrectionRoom()), ShapeIntent.OpenAdjustment)
+        val room = largeCorrectionRoom()
+        val editor = show(stateOf(room), ShapeIntent.OpenAdjustment)
         compose.onNodeWithText("Review large correction").performClick()
         compose.waitForIdle()
         compose.onNodeWithText("Apply correction").performClick()
         compose.waitForIdle()
         assertEquals(
-            listOf(CoreIntent.AcceptAdjustment(SHAPE_ROOM, AdjustmentConfirmation.EXPLICIT)),
+            listOf(CoreIntent.AcceptAdjustment(SHAPE_ROOM, proposalOf(room), AdjustmentConfirmation.EXPLICIT)),
             editor.sent<CoreIntent.AcceptAdjustment>(),
         )
         assertNull(editor.host.shape.sheet)

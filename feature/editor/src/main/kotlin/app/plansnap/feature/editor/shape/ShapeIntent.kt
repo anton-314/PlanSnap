@@ -17,7 +17,7 @@ sealed interface CornerTarget {
 /**
  * Intents of the shape sheets: corner angle, diagonal, thickness, closing and adjustment (DOMAIN sections 4 to 6,
  * UX section 3). A [ShapeHandler] consumes them. Accepting an adjustment is no intent of its own: the sheet sends
- * `CoreIntent.AcceptAdjustment`, which evaluates the proposal again right before the command runs (ADR 0019).
+ * `CoreIntent.AcceptAdjustment`, which carries the displayed proposal and lets the command verify it (ADR 0019).
  */
 sealed interface ShapeIntent : EditorIntent {
     /** Opens the angle sheet for [target]. */

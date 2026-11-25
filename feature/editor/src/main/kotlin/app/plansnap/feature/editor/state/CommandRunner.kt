@@ -9,6 +9,7 @@ import app.plansnap.core.domain.command.ProjectCommandFactory
 import app.plansnap.core.domain.command.ProjectEdit
 import app.plansnap.core.domain.command.ReconcileOutcome
 import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
+import app.plansnap.core.domain.evaluation.AdjustmentProposal
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.domain.evaluation.RoomEvaluator
 import app.plansnap.core.domain.repository.ProjectSaver
@@ -59,12 +60,13 @@ internal class CommandRunner(
     }
 
     /**
-     * Accepts the adjustment of [roomId]. The room is evaluated again right now and the fresh proposal is what the
-     * command receives, so a proposal that went stale since it was displayed is never applied. The command verifies
-     * it once more under the history mutex (ADR 0019).
+     * Accepts the adjustment of [roomId] with exactly the [proposal] the user saw. The command verifies it under the
+     * history mutex (ADR 0019) and rejects a stale proposal. The evaluation here only decides which error the user gets
+     * if no adjustment is available any more.
      */
     suspend fun acceptAdjustment(
         roomId: RoomId,
+        proposal: AdjustmentProposal,
         confirmation: AdjustmentConfirmation,
     ) {
         val room = project.rooms.firstOrNull { it.id == roomId }
@@ -79,9 +81,8 @@ internal class CommandRunner(
             }
 
             is DomainResult.Success -> {
-                val evaluation = fresh.value
-                if (evaluation is RoomEvaluation.NeedsAdjustment) {
-                    execute(ProjectEdit.AcceptAdjustment(roomId, evaluation.proposal, confirmation), tolerance)
+                if (fresh.value is RoomEvaluation.NeedsAdjustment) {
+                    execute(ProjectEdit.AcceptAdjustment(roomId, proposal, confirmation), tolerance)
                 } else {
                     store.send(EditorEffect.Error(DomainError.RuleViolation(DomainRule.ADJUSTMENT_NOT_AVAILABLE)))
                 }

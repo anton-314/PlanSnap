@@ -80,6 +80,7 @@ internal class EditorSession(
                 store.enqueue {
                     runner.acceptAdjustment(
                         intent.roomId,
+                        intent.proposal,
                         intent.confirmation,
                     )
                 }
@@ -134,6 +135,8 @@ internal class EditorSession(
             }
 
             is DomainResult.Success -> {
+                // The input counts as taken over from queuing on, so a second OK cannot add the wall twice.
+                store.update { it.copy(inputText = if (it.inputText == snapshot.inputText) "" else it.inputText) }
                 store.enqueue { appendWall(snapshot.inputText, length.value, snapshot.thickness, snapshot.nextCorner) }
             }
         }
@@ -145,17 +148,18 @@ internal class EditorSession(
         thickness: Length,
         nextCorner: CornerSpec,
     ) {
-        val room = targetRoom() ?: return
-        val wall = Wall(WallId(ids.newId()), length, thickness)
-        val added = runner.execute(ProjectEdit.AddWall(room.id, wall, WallInput.startCorner(room, nextCorner)))
-        if (added is DomainResult.Success) {
-            store.update {
-                it.copy(
-                    inputText = if (it.inputText == text) "" else it.inputText,
-                    thicknessOverride = null,
-                )
+        val room = targetRoom()
+        val added =
+            room?.let {
+                val wall = Wall(WallId(ids.newId()), length, thickness)
+                runner.execute(ProjectEdit.AddWall(it.id, wall, WallInput.startCorner(it, nextCorner)))
             }
+        if (added is DomainResult.Success) {
+            store.update { it.copy(thicknessOverride = null) }
             rememberThickness(thickness)
+        } else {
+            // Rejected: the input comes back for correction, unless the user already typed something new.
+            store.update { it.copy(inputText = it.inputText.ifEmpty { text }) }
         }
     }
 

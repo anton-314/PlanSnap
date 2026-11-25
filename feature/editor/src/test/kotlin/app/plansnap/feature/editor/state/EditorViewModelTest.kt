@@ -14,6 +14,7 @@ import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
 import app.plansnap.core.domain.repository.EditorDraft
 import app.plansnap.core.model.ShapeStatus
 import app.plansnap.core.model.WallId
+import app.plansnap.feature.editor.shape.proposalOf
 import app.plansnap.testing.fixtures.fakes.FakeEditorDraftRepository
 import app.plansnap.testing.fixtures.fakes.FakeProjectRepository
 import app.plansnap.testing.fixtures.fakes.FakeProjectSaver
@@ -330,7 +331,9 @@ class EditorViewModelTest {
                     .status,
             )
             val callsBefore = rig.evaluator.calls.size
-            viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, AdjustmentConfirmation.SIMPLE))
+            viewModel.onIntent(
+                CoreIntent.AcceptAdjustment(ROOM_ID, viewModel.shownProposal(), AdjustmentConfirmation.SIMPLE),
+            )
             runCurrent()
             assertTrue("The room must be evaluated again", rig.evaluator.calls.size > callsBefore)
             val state = viewModel.state.value
@@ -354,7 +357,9 @@ class EditorViewModelTest {
             val (rig, viewModel) = opened(closedProject(2970))
             // The user changes the room, the screen still shows the proposal of the old state.
             viewModel.onIntent(CoreIntent.Submit(ProjectEdit.EditWall(ROOM_ID, WallId("w3"), Length(3000))))
-            viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, AdjustmentConfirmation.SIMPLE))
+            viewModel.onIntent(
+                CoreIntent.AcceptAdjustment(ROOM_ID, viewModel.shownProposal(), AdjustmentConfirmation.SIMPLE),
+            )
             runCurrent()
             val room =
                 viewModel.state.value.project
@@ -373,8 +378,9 @@ class EditorViewModelTest {
     fun adjustmentOfARoomWithoutProposalIsReported() =
         runTest {
             val (_, viewModel) = opened(closedProject(3000))
+            val unrelated = proposalOf(closedProject(2970).rooms.single())
             viewModel.effects.test {
-                viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, AdjustmentConfirmation.SIMPLE))
+                viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, unrelated, AdjustmentConfirmation.SIMPLE))
                 assertEquals(
                     EditorEffect.Error(DomainError.RuleViolation(DomainRule.ADJUSTMENT_NOT_AVAILABLE)),
                     awaitItem(),

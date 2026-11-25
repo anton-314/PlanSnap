@@ -6,6 +6,7 @@ import app.plansnap.core.common.result.DomainRule
 import app.plansnap.core.common.units.Angle
 import app.plansnap.core.common.units.Length
 import app.plansnap.core.common.units.TurnDirection
+import app.plansnap.core.domain.command.ProjectEdit
 import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.domain.repository.AppSettings
@@ -14,6 +15,7 @@ import app.plansnap.core.model.ConflictReason
 import app.plansnap.core.model.CornerSpec
 import app.plansnap.core.model.Project
 import app.plansnap.core.model.ShapeStatus
+import app.plansnap.core.model.WallId
 import app.plansnap.feature.editor.state.CoreIntent
 import app.plansnap.feature.editor.state.EditorEffect
 import app.plansnap.feature.editor.state.EditorIntent
@@ -23,6 +25,7 @@ import app.plansnap.feature.editor.state.ROOM_ID
 import app.plansnap.feature.editor.state.closedProject
 import app.plansnap.feature.editor.state.emptyProject
 import app.plansnap.feature.editor.state.openProject
+import app.plansnap.feature.editor.state.shownProposal
 import app.plansnap.testing.fixtures.runtime.SequentialIdGenerator
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +34,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -185,7 +189,9 @@ class ShapeFlowTest {
             val (rig, viewModel) = opened(closedProject(3030))
             assertEquals(ShapeStatus.NEEDS_ADJUSTMENT, viewModel.evaluation.status)
             viewModel.onIntent(ShapeIntent.OpenAdjustment)
-            viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, AdjustmentConfirmation.SIMPLE))
+            viewModel.onIntent(
+                CoreIntent.AcceptAdjustment(ROOM_ID, viewModel.shownProposal(), AdjustmentConfirmation.SIMPLE),
+            )
             runCurrent()
             assertEquals(ShapeStatus.ADJUSTED, viewModel.evaluation.status)
             assertTrue(
@@ -218,7 +224,9 @@ class ShapeFlowTest {
             val proposal = (viewModel.evaluation as RoomEvaluation.NeedsAdjustment).proposal
             assertEquals(AdjustmentConfirmation.EXPLICIT, proposal.requiredConfirmation)
             viewModel.effects.test {
-                viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, AdjustmentConfirmation.SIMPLE))
+                viewModel.onIntent(
+                    CoreIntent.AcceptAdjustment(ROOM_ID, viewModel.shownProposal(), AdjustmentConfirmation.SIMPLE),
+                )
                 runCurrent()
                 assertEquals(
                     EditorEffect.Error(DomainError.RuleViolation(DomainRule.EXPLICIT_CONFIRMATION_REQUIRED)),
@@ -230,7 +238,9 @@ class ShapeFlowTest {
                     .single()
                     .adjustment,
             )
-            viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, AdjustmentConfirmation.EXPLICIT))
+            viewModel.onIntent(
+                CoreIntent.AcceptAdjustment(ROOM_ID, viewModel.shownProposal(), AdjustmentConfirmation.EXPLICIT),
+            )
             runCurrent()
             assertEquals(ShapeStatus.ADJUSTED, viewModel.evaluation.status)
         }
@@ -248,13 +258,45 @@ class ShapeFlowTest {
             rig.settingsRepository.update { it.copy(tolerance = ClosureTolerance()) }
             runCurrent()
             viewModel.effects.test {
-                viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, AdjustmentConfirmation.SIMPLE))
+                viewModel.onIntent(
+                    CoreIntent.AcceptAdjustment(ROOM_ID, viewModel.shownProposal(), AdjustmentConfirmation.SIMPLE),
+                )
                 runCurrent()
                 assertEquals(
                     EditorEffect.Error(DomainError.RuleViolation(DomainRule.EXPLICIT_CONFIRMATION_REQUIRED)),
                     awaitItem(),
                 )
             }
+            assertNull(
+                rig.stored.rooms
+                    .single()
+                    .adjustment,
+            )
+        }
+
+    @Test
+    fun `given a shown explicit proposal when the room changes but still needs adjustment then it is rejected`() =
+        runTest {
+            val (rig, viewModel) = opened(largeCorrectionProject())
+            val shown = viewModel.shownProposal()
+            assertEquals(AdjustmentConfirmation.EXPLICIT, shown.requiredConfirmation)
+            viewModel.effects.test {
+                viewModel.onIntent(CoreIntent.Submit(ProjectEdit.EditWall(ROOM_ID, WallId("w0"), Length(4160))))
+                viewModel.onIntent(CoreIntent.AcceptAdjustment(ROOM_ID, shown, AdjustmentConfirmation.EXPLICIT))
+                runCurrent()
+                assertEquals(
+                    EditorEffect.Error(DomainError.RuleViolation(DomainRule.ADJUSTMENT_NOT_AVAILABLE)),
+                    awaitItem(),
+                )
+            }
+            assertTrue(viewModel.evaluation is RoomEvaluation.NeedsAdjustment)
+            assertNotEquals(shown, viewModel.shownProposal())
+            assertNull(
+                viewModel.state.value.project!!
+                    .rooms
+                    .single()
+                    .adjustment,
+            )
             assertNull(
                 rig.stored.rooms
                     .single()
