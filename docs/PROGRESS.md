@@ -87,12 +87,15 @@ Keine.
 - 2026-11-25: T-APP-001 gemergt (`fb20aa9`, 29 Tests in `:app` und den Feature-Modulen). Die App startet auf dem Emulator: `MainActivityLaunchTest` erreicht mit dem Produktions-Graphen `RESUMED`, instrumentiert 3 von 3. Typsichere Routen, vollständiger Hilt-Graph, DataStore mit Corruption-Handler. Die Screens zeigen Titel und Leerzustände, „Neues Projekt“ ist bis T-PRJ-001 deaktiviert. Die History-Fabrik ist vorerst als Funktionstyp gebunden. Im Backlog stehen der Vertrag `CommandHistoryFactory` und Room als `api` in `:core:data`, um `DatabaseHolder` zu sparen.
 - 2026-11-25: CR-W2-05 gemergt (`bf7e082`). `SceneElement.Label.blockAnchor` ist additiv. Der Renderer setzt Blockzeilen auf `blockAnchor + k·(anchor − blockAnchor)`, mit `k` gleich dem Schriftfaktor. Der Zeilenabstand ist im Editor immer das 1,5-Fache der Textgröße. Ein Regressionstest belegt disjunkte Zeilen bei 1:50, 1:100 und 1:200 und bei fünf Zoomstufen. Die Baselines sind neu aufgenommen. Die gleiche Regel gilt für SVG (in T-EXP-002 eingetragen).
 - 2026-11-25: Welle 2 inhaltlich fertig, Wellen-Gate 2 gestartet.
+- 2026-11-25: Wellen-Gate 2, technischer Teil auf `f23ee84`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün mit 1 697 JVM-Tests ohne Fehler und Überspringer. Pitest Geometrie 86 % (1 658 von 1 927, unverändert seit T-GEO-009). Instrumentiert 3 von 3. Das Review läuft.
+- 2026-11-25: CR-W3-01 an `architect`: `@ApplicationScope` ist in `:app` deklariert und für `:feature:editor` nicht sichtbar. T-EDT-001 braucht den Scope (ARCHITECTURE §5). Vorab für Batch 3.1: `lifecycle-runtime-compose`, `coroutines-test` und `turbine` in den Modulen editor, projects und settings, `activity-compose` in projects für den Import per SAF.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2:** alle Aufgaben und CRs gemergt. Das Wellen-Gate 2 wurde auf `f23ee84` neu gestartet: Build, Pitest und instrumentierte Tests laufen nacheinander im Hintergrund, Review durch `reviewer` im Worktree. Nach einer Unterbrechung das Gate neu starten.
-- Der Worktree `worktree-agent-a6060eb82b04453d6` stammt vom abgebrochenen ersten Review. Er hat keine Commits, nur einen nicht versionierten Probetest. Er kann mit `git worktree remove --force` entfernt werden. Das Entfernen wurde in dieser Sitzung vom Berechtigungssystem abgelehnt.
+- **Welle 2:** Gate technisch grün (siehe Log). Offen ist das Review durch `reviewer` (Worktree-Branch `worktree-agent-*`, Basis `f23ee84`). Nach einer Unterbrechung nur das Review neu starten.
+- **Läuft:** CR-W3-01 bei `architect` (Worktree-Branch `worktree-agent-*`, Basis `8060d9f`).
+- Den alten Worktree `worktree-agent-a6060eb82b04453d6` aus dem abgebrochenen ersten Review kann man entfernen. Er hat keine Commits, nur einen nicht versionierten Probetest. Das Entfernen mit `--force` hat das Berechtigungssystem abgelehnt.
 
 ## Nächste Schritte
 
