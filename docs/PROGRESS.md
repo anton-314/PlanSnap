@@ -102,16 +102,18 @@ Keine.
 - 2026-11-25: Neue Sitzung. Die übernommenen Worktrees und `integration-w3` sind entfernt. Der abgebrochene Stand von T-FEX-001 ist als WIP-Commit `1fc20e6` gesichert. `:feature:export` bekommt core-ktx (FileProvider), lifecycle-runtime-compose und die Testabhängigkeiten (`668149d`). Die Verdrahtung des Editor-Einstiegs übernimmt T-EDT-004, nicht der Orchestrator, weil sie in `feature/editor/…/navigation/` liegt und von den neuen Blättern abhängt. Die Exporter bindet T-FEX-001 in einem neuen `ExportersModule` in `:app`. Dafür hat der Orchestrator genau diese Datei freigegeben.
 - 2026-11-25: Erster Lauf von `PdfExportInstrumentedTest` (T-EXP-003) auf dem Emulator, Stand `da14d37`: 8 von 8 grün, insgesamt instrumentiert 11 von 11. Die Schwellen bleiben unverändert.
 - 2026-11-25: T-FEX-001 gemergt (`b0b3d83`, `:feature:export` 57 Tests, 11 Baselines, `:app` 17 Tests). Format, Maßstab und Papier sind wählbar, die Ausrichtung wird nur angezeigt. Die Vorprüfung kommt aus `ExportPreflight`. Teilen geht über einen nicht exportierten FileProvider mit Pfaden im Cache, Speichern über SAF, der Export läuft über `dispatchers.io`. Die vier Exporter bindet `ExportersModule` in `:app`. `NavigationTest` bekommt einen `DocumentCodec` im Fake-Modul und erwartet auf der Export-Route jetzt den Ladefehler, weil das Fake-Repository das Projekt nicht kennt. Der Agent hat Fehler aus dem übernommenen Stand behoben: Trennzeichen in den Ressourcen, ein nicht auflösbarer Import und detekt-Befunde. Offen fürs Gate-Review: die neuen Baselines ansehen. Ein End-to-End-Export auf dem Gerät fehlt noch und gehört zu den E2E-Szenarien in Phase 5.
+- 2026-11-25: T-EDT-004 gemergt (`a475848`, `:feature:editor` 219 Tests). Neue Blätter für Ecke, Diagonale, Stärke und Ausgleich unter `shape/` als `EditorHandler` per `@IntoSet`. Für die EXPLICIT-Stufe gibt es einen eigenen Bestätigungsdialog. Unmögliche Maße werden je `ConflictReason` erklärt. Für nicht kontrollierbare Messungen wird ein Zusatzmaß empfohlen, das sich per Knopf eintragen lässt. `EditorEntry` zeigt jetzt den echten Editor mit `EditorScreen`, `PlanCanvas`, Statuskarte, Blättern und Snackbar. `∠` und `Schließen` sendet `InputBar` direkt als Intent, `D` und `Diag` laufen über `extraKeys`. Dem Agenten war die Änderung an `:app` verweigert worden. Der Nutzer hat entschieden: In `NavigationTest` wird ein Projekt `p-1` im Fake angelegt, der Test prüft also den echten Editor (`4e5152d`). In den Backlog: Die Stärke bestätigter Wände ändern (Wandbearbeitung), Raumtypnamen im Plan, Anzeige von `SaveStatus.Failed` im Editor (T-UX-001), `∠` und `Schließen` optional über `EditorActions`.
 
 ## Wiedereinstieg (Stand 2026-11-25, Abend)
 
 - **Welle 2:** fertig, Tag `wave-2`, gepusht. **Welle 3:** Batches 3.1 und 3.2 gemergt (T-EDT-002 `cf8cfbd`, T-EDT-003 `d2d3842`). Lokal liegt main vor `origin/main`. Gepusht wird erst nach Gate 3.
 - **Läuft, Batch 3.3** (Basis `668149d`, neue Worktrees starten per `git merge --ff-only`):
   - T-FEX-001: gemergt (`b0b3d83`), Worktrees entfernt.
-  - T-EDT-004 (`ui-engineer`), Worktree `.claude/worktrees/agent-a42fc978de4fcda6a`, Branch `worktree-agent-a42fc978de4fcda6a`. Verdrahtet zusätzlich `EditorEntry` mit ViewModel, `EditorScreen` und `PlanCanvas` (feature/editor/…/navigation/).
+  - T-EDT-004: gemergt (`a475848`, Testfix `4e5152d`), Worktree entfernt.
+- **Welle 3 inhaltlich fertig, Wellen-Gate 3 läuft auf `4e5152d`.**
 - **Gate 3 vorab:** `PdfExportInstrumentedTest` läuft auf `da14d37` grün (instrumentiert 11 von 11, davon 8 PDF). Gate: Build mit Kover, Architektur und Roborazzi, Pitest, instrumentiert, Review, Tag `wave-3`, Push.
 
 ## Nächste Schritte
 
-1. T-FEX-001 und T-EDT-004 übernehmen, dann Wellen-Gate 3.
+1. Wellen-Gate 3 auswerten, Tag `wave-3`, Push, CI prüfen.
 2. Welle 4, Batch 4.1: T-EDT-005 bis T-EDT-008.
