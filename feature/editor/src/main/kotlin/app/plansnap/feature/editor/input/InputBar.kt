@@ -3,6 +3,7 @@ package app.plansnap.feature.editor.input
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.intl.Locale as ComposeLocale
 
 private const val MIN_WALLS_TO_CLOSE = 3
 private const val ANGLE_KEY_WEIGHT = 0.8f
+private val CORNER_PADDING = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
 
 /**
  * Input bar at the bottom of the editor (UX sections 2 and 3): the live value of the wall being typed, the error
@@ -75,16 +77,24 @@ fun InputBar(
     val open = state.load == EditorLoadState.Loaded && room != null && !room.isClosed
     val canConfirm = state.inputText.isNotBlank() && state.inputError == null
     Column(
-        modifier = modifier.fillMaxWidth().padding(PlanSnapTheme.spacing.l),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = PlanSnapTheme.spacing.l, vertical = PlanSnapTheme.spacing.s),
         verticalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.s),
     ) {
-        InputDisplay(
-            state = state,
-            locale = locale,
-            wallNumber = (room?.walls?.size ?: 0) + 1,
-            roomClosed =
-                room?.isClosed == true,
-        )
+        Row(horizontalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.s)) {
+            InputDisplay(
+                state = state,
+                locale = locale,
+                wallNumber = (room?.walls?.size ?: 0) + 1,
+                roomClosed = room?.isClosed == true,
+                modifier = Modifier.weight(1f),
+            )
+            if (open && room != null && room.walls.size >= MIN_WALLS_TO_CLOSE) {
+                CloseButton(onClick = { onIntent(ShapeIntent.CloseRoom) })
+            }
+        }
         state.inputError?.let { InputError(it) }
         CornerChoice(
             selected = state.nextCorner.direction,
@@ -97,9 +107,6 @@ fun InputBar(
                 locale = locale,
                 onClick = { onIntent(ShapeIntent.OpenCorner(CornerTarget.Next)) },
             )
-        }
-        if (open && room != null && room.walls.size >= MIN_WALLS_TO_CLOSE) {
-            CloseButton(onClick = { onIntent(ShapeIntent.CloseRoom) })
         }
         Keypad(
             separator = separator,
@@ -124,6 +131,7 @@ private fun InputDisplay(
     locale: Locale,
     wallNumber: Int,
     roomClosed: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     val unit = state.settings.lengthUnit
     val wallLabel = stringResource(R.string.input_wall_label, wallNumber)
@@ -139,7 +147,7 @@ private fun InputDisplay(
         }
     Column(
         modifier =
-            Modifier.fillMaxWidth().semantics(mergeDescendants = true) {
+            modifier.semantics(mergeDescendants = true) {
                 contentDescription = spoken
                 liveRegion = LiveRegionMode.Polite
             },
@@ -274,11 +282,9 @@ private fun CloseButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier =
             Modifier
-                .fillMaxWidth()
                 .sizeIn(minHeight = PlanSnapTheme.sizes.numericKey)
                 .semantics { contentDescription = description },
     ) {
-        Icon(imageVector = PlanSnapIcons.Check, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
         Text(text = stringResource(R.string.input_key_close_label), textAlign = TextAlign.Center)
     }
 }
@@ -308,9 +314,21 @@ private fun RowScope.CornerButton(
         Text(text = label, textAlign = TextAlign.Center)
     }
     if (isSelected) {
-        Button(onClick = onClick, enabled = enabled, modifier = modifier, content = content)
+        Button(
+            onClick = onClick,
+            enabled = enabled,
+            modifier = modifier,
+            contentPadding = CORNER_PADDING,
+            content = content,
+        )
     } else {
-        OutlinedButton(onClick = onClick, enabled = enabled, modifier = modifier, content = content)
+        OutlinedButton(
+            onClick = onClick,
+            enabled = enabled,
+            modifier = modifier,
+            contentPadding = CORNER_PADDING,
+            content = content,
+        )
     }
 }
 

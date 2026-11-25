@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -184,7 +185,7 @@ private fun RowScope.ExtraKeyCell(
             enabled = enabled,
             description = key.contentDescription,
             onClick = key.onClick,
-        ) { KeyLabel(key.label) }
+        ) { KeyLabel(key.label, fixedSize = true) }
     }
 }
 
@@ -228,6 +229,20 @@ private fun Key(
 }
 
 @Composable
-private fun KeyLabel(text: String) {
-    Text(text = text, style = KEY_TEXT_STYLE, textAlign = TextAlign.Center)
+private fun KeyLabel(
+    text: String,
+    fixedSize: Boolean = false,
+) {
+    // A word such as "Diag" does not fit a key at 200 percent; it keeps the size of normal text there instead of
+    // breaking in the middle of the word. Digits and OK keep scaling.
+    val scale = LocalDensity.current.fontScale
+    val style =
+        if (fixedSize &&
+            scale > 1f
+        ) {
+            KEY_TEXT_STYLE.copy(fontSize = KEY_TEXT_STYLE.fontSize / scale)
+        } else {
+            KEY_TEXT_STYLE
+        }
+    Text(text = text, style = style, textAlign = TextAlign.Center)
 }
