@@ -109,10 +109,11 @@ Keine.
 - 2026-11-25: T-EDT-011 gemergt (`ec9dc41`, `:feature:editor` 233 Tests, 8 neue Layout-Baselines bei 360 × 640 und 360 × 740 dp). `Schließen` steht neben der Anzeige, die Leiste ist verdichtet und braucht 400 dp. OK ist in beiden Höhen bei 100 % Schrift voll sichtbar, mit und ohne Statuskarte, per Bounds-Test belegt. Bei 200 % Schrift scrollt die Leiste. **Entscheidung:** Das „ca. 50 %“ für den Plan aus UX §2 ist mit Tasten ab 56 dp (REQ-UX-001) nicht erreichbar. Der Eingabebereich hat Vorrang, der Plan bekommt den Rest mit mindestens 96 dp, die Statuskarte höchstens 35 % der Planfläche. UX §2 ist entsprechend angepasst. Backlog: Statuskarte bei wenig Höhe einzeilig einklappen (T-EDT-007 oder T-UX-001), Top-Bar-Titel bei 200 % Schrift (steht schon im Backlog).
 - 2026-11-26: Auf Wunsch des Nutzers gibt es eine Debug-APK zum Ansehen (`fee05ca`, 14,9 MB) im Windows-Download-Ordner. Das ist eine bewusste Ausnahme von „keine Zwischen-APKs“.
 - 2026-11-26: **Wellen-Gate 3 bestanden** auf `b53c9cb`. Build mit Kover, Architektur und Roborazzi grün, 2 140 JVM-Tests ohne Fehler. Pitest Geometrie 86 % (1 658 von 1 927). Instrumentiert 11 von 11, davon 8 PDF-Kalibrierungstests. Nachreview `APPROVE`: H1, M1 bis M4, N2 und N5 behoben, belegt durch Revert-Proben. Neu und mittel, nicht blockierend: Die Statuskarte zeigt bei 200 % Schrift im sichtbaren Bereich nichts, kommt als T-EDT-012 in Batch 4.1. N1, N2 und Nits stehen im Backlog. N3 hat der Orchestrator behoben: Eine `.pyc`-Datei war versehentlich eingecheckt, `.gitignore` deckt Python-Caches jetzt ab. Tag `wave-3`.
+- 2026-11-26: CI-Lauf für `wave-3` (`0803790`) grün.
 
 ## Wiedereinstieg (Stand 2026-11-26)
 
-- **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`). CI läuft.
+- **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`), CI grün.
 - **Läuft, Welle 4 / Batch 4.1** (Basis `0803790`, Branches `worktree-<Worktree>`):
   - T-EDT-005 (`ui-engineer`, `opening/`): `.claude/worktrees/agent-a55ec4cd278005d3e`
   - T-EDT-006 (`ui-engineer`, `rooms/` plus additiv `canvas/`): `.claude/worktrees/agent-a1029fa26f60a909a`
