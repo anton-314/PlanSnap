@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- Host of Compose tests that need Hilt. Debug builds only, never part of the release manifest. -->
+        <activity
+            android:name="app.plansnap.HiltTestActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>

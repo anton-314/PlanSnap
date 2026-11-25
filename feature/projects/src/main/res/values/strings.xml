@@ -4,4 +4,40 @@
     <string name="projects_open_settings">Settings</string>
     <string name="projects_empty_explanation">Measure a room wall by wall and PlanSnap draws the floor plan. Start with a new project.</string>
     <string name="projects_new_project">New project</string>
+    <string name="projects_import">Import project</string>
+    <string name="projects_importing">Importing project…</string>
+    <string name="projects_loading">Loading projects…</string>
+    <string name="projects_retry">Try again</string>
+    <string name="projects_more_actions">More actions for %1$s</string>
+    <string name="projects_open_project">Open %1$s</string>
+    <plurals name="projects_room_count">
+        <item quantity="one">%1$d room</item>
+        <item quantity="other">%1$d rooms</item>
+    </plurals>
+    <string name="projects_summary">%1$s · changed %2$s</string>
+
+    <string name="projects_action_rename">Rename</string>
+    <string name="projects_action_duplicate">Duplicate</string>
+    <string name="projects_action_delete">Delete</string>
+
+    <string name="projects_dialog_cancel">Cancel</string>
+    <string name="projects_dialog_create_title">New project</string>
+    <string name="projects_dialog_create_confirm">Create</string>
+    <string name="projects_dialog_rename_title">Rename project</string>
+    <string name="projects_dialog_rename_confirm">Rename</string>
+    <string name="projects_dialog_name_label">Project name</string>
+    <string name="projects_dialog_delete_title">Delete project?</string>
+    <string name="projects_dialog_delete_message">“%1$s” and all its rooms will be deleted. This cannot be undone.</string>
+    <string name="projects_dialog_delete_confirm">Delete</string>
+
+    <string name="projects_error_read_failed">The projects could not be read. Try again.</string>
+    <string name="projects_error_write_failed">The change could not be saved. Try again.</string>
+    <string name="projects_error_no_space">There is not enough free storage on this device.</string>
+    <string name="projects_error_not_found">This project no longer exists.</string>
+    <string name="projects_error_invalid_name">This name is not allowed. Choose another name.</string>
+    <string name="projects_error_import_malformed">This file is not a PlanSnap project file.</string>
+    <string name="projects_error_import_unsupported_version">This file was saved by a newer version of PlanSnap. Update the app to open it.</string>
+    <string name="projects_error_import_too_large">This file is too large to import.</string>
+    <string name="projects_error_import_invalid_values">This project file contains values that are not allowed and cannot be imported.</string>
+    <string name="projects_error_unknown">Something went wrong. Try again.</string>
 </resources>

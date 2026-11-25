@@ -42,8 +42,8 @@ data class EditorAppearance(
  * The only allocations are per frame (the reference points of the coordinate mapping) and when the line unit changes
  * (dash patterns). Instances are not thread safe.
  *
- * Line weights are expressed in a line unit `u`: 1 dp in the editor and 0,18 mm on paper in exports. The rendering
- * of each [SceneStyle] is in [StyleLook].
+ * Line weights are expressed in a line unit `u`: 1 dp in the editor and 0,18 mm on paper in exports. The look of each
+ * [SceneStyle] comes from [SceneStyleSheet], shared with the SVG writer (ADR 0022).
  *
  * @property texts formatter of label text.
  * @property transform the conversion between world and screen of the editor (ARCHITECTURE section 8).
@@ -83,7 +83,7 @@ class SceneRenderer(
         mapping.set(center, origin.x, origin.y, step.x, step.y)
         editorTextReferencePx = RenderTextRules.EDITOR_REFERENCE_SP * appearance.density * appearance.fontScale
         exportDenominator = 0
-        drawRooms(canvas, rooms, appearance.palette, appearance.density)
+        drawRooms(canvas, rooms, appearance.palette, appearance.density * EDITOR_UNIT_DP)
     }
 
     /**
@@ -270,8 +270,11 @@ class SceneRenderer(
     }
 
     private companion object {
-        /** Line unit of exports: 0,18 mm in page points. */
-        const val EXPORT_UNIT_PT = (0.18 * 72.0 / 25.4).toFloat()
+        /** Line unit of exports, [SceneStyleSheet.PAPER_LINE_UNIT_MM] in page points. */
+        const val EXPORT_UNIT_PT = (SceneStyleSheet.PAPER_LINE_UNIT_MM * 72.0 / 25.4).toFloat()
+
+        /** Line unit of the editor in dp, multiplied by the density. */
+        const val EDITOR_UNIT_DP = SceneStyleSheet.EDITOR_LINE_UNIT_DP.toFloat()
         const val NO_REFERENCE = Float.POSITIVE_INFINITY
     }
 }

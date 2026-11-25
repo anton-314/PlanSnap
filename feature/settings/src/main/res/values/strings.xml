@@ -2,4 +2,43 @@
 <resources>
     <string name="settings_title">Settings</string>
     <string name="settings_back">Back</string>
+
+    <string name="settings_section_unit">Unit</string>
+    <string name="settings_unit_description">Used to show and enter lengths. Stored lengths do not change.</string>
+    <string name="settings_unit_millimeter">Millimeters (mm)</string>
+    <string name="settings_unit_centimeter">Centimeters (cm)</string>
+    <string name="settings_unit_meter">Meters (m)</string>
+    <string name="settings_unit_symbol_millimeter">mm</string>
+    <string name="settings_unit_symbol_centimeter">cm</string>
+    <string name="settings_unit_symbol_meter">m</string>
+
+    <string name="settings_section_tolerance">Closure tolerance</string>
+    <string name="settings_tolerance_description">A gap up to the larger of the two limits counts as a measurement error and can be adjusted. A larger gap counts as a deviation of the shape.</string>
+    <string name="settings_tolerance_absolute_label">Absolute limit (%1$s)</string>
+    <string name="settings_tolerance_relative_label">Relative limit (percent of the perimeter)</string>
+    <string name="settings_tolerance_error_malformed">Enter a number, for example 5,0 or 5.0.</string>
+    <string name="settings_tolerance_error_absolute_too_small">The absolute limit must be at least %1$d mm.</string>
+    <string name="settings_tolerance_error_not_representable">The value must be a whole number of millimeters.</string>
+    <string name="settings_tolerance_error_too_large">The value is too large.</string>
+    <string name="settings_tolerance_error_relative_negative">The relative limit must not be negative.</string>
+    <string name="settings_tolerance_error_relative_too_large">The relative limit must not exceed 100 percent.</string>
+
+    <string name="settings_section_grid">Grid and snapping</string>
+    <string name="settings_grid_show">Show grid</string>
+    <string name="settings_snap_enable">Snap to grid</string>
+
+    <string name="settings_section_hints">Hints</string>
+    <string name="settings_hints_reset">Reset hints</string>
+    <string name="settings_hints_all_active">All hints are active and appear again in the editor.</string>
+    <plurals name="settings_hints_dismissed">
+        <item quantity="one">%1$d hint is closed.</item>
+        <item quantity="other">%1$d hints are closed.</item>
+    </plurals>
+
+    <string name="settings_save_failed_title">Not saved</string>
+    <string name="settings_save_failed_storage">The setting could not be saved. Try again.</string>
+    <string name="settings_save_failed_no_space">The setting could not be saved because the device is out of storage space.</string>
+    <string name="settings_save_failed_rejected">The setting was rejected because its value is not allowed.</string>
+    <string name="settings_save_failed_generic">The setting could not be saved.</string>
+    <string name="settings_save_failed_dismiss">Dismiss</string>
 </resources>
