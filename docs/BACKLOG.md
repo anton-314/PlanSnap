@@ -35,3 +35,6 @@
 - Editor: Der Bestätigungsdialog von `AcceptAdjustment` könnte vorab nennen, welche Öffnungen durch das Annehmen `OUT_OF_BOUNDS` würden (aus CR-W2-06).
 - `DefaultOpeningRules` legt `ShapeBuilder` fest an, `DefaultRoomEvaluator` erhält ihn injiziert. Mit Fakes könnten beide auseinanderlaufen: optionalen Konstruktorparameter ergänzen (Nachreview Welle 2, niedrig).
 - `OpeningStatusConsistencyTest`: Die Property-Basis um veraltete sowie schließende, aber nicht einfache Overlays erweitern (Nachreview Welle 2, Hinweis).
+- `:core:designsystem`: `PlanSnapNumericKey` mit Parameter `contentPadding` (feste 24 dp schneiden bei 200 % Schrift ab), `NumericKeyTextStyle` öffentlich, `error` in `PlanSnapTheme.colors`. Danach den eigenen Ziffernblock aus T-EDT-002 auf die Designsystem-Taste umstellen.
+- `EditorUiState.kt:176`: veraltetes `PersistentMap.put` durch `putting()` ersetzen.
+- Editor: Bei 200 % Schrift bricht der Titel der Top-Bar mitten im Wort um (`screen-fontscale-2.png`).

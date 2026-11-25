@@ -666,7 +666,7 @@ graph LR
 - **Abhängigkeiten:** T-EDT-002, T-EDT-003
 - **Besitzbereich:** `feature/editor/…/shape/`
 - **Vertrag:** UX §3
-- **Akzeptanzkriterien:** Winkel, Diagonale und Stärke sind eingebbar. Vorschlag, fehlendes Maß, Ausgleich und Rücknahme funktionieren. Unmögliche Maße werden erklärt. Große Korrekturen haben einen eigenen Dialog zur ausdrücklichen Bestätigung. Nicht kontrollierbare Messungen werden mit empfohlenem Zusatzmaß angezeigt. Anforderungen: REQ-MEAS-004, REQ-MEAS-005, REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-012
+- **Akzeptanzkriterien:** Winkel, Diagonale und Stärke sind eingebbar. Die Tasten `∠`, `D`, `Diag` und `Schließen` (UX §3, ab 3 Wänden) werden in die Eingabeleiste aus T-EDT-002 eingehängt: `D` und `Diag` über `EditorActions.extraKeys`, für `∠` und `Schließen` die API in `input/` erweitern (Freigabe für `input/` in dieser Aufgabe). Abgelehnte Befehle (`EditorEffect.Error`) erhalten verständliche Texte. Vorschlag, fehlendes Maß, Ausgleich und Rücknahme funktionieren. Unmögliche Maße werden erklärt. Große Korrekturen haben einen eigenen Dialog zur ausdrücklichen Bestätigung. Nicht kontrollierbare Messungen werden mit empfohlenem Zusatzmaß angezeigt. Anforderungen: REQ-MEAS-004, REQ-MEAS-005, REQ-MEAS-008, REQ-MEAS-009, REQ-MEAS-012
 - **Tests:** ViewModel, Compose-UI, Roborazzi
 
 #### T-FEX-001 – Exportdialog
