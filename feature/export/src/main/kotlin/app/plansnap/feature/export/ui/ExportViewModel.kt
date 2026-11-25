@@ -83,7 +83,7 @@ class ExportViewModel
     @Inject
     @Suppress("LongParameterList") // Constructor injection needs every dependency as its own parameter.
     constructor(
-        savedState: SavedStateHandle,
+        private val savedState: SavedStateHandle,
         private val projects: ProjectRepository,
         private val settings: SettingsRepository,
         private val evaluator: RoomEvaluator,
@@ -100,6 +100,7 @@ class ExportViewModel
         private var session: Session? = null
         private var previewJob: Job? = null
         private var lastAction: ExportAction? = null
+        private var deferredDocument: Uri? = null
 
         /** State of the dialog. */
         val state: StateFlow<ExportUiState> = mutableState.asStateFlow()
@@ -119,18 +120,21 @@ class ExportViewModel
 
         /** Chooses the output [format]. */
         fun onFormatSelected(format: ExportFormat) {
+            savedState[FORMAT_KEY] = format.name
             updateReady { it.copy(format = format, error = null, notice = null) }
             refreshFit()
         }
 
         /** Chooses the [scale], `null` for automatic. */
         fun onScaleSelected(scale: PlotScale?) {
+            savedState[SCALE_KEY] = scale?.name
             updateReady { it.copy(scale = scale, error = null) }
             refreshFit()
         }
 
         /** Chooses the [paper], `null` for automatic. */
         fun onPaperSelected(paper: PaperSize?) {
+            savedState[PAPER_KEY] = paper?.name
             updateReady { it.copy(paper = paper, error = null) }
             refreshFit()
         }
@@ -146,14 +150,25 @@ class ExportViewModel
         fun onSave() {
             val ready = mutableState.value as? ExportUiState.Ready ?: return
             if (!ready.canExport) return
+            savedState[AWAITING_KEY] = true
             updateReady { it.copy(awaitingDocument = true, error = null, notice = null) }
             mutableEvents.trySend(
                 ExportEvent.ChooseDocument(ExportFileNames.forProject(ready.projectName, ready.format), ready.format),
             )
         }
 
-        /** Takes the result of the document picker. A `null` [uri] means the user cancelled, which is no error. */
+        /**
+         * Takes the result of the document picker. A `null` [uri] means the user cancelled, which is no error.
+         *
+         * After a process death the result can arrive before the project is loaded. It is then held back and served
+         * with the restored options as soon as the load is done.
+         */
         fun onDocumentChosen(uri: Uri?) {
+            savedState[AWAITING_KEY] = false
+            if (session == null && mutableState.value !is ExportUiState.Ready) {
+                if (uri != null) deferredDocument = uri
+                return
+            }
             updateReady { it.copy(awaitingDocument = false) }
             if (uri != null) launchExport(ExportAction.SAVE) { files.openDocument(uri) }
         }
@@ -178,6 +193,41 @@ class ExportViewModel
             viewModelScope.launch(dispatchers.main) {
                 mutableState.value = readSession()
                 refreshFit()
+                previewJob?.join()
+                serveDeferredDocument()
+            }
+        }
+
+        /** Exports into a document that arrived before the load was done, or rejects it with a visible error. */
+        private suspend fun serveDeferredDocument() {
+            val uri = deferredDocument ?: return
+            deferredDocument = null
+            val current = mutableState.value
+            if (current is ExportUiState.Ready) {
+                updateReady { it.copy(awaitingDocument = false) }
+                val fit = (mutableState.value as ExportUiState.Ready).fit
+                if (fit is PlanFit.Unavailable) {
+                    updateReady { it.copy(error = fit.error) }
+                    discardDocument(uri)
+                } else {
+                    launchExport(ExportAction.SAVE) { files.openDocument(uri) }
+                }
+            } else {
+                // Failed shows its own error and Empty explains itself; the empty document must not stay behind.
+                discardDocument(uri)
+            }
+        }
+
+        private suspend fun discardDocument(uri: Uri) {
+            withContext(dispatchers.io) {
+                try {
+                    files.openDocument(uri).let {
+                        runCatching { it.stream.close() }
+                        it.discard()
+                    }
+                } catch (_: IOException) {
+                    // The document cannot be reached either; there is nothing left to remove.
+                }
             }
         }
 
@@ -203,15 +253,21 @@ class ExportViewModel
             val ready =
                 ExportUiState.Ready(
                     projectName = project.name,
-                    format = ExportFormat.PDF,
-                    scale = null,
-                    paper = null,
+                    format = restored(FORMAT_KEY, ExportFormat.entries) ?: ExportFormat.PDF,
+                    scale = restored(SCALE_KEY, PlotScale.entries),
+                    paper = restored(PAPER_KEY, PaperSize.entries),
                     unit = appSettings.lengthUnit,
                     findings = findings(project, report),
                     fit = PlanFit.Checking,
+                    awaitingDocument = savedState.get<Boolean>(AWAITING_KEY) == true,
                 )
             return ready
         }
+
+        private fun <T : Enum<T>> restored(
+            key: String,
+            entries: List<T>,
+        ): T? = savedState.get<String>(key)?.let { name -> entries.firstOrNull { it.name == name } }
 
         @Suppress("ReturnCount") // Early exits for missing session and unchanged selection.
         private fun refreshFit() {
@@ -363,5 +419,10 @@ class ExportViewModel
         companion object {
             /** Key in the `SavedStateHandle`, the property name of `ExportRoute`. */
             const val PROJECT_ID_KEY: String = "projectId"
+
+            private const val FORMAT_KEY = "export.format"
+            private const val SCALE_KEY = "export.scale"
+            private const val PAPER_KEY = "export.paper"
+            private const val AWAITING_KEY = "export.awaitingDocument"
         }
     }

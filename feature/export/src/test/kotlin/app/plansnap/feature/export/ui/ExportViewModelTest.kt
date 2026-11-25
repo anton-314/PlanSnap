@@ -80,14 +80,16 @@ class ExportViewModelTest {
         Locale.setDefault(previousLocale)
     }
 
+    @Suppress("LongParameterList") // Test factory with a default for every collaborator.
     private fun viewModel(
         project: DomainResult<Project>,
         settings: AppSettings = AppSettings(),
         preflight: ExportPreflight = DefaultExportPreflight(),
         evaluator: RoomEvaluator = DefaultRoomEvaluator(dispatchers),
         exporterSet: Set<Exporter> = exporters.values.toSet(),
+        savedState: SavedStateHandle = SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1")),
     ) = ExportViewModel(
-        savedState = SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1")),
+        savedState = savedState,
         projects = FakeProjects(project),
         settings = FakeSettings(settings),
         evaluator = evaluator,
@@ -98,7 +100,10 @@ class ExportViewModelTest {
         dispatchers = dispatchers,
     )
 
-    private fun viewModel(vararg rooms: Room) = viewModel(DomainResult.Success(ExportRooms.project(*rooms)))
+    private fun viewModel(
+        vararg rooms: Room,
+        savedState: SavedStateHandle = SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1")),
+    ) = viewModel(DomainResult.Success(ExportRooms.project(*rooms)), savedState = savedState)
 
     private fun TestScope.ready(viewModel: ExportViewModel): ExportUiState.Ready {
         advanceUntilIdle()
@@ -507,5 +512,100 @@ class ExportViewModelTest {
             viewModel.onRetryLoad()
             advanceUntilIdle()
             assertTrue(viewModel.state.value is ExportUiState.Ready)
+        }
+
+    private fun SavedStateHandle.recreated() = SavedStateHandle(keys().associateWith { get<Any>(it) })
+
+    @Test
+    fun `given a process death when the uri arrives before loading then it is exported with restored options`() =
+        runTest(testDispatcher) {
+            val savedState = SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1"))
+            val before = viewModel(ExportRooms.confirmed, savedState = savedState)
+            ready(before)
+            before.onFormatSelected(ExportFormat.SVG)
+            before.onScaleSelected(PlotScale.ONE_TO_100)
+            before.onPaperSelected(PaperSize.A3)
+            advanceUntilIdle()
+            before.onSave()
+            advanceUntilIdle()
+
+            val restored =
+                viewModel(
+                    DomainResult.Success(ExportRooms.project(ExportRooms.confirmed)),
+                    savedState = savedState.recreated(),
+                )
+            val document = Uri.parse("content://docs/tree/Flat_1.svg")
+            restored.onDocumentChosen(document)
+            assertTrue(files.targets.isEmpty())
+            advanceUntilIdle()
+
+            val state = restored.current
+            assertEquals(ExportFormat.SVG, state.format)
+            assertEquals(PlotScale.ONE_TO_100, state.scale)
+            assertEquals(PaperSize.A3, state.paper)
+            assertFalse(state.awaitingDocument)
+            assertEquals(ExportNotice.Saved(ExportFormat.SVG), state.notice)
+            assertEquals(document, files.targets.single().uri)
+            val request = exporters.getValue(ExportFormat.SVG).requests.single()
+            assertEquals(PlotScale.ONE_TO_100, request.selection.scale)
+            assertEquals(PaperSize.A3, request.selection.paper)
+        }
+
+    @Test
+    fun `given a restored picker without a result when loaded then the dialog still waits for it`() =
+        runTest(testDispatcher) {
+            val savedState = SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1"))
+            val before = viewModel(ExportRooms.confirmed, savedState = savedState)
+            ready(before)
+            before.onSave()
+            val restored =
+                viewModel(
+                    DomainResult.Success(ExportRooms.project(ExportRooms.confirmed)),
+                    savedState = savedState.recreated(),
+                )
+            assertTrue(ready(restored).awaitingDocument)
+            restored.onDocumentChosen(null)
+            assertFalse(restored.current.awaitingDocument)
+            assertTrue(files.targets.isEmpty())
+        }
+
+    @Test
+    fun `given an early uri when the load fails then the error is shown and the empty document is discarded`() =
+        runTest(testDispatcher) {
+            val savedState =
+                SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1", "export.awaitingDocument" to true))
+            val error = DomainError.Storage(StorageProblem.READ_FAILED)
+            val restored = viewModel(DomainResult.Failure(error), savedState = savedState)
+            val document = Uri.parse("content://docs/tree/Flat_1.pdf")
+            restored.onDocumentChosen(document)
+            advanceUntilIdle()
+
+            assertEquals(ExportUiState.Failed(error), restored.state.value)
+            assertEquals(document, files.targets.single().uri)
+            assertTrue(files.targets.single().discarded)
+            assertTrue(exporters.values.all { it.requests.isEmpty() })
+        }
+
+    @Test
+    fun `given an early uri when the restored options do not fit then the error is shown and it is discarded`() =
+        runTest(testDispatcher) {
+            val savedState =
+                SavedStateHandle(
+                    mapOf(
+                        ExportViewModel.PROJECT_ID_KEY to "p1",
+                        "export.format" to "PDF",
+                        "export.scale" to PlotScale.ONE_TO_50.name,
+                        "export.paper" to PaperSize.A4.name,
+                        "export.awaitingDocument" to true,
+                    ),
+                )
+            val restored = viewModel(ExportRooms.wide, savedState = savedState)
+            restored.onDocumentChosen(Uri.parse("content://docs/tree/Flat_1.pdf"))
+            advanceUntilIdle()
+
+            val state = restored.current
+            assertTrue(state.error is DomainError.Export)
+            assertTrue(files.targets.single().discarded)
+            assertTrue(exporters.values.all { it.requests.isEmpty() })
         }
 }

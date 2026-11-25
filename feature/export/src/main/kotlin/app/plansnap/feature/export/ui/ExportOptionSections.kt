@@ -3,13 +3,12 @@ package app.plansnap.feature.export.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.MaterialTheme
@@ -72,7 +71,7 @@ private fun FormatRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .heightIn(min = PlanSnapTheme.sizes.minTouchTarget)
+                .sizeIn(minWidth = PlanSnapTheme.sizes.minTouchTarget, minHeight = PlanSnapTheme.sizes.minTouchTarget)
                 .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.s),
@@ -130,13 +129,15 @@ private fun <T : Any> ChoiceRow(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.xs)) {
         Text(text = label, style = MaterialTheme.typography.labelLarge)
-        Row(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).selectableGroup(),
+        // A flow row breaks to a second line instead of squeezing a text, which clipped it at large font scales.
+        FlowRow(
+            modifier = Modifier.fillMaxWidth().selectableGroup(),
             horizontalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.s),
+            verticalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.s),
         ) {
-            Choice(automatic, selected == null, enabled, Modifier.weight(1f)) { onSelected(null) }
+            Choice(automatic, selected == null, enabled, Modifier) { onSelected(null) }
             options.forEach { (value, text) ->
-                Choice(text, value == selected, enabled, Modifier.weight(1f)) { onSelected(value) }
+                Choice(text, value == selected, enabled, Modifier) { onSelected(value) }
             }
         }
     }
@@ -154,22 +155,25 @@ private fun Choice(
     Surface(
         modifier =
             modifier
-                .fillMaxHeight()
-                .heightIn(min = PlanSnapTheme.sizes.minTouchTarget)
                 .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick),
         shape = MaterialTheme.shapes.small,
         color = if (selected) colors.primaryContainer else colors.surface,
         border = BorderStroke(if (selected) 2.dp else 1.dp, if (selected) colors.primary else colors.outline),
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = PlanSnapTheme.spacing.xs, vertical = PlanSnapTheme.spacing.s),
+            modifier =
+                Modifier
+                    .sizeIn(
+                        minWidth = PlanSnapTheme.sizes.minTouchTarget,
+                        minHeight = PlanSnapTheme.sizes.minTouchTarget,
+                    ).padding(horizontal = PlanSnapTheme.spacing.s, vertical = PlanSnapTheme.spacing.s),
             verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelLarge,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
                 color = if (selected) colors.onPrimaryContainer else colors.onSurface,
             )
         }
