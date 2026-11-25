@@ -653,7 +653,7 @@ graph LR
 - **Abhängigkeiten:** T-RND-001, T-EXP-001
 - **Besitzbereich:** `core/export/…/png/`, `core/export/…/pdf/`
 - **Vertrag:** ADR 0009
-- **Akzeptanzkriterien:** Kalibrierbalken misst im PDF ±0,5 mm. PNG ist vollständig. Kennzeichnung vorhanden. Anforderungen: REQ-EXP-001, REQ-EXP-003, REQ-EXP-006
+- **Akzeptanzkriterien:** Kalibrierbalken misst im PDF ±0,5 mm. PNG ist vollständig. Kennzeichnung vorhanden. Der Titelblock kommt aus `PlotPlan.titleBlockLayout` (`TitleBlockSpec`), Farben und Strichstile aus `SceneStyleSheet` (ADR 0022). Der Projektname wird über `projectNameMaxWidthMm` mit „…“ gekürzt. Gleiche Szene ergibt gleiche Geometrie wie im SVG-Golden. Anforderungen: REQ-EXP-001, REQ-EXP-003, REQ-EXP-006
 - **Tests:** Instrumentiert mit PdfRenderer, Robolectric-PNG
 
 ### Batch 3.3
@@ -677,7 +677,7 @@ graph LR
 - **Abhängigkeiten:** T-EXP-002, T-EXP-003, T-APP-001
 - **Besitzbereich:** `feature/export/`
 - **Vertrag:** UX §1
-- **Akzeptanzkriterien:** Format, Maßstab, Papier, Warnung vor dem Export. Teilen und Speichern für jedes Format. Der Dialog überschreibt nur Maßstab und Papier, die Ausrichtung wird angezeigt (CR-W2-04). Maßstabsbalken und Maßstabsangabe stehen im Titelblock. Anforderungen: REQ-EXP-002, REQ-EXP-005, REQ-EXP-006
+- **Akzeptanzkriterien:** Format, Maßstab, Papier, Warnung vor dem Export über `ExportPreflight` (`DefaultExportPreflight`, ADR 0022). Teilen und Speichern für jedes Format. Der Dialog überschreibt nur Maßstab und Papier, die Ausrichtung wird angezeigt (CR-W2-04). Maßstabsbalken und Maßstabsangabe stehen im Titelblock. Anforderungen: REQ-EXP-002, REQ-EXP-005, REQ-EXP-006
 - **Tests:** ViewModel, Compose-UI, FileProvider-Test
 
 ## Welle 4
