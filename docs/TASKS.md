@@ -33,7 +33,7 @@ graph LR
 | Welle 1 / 1.3 | T-GEO-004, T-GEO-006, T-DAT-002, T-GEO-008 (Fix) |
 | Welle 1 / 1.4 | T-GEO-005, T-GEO-007, T-DAT-004 (Fix aus Gate-Review) |
 | Welle 2 / 2.1 | T-DOM-001, T-DOM-002, T-DOM-005, T-DRW-002 |
-| Welle 2 / 2.2 | T-DOM-003, T-DOM-004, T-DOM-006, T-DRW-001 |
+| Welle 2 / 2.2 | T-DOM-003, T-DOM-004, T-DOM-006, T-DRW-001, T-GEO-009 (Fix) |
 | Welle 2 / 2.3 | T-RND-001, T-EXP-001, T-APP-001, T-DOM-007 |
 | Welle 3 / 3.1 | T-EDT-001, T-PRJ-001, T-SET-001, T-EXP-002 |
 | Welle 3 / 3.2 | T-EDT-002, T-EDT-003, T-EXP-003 |
@@ -455,6 +455,17 @@ graph LR
 - **Vertrag:** ADR 0008
 - **Akzeptanzkriterien:** Transformationen sind invers, Zoom bleibt um den Fokuspunkt stabil, Treffer folgen der Prioritätsregel. Anforderungen: REQ-UX-003
 - **Tests:** Property, Tabellentests
+
+#### T-GEO-009 – Fix: Drehrichtung an der Schlussecke in der Solver-Auswahl
+
+- **Modul:** :core:geometry
+- **Rolle/Modell:** geometry-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-GEO-004, T-DOM-001
+- **Besitzbereich:** `core/geometry/…/solver/`
+- **Vertrag:** DOMAIN §3, §5.3, §5.6
+- **Akzeptanzkriterien:** Zuerst reproduzieren (WORKFLOWS §6). Prüfen, ob `SolverProblem.violatesDirections` bei deklarierter Schlussecke die tatsächlich entstehende Drehung an `V_0` übersieht, weil es `τ̂_0` statt des abgeleiteten `τ_0` prüft (Hinweis aus T-DOM-001). Bestätigt sich der Fehler, prüft die Auswahl nach §5.3 und der Alternativenfilter nach §5.6 die abgeleitete Drehung, mit Regressionstest. Bestätigt er sich nicht, wird der Nachweis als Test festgehalten. Katalog, Prüfstand und Referenz-Suite bleiben grün. Anforderungen: REQ-MEAS-005, REQ-MEAS-007
+- **Tests:** Regressionstest, bestehende Suite
 
 ### Batch 2.2
 

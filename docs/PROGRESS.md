@@ -71,11 +71,12 @@ Keine.
 - 2026-11-24: T-DRW-002 gemergt (`:core:drawing` 97 Tests, Zeilenabdeckung 100 %). Vorläufige Festlegungen, an `architect` als CR-W2-01: Zoomgrenzen 1e-4 bis 100 px/mm, Trefferradius 24 dp, Trefferpriorität Öffnung > Ecke > Wand > Diagonale > Rauminneres, relative Gleichstandstoleranz 1e-9 (soll nach `GeometryTolerances`). Hinweis für T-DRW-001: Ecken sind nur treffbar, wenn die Szene für jede Ecke ein Element mit Ziel `SceneTarget.Corner` erzeugt.
 - 2026-11-24: T-DOM-003 gemergt (`75a9e95`). `:core:domain` hat 153 Tests. Gültig nach DOMAIN §9 ist `offset + width ≤ L_wirksam + EXACT_CLOSURE_MM`. `L_wirksam` ist die ausgeglichene Länge, solange das Overlay zum Fingerabdruck passt, sonst die Rohlänge. Die Verdrahtung von Öffnungsregeln und Andock-Resolver ist in T-APP-001 nachgetragen.
 - 2026-11-24: CR-W2-01 gemergt (`4a4120e`). Bestätigt und festgeschrieben: Zoom 1e-4 bis 100 px/mm, begründet mit dem größten gültigen Raum und der kürzesten Wand (UX §4). Trefferpriorität Öffnung > Ecke > Wand > Diagonale > Rauminneres (DOMAIN §11). `GeometryTolerances.HIT_TIE_RELATIVE = 1e-9`, additiv (DOMAIN §1). Trefferradius 24 dp. Doppeltippen mit 24 dp Rand ist in T-EDT-003 aufgenommen.
+- 2026-11-25: T-DOM-001 gemergt (`2074112`). `:core:domain` hat 328 Tests. Alle 30 Katalogfälle liefern über den Produktions-Evaluator Status, Grund und Bestätigungsstufe. Für den Zahlenfall aus ADR 0019 ergibt die Auswertung SIMPLE bei `T_abs = 250` und EXPLICIT bei Standardtoleranz, wie es der Fake in T-DOM-002 angenommen hat. Ein Integrationstest mit echter Historie und echtem Evaluator wird Teil von T-DOM-007. A3 prüft die tatsächlich entstehende Drehung mit abgeleitetem `τ_0`. Folgepunkte: T-GEO-009 (Verdacht auf übersehene Richtungsverletzung an `V_0` im Solver) und CR-W2-02 (`ValueField` ohne Wandanzahl, der Evaluator liefert `RuleViolation(TOO_MANY_WALLS)`).
 
 ## Wiedereinstieg (Stand 2026-11-24)
 
 - **Welle 1:** fertig, Tag `wave-1`.
-- **Welle 2:** Laufend: T-DOM-001, T-DOM-004. Gemergt: CR-W2-01, T-DOM-003, T-DRW-002, T-DOM-002, T-DOM-005, T-DOM-006.
+- **Welle 2:** Laufend: T-DOM-004, T-DRW-001, T-GEO-009, CR-W2-02. Gemergt: T-DOM-001, CR-W2-01, T-DOM-003, T-DRW-002, T-DOM-002, T-DOM-005, T-DOM-006.
 
 ## Nächste Schritte
 
