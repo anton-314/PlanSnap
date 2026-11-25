@@ -110,7 +110,7 @@ Keine.
 - **Läuft, Batch 3.3** (Basis `668149d`, neue Worktrees starten per `git merge --ff-only`):
   - T-FEX-001: gemergt (`b0b3d83`), Worktrees entfernt.
   - T-EDT-004: gemergt (`a475848`, Testfix `4e5152d`), Worktree entfernt.
-- **Welle 3 inhaltlich fertig, Wellen-Gate 3 läuft auf `4e5152d`.**
+- **Welle 3 inhaltlich fertig, Wellen-Gate 3 läuft auf `434ac37`:** Build mit Kover, Architektur und Roborazzi grün (2 117 JVM-Tests, 0 Fehler). Pitest läuft. Danach instrumentiert. Das Review läuft (`reviewer`, Worktree und Branch: /home/anon/PlanSnap/.claude/worktrees/agent-ad7ec2b0160957aa3 [worktree-agent-ad7ec2b0160957aa3]).
 - **Gate 3 vorab:** `PdfExportInstrumentedTest` läuft auf `da14d37` grün (instrumentiert 11 von 11, davon 8 PDF). Gate: Build mit Kover, Architektur und Roborazzi, Pitest, instrumentiert, Review, Tag `wave-3`, Push.
 
 ## Nächste Schritte
