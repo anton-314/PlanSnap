@@ -562,7 +562,7 @@ graph LR
 
 ### Batch 2.4 (Gate-Fix)
 
-#### CR-W2-06 – Fix: Einheitliche wirksame Wandlänge für Öffnungen
+#### CR-W2-06 – Fix: Einheitliche wirksame Wandlänge für Öffnungen (erledigt, ADR 0021)
 
 - **Modul:** :core:domain
 - **Rolle/Modell:** architect

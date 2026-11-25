@@ -32,3 +32,4 @@
 - `SceneRenderer`: Die Längenreferenz zum Ausblenden von Maßtexten hängt am Stil (`DIMENSION`, `DIAGONAL`). Bei einer Konfliktdiagonale (Stil `CONFLICT`) wird ihr Maß gegen die falsche Linie geprüft. Die Referenz sollte am Ziel (`SceneTarget.Wall/Diagonal`) hängen (Gate-Review Welle 2, niedrig, `SceneRenderer.kt:185`).
 - `SceneRenderer.kt:237`: Das ktlint-Artefakt `if (block ==\n null\n)` lesbar formatieren (Gate-Review Welle 2, niedrig).
 - `DefaultSnapper`: Listen und `Pair` je Aufruf vermeiden, weil das Einrasten beim Ziehen in jedem Frame läuft. Mit T-EDT umsetzen (Gate-Review Welle 2, niedrig).
+- Editor: Der Bestätigungsdialog von `AcceptAdjustment` könnte vorab nennen, welche Öffnungen durch das Annehmen `OUT_OF_BOUNDS` würden (aus CR-W2-06).
