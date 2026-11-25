@@ -25,8 +25,9 @@ import kotlinx.coroutines.launch
  *   is kept and leaving the editor never cancels a queued job. [close] only stops accepting new jobs.
  * - `draft` stores the running input, latest value wins.
  *
- * Every change of the input text, the selected room or the plan view is written to the [SavedStateHandle] at once. A
- * changed input text or room is also queued for the draft in the database.
+ * Every change of the input text, the selected room or the plan view is written to the [SavedStateHandle] on the main
+ * dispatcher of the screen [scope], always with the latest state. A changed input text or room is also queued for the
+ * draft in the database.
  */
 internal class EditorStore(
     initial: EditorUiState,
@@ -40,8 +41,10 @@ internal class EditorStore(
     private val effectChannel = Channel<EditorEffect>(Channel.UNLIMITED)
     private val work = Channel<suspend () -> Unit>(Channel.UNLIMITED)
     private val draft = Channel<DraftWrite>(Channel.CONFLATED)
+    private val handleWrites = Channel<Unit>(Channel.CONFLATED)
     private val syncLock = Any()
     private var synced = InputSnapshot.of(initial)
+    private var handleSynced = InputSnapshot.of(initial)
 
     override val state: StateFlow<EditorUiState> = mutableState.asStateFlow()
 
@@ -51,6 +54,7 @@ internal class EditorStore(
     init {
         applicationScope.launch { for (job in work) job() }
         applicationScope.launch { for (write in draft) persist(write) }
+        scope.launch { for (ignored in handleWrites) writeHandle(InputSnapshot.of(mutableState.value)) }
     }
 
     override fun update(transform: (EditorUiState) -> EditorUiState) {
@@ -95,15 +99,7 @@ internal class EditorStore(
         synchronized(syncLock) {
             val current = InputSnapshot.of(mutableState.value)
             val previous = persisted ?: synced
-            if (current.roomId != synced.roomId) {
-                handle[KEY_ROOM_ID] = current.roomId?.value
-            }
-            if (current.text != synced.text) {
-                handle[KEY_INPUT_TEXT] = current.text
-            }
-            if (current.view != synced.view) {
-                handle[KEY_PLAN_VIEW] = current.view?.let { doubleArrayOf(it.centerXMm, it.centerYMm, it.pixelsPerMm) }
-            }
+            handleWrites.trySend(Unit)
             val inputChanged =
                 current.text != previous.text || (current.text.isNotEmpty() && current.roomId != previous.roomId)
             if (inputChanged && current.projectId != null) {
@@ -111,6 +107,20 @@ internal class EditorStore(
             }
             synced = current
         }
+
+    /** Writes the changes to the [SavedStateHandle]. Runs on the main dispatcher only, with the latest state. */
+    private fun writeHandle(current: InputSnapshot) {
+        if (current.roomId != handleSynced.roomId) {
+            handle[KEY_ROOM_ID] = current.roomId?.value
+        }
+        if (current.text != handleSynced.text) {
+            handle[KEY_INPUT_TEXT] = current.text
+        }
+        if (current.view != handleSynced.view) {
+            handle[KEY_PLAN_VIEW] = current.view?.let { doubleArrayOf(it.centerXMm, it.centerYMm, it.pixelsPerMm) }
+        }
+        handleSynced = current
+    }
 
     private suspend fun persist(write: DraftWrite) {
         val result =

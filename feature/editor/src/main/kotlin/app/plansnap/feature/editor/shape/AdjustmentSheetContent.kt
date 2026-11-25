@@ -18,6 +18,7 @@ import app.plansnap.core.designsystem.component.PlanSnapButton
 import app.plansnap.core.designsystem.component.PlanSnapOutlinedButton
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
+import app.plansnap.core.domain.evaluation.AdjustmentProposal
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.model.Room
 import app.plansnap.feature.editor.R
@@ -77,13 +78,14 @@ internal fun AdjustmentSheetContent(
             )
         }
         UncontrolledList(evaluation.measurementControl, room, onIntent)
-        AdjustmentButtons(room, explicit, onIntent)
+        AdjustmentButtons(room, proposal, explicit, onIntent)
     }
 }
 
 @Composable
 private fun AdjustmentButtons(
     room: Room,
+    proposal: AdjustmentProposal,
     explicit: Boolean,
     onIntent: (EditorIntent) -> Unit,
 ) {
@@ -93,7 +95,7 @@ private fun AdjustmentButtons(
             if (explicit) {
                 onIntent(ShapeIntent.RequestExplicitConfirmation)
             } else {
-                onIntent(CoreIntent.AcceptAdjustment(room.id, AdjustmentConfirmation.SIMPLE))
+                onIntent(CoreIntent.AcceptAdjustment(room.id, proposal, AdjustmentConfirmation.SIMPLE))
                 onIntent(ShapeIntent.Dismiss)
             }
         },
@@ -158,7 +160,7 @@ internal fun ExplicitConfirmationContent(
         PlanSnapButton(
             text = stringResource(R.string.shape_explicit_confirm),
             onClick = {
-                onIntent(CoreIntent.AcceptAdjustment(room.id, AdjustmentConfirmation.EXPLICIT))
+                onIntent(CoreIntent.AcceptAdjustment(room.id, proposal, AdjustmentConfirmation.EXPLICIT))
                 onIntent(ShapeIntent.Dismiss)
             },
             modifier = Modifier.fillMaxWidth(),

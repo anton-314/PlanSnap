@@ -4,6 +4,7 @@ import app.plansnap.core.common.result.DomainError
 import app.plansnap.core.common.units.Length
 import app.plansnap.core.domain.command.ProjectEdit
 import app.plansnap.core.domain.evaluation.AdjustmentConfirmation
+import app.plansnap.core.domain.evaluation.AdjustmentProposal
 import app.plansnap.core.model.CornerSpec
 import app.plansnap.core.model.RoomId
 
@@ -52,11 +53,13 @@ sealed interface CoreIntent : EditorIntent {
     ) : CoreIntent
 
     /**
-     * Accepts the closure adjustment of [roomId]. The proposal is not part of the intent: it is evaluated again right
-     * before the command runs, so a stale proposal can never be accepted.
+     * Accepts the closure adjustment of [roomId]. [proposal] is exactly the proposal that the user saw. It goes
+     * unchanged into the command, so a proposal that went stale since it was displayed is rejected with
+     * `ADJUSTMENT_NOT_AVAILABLE` and never replaced silently (ADR 0019).
      */
     data class AcceptAdjustment(
         val roomId: RoomId,
+        val proposal: AdjustmentProposal,
         val confirmation: AdjustmentConfirmation,
     ) : CoreIntent
 

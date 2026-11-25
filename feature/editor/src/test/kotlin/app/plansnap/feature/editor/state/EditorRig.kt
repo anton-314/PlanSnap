@@ -8,12 +8,14 @@ import app.plansnap.core.common.units.TurnDirection
 import app.plansnap.core.domain.command.CommandHistory
 import app.plansnap.core.domain.command.DefaultCommandHistory
 import app.plansnap.core.domain.command.DefaultProjectCommandFactory
+import app.plansnap.core.domain.evaluation.AdjustmentProposal
 import app.plansnap.core.domain.evaluation.DefaultRoomEvaluator
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.domain.evaluation.RoomEvaluator
 import app.plansnap.core.domain.opening.DefaultOpeningRules
 import app.plansnap.core.domain.placement.DefaultDockPlacementResolver
 import app.plansnap.core.domain.repository.AppSettings
+import app.plansnap.core.domain.repository.ProjectSaver
 import app.plansnap.core.drawing.scene.DefaultSceneBuilder
 import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.model.CornerSpec
@@ -92,7 +94,10 @@ internal class EditorRig(
 
     fun handle(): SavedStateHandle = SavedStateHandle(mapOf(EditorStore.KEY_PROJECT_ID to PROJECT_ID.value))
 
-    fun viewModel(handle: SavedStateHandle = handle()): EditorViewModel =
+    fun viewModel(
+        handle: SavedStateHandle = handle(),
+        saver: ProjectSaver = this.saver,
+    ): EditorViewModel =
         EditorViewModel(
             savedStateHandle = handle,
             projects = projects,
@@ -153,3 +158,7 @@ private fun projectOf(vararg rooms: Room) =
         createdAtEpochMs = 1L,
         updatedAtEpochMs = 1L,
     )
+
+/** The adjustment proposal that the screen currently shows for [ROOM_ID]. */
+internal fun EditorViewModel.shownProposal(): AdjustmentProposal =
+    (state.value.evaluations.getValue(ROOM_ID) as RoomEvaluation.NeedsAdjustment).proposal

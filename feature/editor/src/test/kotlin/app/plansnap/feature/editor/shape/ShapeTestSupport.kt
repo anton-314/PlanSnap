@@ -5,6 +5,7 @@ import app.plansnap.core.common.units.Angle
 import app.plansnap.core.common.units.Length
 import app.plansnap.core.common.units.TurnDirection
 import app.plansnap.core.domain.command.ProjectEdit
+import app.plansnap.core.domain.evaluation.AdjustmentProposal
 import app.plansnap.core.domain.evaluation.DefaultRoomEvaluator
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.geometry.primitives.ClosureTolerance
@@ -85,6 +86,9 @@ internal fun evaluate(
         val evaluator = DefaultRoomEvaluator(TestDispatcherProvider(UnconfinedTestDispatcher()))
         (evaluator.evaluate(room, tolerance) as DomainResult.Success).value
     }
+
+/** The adjustment proposal of the real evaluation of [room], which must need an adjustment. */
+internal fun proposalOf(room: Room): AdjustmentProposal = (evaluate(room) as RoomEvaluation.NeedsAdjustment).proposal
 
 /** The room with its confirmed adjustment, as `AcceptAdjustment` stores it. */
 internal fun Room.withOverlay(): Room =
