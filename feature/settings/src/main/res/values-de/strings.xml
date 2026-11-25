@@ -2,4 +2,43 @@
 <resources>
     <string name="settings_title">Einstellungen</string>
     <string name="settings_back">Zurück</string>
+
+    <string name="settings_section_unit">Einheit</string>
+    <string name="settings_unit_description">Gilt für Anzeige und Eingabe von Längen. Gespeicherte Längen ändern sich nicht.</string>
+    <string name="settings_unit_millimeter">Millimeter (mm)</string>
+    <string name="settings_unit_centimeter">Zentimeter (cm)</string>
+    <string name="settings_unit_meter">Meter (m)</string>
+    <string name="settings_unit_symbol_millimeter">mm</string>
+    <string name="settings_unit_symbol_centimeter">cm</string>
+    <string name="settings_unit_symbol_meter">m</string>
+
+    <string name="settings_section_tolerance">Toleranz beim Schließen</string>
+    <string name="settings_tolerance_description">Eine Lücke bis zum größeren der beiden Grenzwerte gilt als Messfehler und kann ausgeglichen werden. Eine größere Lücke gilt als Abweichung der Form.</string>
+    <string name="settings_tolerance_absolute_label">Absoluter Grenzwert (%1$s)</string>
+    <string name="settings_tolerance_relative_label">Relativer Grenzwert (Prozent des Umfangs)</string>
+    <string name="settings_tolerance_error_malformed">Gib eine Zahl ein, zum Beispiel 5,0 oder 5.0.</string>
+    <string name="settings_tolerance_error_absolute_too_small">Der absolute Grenzwert muss mindestens %1$d mm betragen.</string>
+    <string name="settings_tolerance_error_not_representable">Der Wert muss eine ganze Zahl von Millimetern sein.</string>
+    <string name="settings_tolerance_error_too_large">Der Wert ist zu groß.</string>
+    <string name="settings_tolerance_error_relative_negative">Der relative Grenzwert darf nicht negativ sein.</string>
+    <string name="settings_tolerance_error_relative_too_large">Der relative Grenzwert darf höchstens 100 Prozent betragen.</string>
+
+    <string name="settings_section_grid">Raster und Einrasten</string>
+    <string name="settings_grid_show">Raster anzeigen</string>
+    <string name="settings_snap_enable">Am Raster einrasten</string>
+
+    <string name="settings_section_hints">Hinweise</string>
+    <string name="settings_hints_reset">Hinweise zurücksetzen</string>
+    <string name="settings_hints_all_active">Alle Hinweise sind aktiv und erscheinen im Editor wieder.</string>
+    <plurals name="settings_hints_dismissed">
+        <item quantity="one">%1$d Hinweis ist geschlossen.</item>
+        <item quantity="other">%1$d Hinweise sind geschlossen.</item>
+    </plurals>
+
+    <string name="settings_save_failed_title">Nicht gespeichert</string>
+    <string name="settings_save_failed_storage">Die Einstellung konnte nicht gespeichert werden. Versuche es erneut.</string>
+    <string name="settings_save_failed_no_space">Die Einstellung konnte nicht gespeichert werden, weil der Gerätespeicher voll ist.</string>
+    <string name="settings_save_failed_rejected">Die Einstellung wurde abgelehnt, weil ihr Wert nicht zulässig ist.</string>
+    <string name="settings_save_failed_generic">Die Einstellung konnte nicht gespeichert werden.</string>
+    <string name="settings_save_failed_dismiss">Schließen</string>
 </resources>
