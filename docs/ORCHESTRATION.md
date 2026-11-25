@@ -69,6 +69,17 @@ Start mit `Agent(subagent_type=<rolle>, isolation="worktree", run_in_background=
 
 Lies zuerst `docs/PROGRESS.md`, Abschnitt „Wiedereinstieg“, und prüfe `git status`, `git log --oneline -5`, `git worktree list` und `git branch`. Unterbrochene Aufgaben liegen auf `worktree-agent-*`-Branches. Prüfe sie, bevor du neue Agenten startest.
 
+## Nutzungslimit und Sicherung
+
+Der Orchestrator sieht den Verbrauch nicht in Prozent. Er erfährt vom Limit erst durch einen Hinweis des Harness oder durch Fehler 429 bei einem Agenten. Deshalb gilt:
+
+1. **Laufend sichern:** Nach jeder Übernahme, Entscheidung oder jedem Agentenstart wird der Abschnitt „Wiedereinstieg“ in `docs/PROGRESS.md` aktualisiert und committet. Er nennt laufende Aufgaben mit Worktree, Branch und Basis-Commit.
+2. **Beim Limit-Hinweis:** Keine neuen Agenten starten. Laufende Agenten mit `TaskStop` beenden. Deren Worktrees bleiben erhalten, ungesicherte Dateien werden nicht gelöscht. Dann den Wiedereinstieg aktualisieren und committen.
+3. **Nach einem Abbruch durch 429:** Unterbrochene Agenten werden nach dem Reset per `SendMessage` fortgesetzt, wenn ihre Sitzung noch besteht. Sonst wird ein neuer Agent auf dem Worktree-Stand gestartet: Briefing aus `docs/TASKS.md`, Hinweis auf die vorhandenen ungesicherten Dateien.
+4. **Wiederaufnahme-Prompt** für eine neue Sitzung:
+
+   > Du bist der Orchestrator für PlanSnap. Lies docs/ORCHESTRATION.md vollständig und halte dich daran. Lies dann docs/PROGRESS.md, Abschnitt „Wiedereinstieg“, prüfe den Git-Stand (git status, git log --oneline -5, git worktree list, git branch) und setze die Arbeit von dort autonom fort. Frag mich nur bei echten Blockern.
+
 ## Abschlussbericht (Phase 7)
 
 `docs/FINAL_REPORT.md` und eine Zusammenfassung an den Nutzer, ehrlich und knapp:

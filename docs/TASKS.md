@@ -523,7 +523,7 @@ graph LR
 - **Abhängigkeiten:** T-DOM-003, T-DOM-004
 - **Besitzbereich:** `core/domain/…/validation/` (nur neue Implementierungsdateien, der Vertrag in `ProjectRules.kt` bleibt eingefroren)
 - **Vertrag:** `ProjectValidator`, DOMAIN §9 bis §11
-- **Akzeptanzkriterien:** Grenzwerte aus `GeometryTolerances`, Andockziele einschließlich `DockLink.ownWallId`, Wirtsöffnungen auf ihrer Wand, Andockzyklen und überlappende Öffnungen je Wand werden erkannt. Sich berührende Öffnungen gelten nicht als Überlappung. Gemeldet wird der erste Verstoß in Raum- und Indexreihenfolge. Die Regeln aus T-DOM-003 und T-DOM-004 werden wiederverwendet, nicht dupliziert. `RoomProjectRepository` (T-DAT-002) erhält die Implementierung über T-APP-001. Anforderungen: REQ-DATA-004, REQ-NFR-003
+- **Akzeptanzkriterien:** Grenzwerte aus `GeometryTolerances`, Andockziele einschließlich `DockLink.ownWallId`, Wirtsöffnungen auf ihrer Wand, Andockzyklen und überlappende Öffnungen je Wand werden erkannt. Sich berührende Öffnungen gelten nicht als Überlappung. Gemeldet wird der erste Verstoß in Raum- und Indexreihenfolge. Die Regeln aus T-DOM-003 und T-DOM-004 werden wiederverwendet, nicht dupliziert. Zusätzlich ein Integrationstest des Zahlenfalls aus ADR 0019 (Rechteck 4150/3000/4000/3000) über `DefaultCommandHistory` mit `DefaultRoomEvaluator`. `RoomProjectRepository` (T-DAT-002) erhält die Implementierung über T-APP-001. Anforderungen: REQ-DATA-004, REQ-NFR-003
 - **Tests:** Tabellentests je Regel, Property: gültige Generatorprojekte bestehen
 
 #### T-RND-001 – Canvas-Renderer
