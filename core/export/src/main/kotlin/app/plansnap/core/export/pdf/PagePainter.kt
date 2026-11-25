@@ -73,7 +73,11 @@ internal class PagePainter(
             pt(frame.bottomMm.toDouble()),
             line,
         )
-        drawText(canvas, ellipsize(projectName, layout.projectName, pt(layout.projectNameMaxWidthMm)), layout.projectName)
+        drawText(
+            canvas,
+            ellipsize(projectName, layout.projectName, pt(layout.projectNameMaxWidthMm)),
+            layout.projectName,
+        )
         drawText(canvas, TitleBlockSpec.scaleText(plan.scale), layout.scaleLabel)
         val bar = layout.scaleBar
         val top = pt(bar.topMm)

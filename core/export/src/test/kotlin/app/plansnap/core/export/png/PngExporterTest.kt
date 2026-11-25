@@ -44,7 +44,8 @@ import kotlin.math.roundToInt
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PngExporterTest {
     private val layout = DefaultPlotLayout()
-    private val exporter = PngExporter(DefaultSceneBuilder(), layout, ExportFixtures::formatter, ExportFixtures.unconfined)
+    private val exporter =
+        PngExporter(DefaultSceneBuilder(), layout, ExportFixtures::formatter, ExportFixtures.unconfined)
     private val ink = SceneStyleSheet.EXPORT_PALETTE.argb(SceneStyleSheet.TITLE_BLOCK_INK)
 
     private fun request(
@@ -276,7 +277,12 @@ class PngExporterTest {
         val project = ExportFixtures.project(ExportFixtures.confirmed).copy(name = "W".repeat(200))
         val (_, bitmap, summary) = png(ExportFixtures.request(project, ExportFormat.PNG))
         val title = summary.plan!!.titleBlockLayout
-        val gap = pixel(bitmap, title.projectName.xMm + title.projectNameMaxWidthMm + 1.0, title.projectName.baselineMm - 1.0)
+        val gap =
+            pixel(
+                bitmap,
+                title.projectName.xMm + title.projectNameMaxWidthMm + 1.0,
+                title.projectName.baselineMm - 1.0,
+            )
         assertEquals(SceneStyleSheet.PAGE_BACKGROUND_ARGB, gap)
     }
 

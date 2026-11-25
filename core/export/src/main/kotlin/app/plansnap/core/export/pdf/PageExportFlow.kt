@@ -87,7 +87,12 @@ internal class PageExportFlow(
 
     private suspend fun prepare(request: ExportRequest): DomainResult<PageJob> {
         val context = currentCoroutineContext()
-        val omitted = request.project.rooms.filter { !request.evaluations.getValue(it.id).status.isExportable }
+        val omitted =
+            request.project.rooms.filter {
+                !request.evaluations
+                    .getValue(it.id)
+                    .status.isExportable
+            }
         val options = SceneOptions(exportableOnly = true, includeNotes = request.includeNotes)
         val scenes = ArrayList<RoomScene>()
         for (room in request.project.rooms) {

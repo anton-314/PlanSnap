@@ -46,7 +46,11 @@ class PdfExporter(
         output: OutputStream,
     ): DomainResult<ExportSummary> {
         require(request.format == ExportFormat.PDF) { "PdfExporter writes PDF, not ${request.format}" }
-        return flow.run(request, ExportFormat.PDF, output) { job, checkActive -> DomainResult.Success(encode(job, checkActive)) }
+        return flow.run(
+            request,
+            ExportFormat.PDF,
+            output,
+        ) { job, checkActive -> DomainResult.Success(encode(job, checkActive)) }
     }
 
     private fun encode(

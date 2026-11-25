@@ -69,13 +69,8 @@ class PngExporter(
     ): DomainResult<ByteArray> {
         val width = pixels(job.plan.pageWidthMm)
         val height = pixels(job.plan.pageHeightMm)
-        if (width.toLong() * height > MAX_PIXELS) return encodingFailed()
-        val bitmap =
-            try {
-                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            } catch (_: OutOfMemoryError) {
-                return encodingFailed()
-            }
+        val bitmap = if (width.toLong() * height > MAX_PIXELS) null else allocate(width, height)
+        if (bitmap == null) return encodingFailed()
         try {
             bitmap.eraseColor(SceneStyleSheet.PAGE_BACKGROUND_ARGB)
             val canvas = Canvas(bitmap)
@@ -92,6 +87,17 @@ class PngExporter(
             bitmap.recycle()
         }
     }
+
+    /** Returns the bitmap or `null` if the heap cannot hold it. */
+    private fun allocate(
+        width: Int,
+        height: Int,
+    ): Bitmap? =
+        try {
+            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        } catch (_: OutOfMemoryError) {
+            null
+        }
 
     private fun pixels(mm: Int): Int = (mm / MM_PER_INCH * dpi).roundToInt()
 
