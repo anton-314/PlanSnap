@@ -73,13 +73,15 @@ Keine.
 - 2026-11-24: CR-W2-01 gemergt (`4a4120e`). Bestätigt und festgeschrieben: Zoom 1e-4 bis 100 px/mm, begründet mit dem größten gültigen Raum und der kürzesten Wand (UX §4). Trefferpriorität Öffnung > Ecke > Wand > Diagonale > Rauminneres (DOMAIN §11). `GeometryTolerances.HIT_TIE_RELATIVE = 1e-9`, additiv (DOMAIN §1). Trefferradius 24 dp. Doppeltippen mit 24 dp Rand ist in T-EDT-003 aufgenommen.
 - 2026-11-25: T-DOM-001 gemergt (`2074112`). `:core:domain` hat 328 Tests. Alle 30 Katalogfälle liefern über den Produktions-Evaluator Status, Grund und Bestätigungsstufe. Für den Zahlenfall aus ADR 0019 ergibt die Auswertung SIMPLE bei `T_abs = 250` und EXPLICIT bei Standardtoleranz, wie es der Fake in T-DOM-002 angenommen hat. Ein Integrationstest mit echter Historie und echtem Evaluator wird Teil von T-DOM-007. A3 prüft die tatsächlich entstehende Drehung mit abgeleitetem `τ_0`. Folgepunkte: T-GEO-009 (Verdacht auf übersehene Richtungsverletzung an `V_0` im Solver) und CR-W2-02 (`ValueField` ohne Wandanzahl, der Evaluator liefert `RuleViolation(TOO_MANY_WALLS)`).
 - 2026-11-25: CR-W2-02 gemergt. Mehr als `MAX_WALLS_PER_ROOM` Wände ergeben in Auswertung und `AddWall` einheitlich `RuleViolation(TOO_MANY_WALLS)`. Die Wandanzahl ist eine Strukturregel, `ValueField` bleibt unverändert (DOMAIN §4 Schritt 1, §11).
+- 2026-11-25: T-DOM-004 gemergt. Der Abstand entspricht der Stärke der Wirtswand (ADR 0013). Räume ohne Form behalten Platzierung und Link. Eine Kette von 30 Räumen braucht 0,82 ms je `MoveRoom` (mit Fake-Evaluator). `DockTopology` (`linkError`, `resolutionOrder`) ist öffentlich zur Wiederverwendung. An `architect` als CR-W2-03: Bezugspunkt von `hostOffset`. Wörtlich nach DOMAIN §10 liegt der Gastraum bei `hostOffset = 0` neben dem Wandanfang und deckt eine Tür mit Offset 0 nicht ab. Außerdem überlappen sich Räume bei unterschiedlichem Umlaufsinn.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02.
+- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, T-DOM-004.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
-  - T-DOM-004 (Platzierung und Andocken). Basis `a60b7d5`, ungesicherte Dateien unter `core/domain/…/placement/`. Einmal durch 429 unterbrochen, per `SendMessage` fortgesetzt.
+  - T-DOM-007 (Projektvalidierung), Basis siehe Commit nach diesem Eintrag.
+  - CR-W2-03 (`hostOffset` und Umlaufsinn beim Andocken, `architect`), gleiche Basis.
   - T-DRW-001 (SceneBuilder), Basis `5837c4b`.
   - T-GEO-009 (Fix: Drehrichtung an der Schlussecke), Basis `5837c4b`.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
