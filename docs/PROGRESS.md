@@ -80,8 +80,8 @@ Keine.
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
 - **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, T-DOM-004.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
-  - T-DOM-007 (Projektvalidierung), Basis siehe Commit nach diesem Eintrag.
-  - CR-W2-03 (`hostOffset` und Umlaufsinn beim Andocken, `architect`), gleiche Basis.
+  - T-DOM-007 (Projektvalidierung, mit Integrationstest ADR 0019), Basis `e107c82`.
+  - CR-W2-03 (`hostOffset` und Umlaufsinn beim Andocken, `architect`), Basis `e107c82`.
   - T-DRW-001 (SceneBuilder), Basis `5837c4b`.
   - T-GEO-009 (Fix: Drehrichtung an der Schlussecke), Basis `5837c4b`.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
@@ -89,5 +89,5 @@ Keine.
 ## Nächste Schritte
 
 1. Die laufenden Aufgaben prüfen und übernehmen.
-2. Danach T-DOM-007 (nach T-DOM-004, mit Integrationstest des ADR-0019-Zahlenfalls über echte Historie und echten Evaluator), T-RND-001 und T-EXP-001 (nach T-DRW-001), zuletzt T-APP-001.
+2. Danach T-RND-001 und T-EXP-001 (nach T-DRW-001), zuletzt T-APP-001.
 3. Wellen-Gate 2 mit Review, Tag `wave-2`, Push, CI prüfen.
