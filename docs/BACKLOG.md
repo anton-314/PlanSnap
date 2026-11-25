@@ -26,3 +26,4 @@
 - Überschneidungen angedockter Räume abseits der Andockwand werden nicht geprüft (nicht konvexe oder überstehende Räume). Bei Bedarf als eigene Anforderung aufnehmen.
 - `DefaultProjectValidator` dupliziert das Überlappungsprädikat aus `DefaultOpeningRules`, weil `OpeningRules.check` Grenzen vor Überlappung meldet. Ein gemeinsames internes Prädikat würde das beheben, ohne den Vertrag zu ändern. Außerdem `wallLengthError` und `thicknessError` aus `command/` in ein neutrales Paket verschieben, damit `validation/` nicht von `command/` abhängt.
 - Drehrichtung an fast spitzen Ecken (α nahe 0°): Der Wortlaut von DOMAIN §3 meldet durch den Sprung über ±π schon bei winzigen Abweichungen eine Verletzung, in Auswerter und Solver gleich. `architect` soll prüfen, ob das gemeint ist (aus T-GEO-009).
+- KDoc von `DoorSwing` in `core/model/…/Opening.kt` auf DIN 107 und DOMAIN §9 verweisen (Lesart nach CR-W2-04).

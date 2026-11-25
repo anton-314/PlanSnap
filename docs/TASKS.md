@@ -534,7 +534,7 @@ graph LR
 - **Abhängigkeiten:** T-DRW-001
 - **Besitzbereich:** `core/render/`
 - **Vertrag:** ADR 0008
-- **Akzeptanzkriterien:** Alle Szenenelemente werden gezeichnet, ohne Allokationen pro Element im Zeichenpfad. Anforderungen: REQ-UX-002
+- **Akzeptanzkriterien:** Alle Szenenelemente werden gezeichnet, ohne Allokationen pro Element im Zeichenpfad. Jeder `SceneStyle` hat eine Darstellung: `ROOM_BODY*` getönt gefüllt mit Umriss, `_UNCONFIRMED` gestrichelt. Eckmarker (Polylinien der Länge 0) erscheinen mit rundem Linienende. Text: im Editor in konstanter Bildschirmgröße (12 sp für 150 mm Nennhöhe, andere im Verhältnis), ausgeblendet, wenn das Bezugselement kürzer als der Text ist. Im Export mit Faktor `max(1, 1,8 mm · M / 150 mm)` (ADR 0008, Ergänzung CR-W2-04). `LabelText.ShapeConflict` und `ShapeNotConfirmed` sind übersetzt (DE/EN). Anforderungen: REQ-UX-002
 - **Tests:** Robolectric-Bitmap, Roborazzi
 
 #### T-EXP-001 – PlotLayout
