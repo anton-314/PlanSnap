@@ -25,4 +25,5 @@ dependencies {
 
     testImplementation(libs.androidx.navigation.testing)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(project(":testing:fixtures"))
 }
