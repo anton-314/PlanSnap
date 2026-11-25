@@ -89,17 +89,26 @@ Keine.
 - 2026-11-25: Welle 2 inhaltlich fertig, Wellen-Gate 2 gestartet.
 - 2026-11-25: Wellen-Gate 2, technischer Teil auf `f23ee84`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün mit 1 697 JVM-Tests ohne Fehler und Überspringer. Pitest Geometrie 86 % (1 658 von 1 927, unverändert seit T-GEO-009). Instrumentiert 3 von 3. Das Review läuft.
 - 2026-11-25: T-EXP-002 fertig (`fa64d28`, noch nicht gemergt). Der SVG-Exporter rechnet Welt → Seite über `PlotLayout`, setzt Labels nach CR-W2-05 und schreibt Zahlen mit `Locale.ROOT`, die Ausgabe ist byte-deterministisch. JSON besteht den Roundtrip über den Codec. Folgepunkte: Die Stiltabelle ist gespiegelt, das Titelblock-Layout frei gewählt, und es gibt noch kein Default für `ExportPreflight`. Das geht an CR-W3-02. Die DI-Bindung der Exporter folgt mit T-FEX-001.
+- 2026-11-25: T-PRJ-001 fertig (37 Tests, 4 Baselines): Anlegen öffnet den Editor. Der Import schließt den Stream immer, ein Abbruch durch den Nutzer ist kein Fehler, `DomainError.Document` wird auf vier Meldungen abgebildet. T-SET-001 fertig (31 Tests, 5 Baselines): Die absolute Toleranz wird in der Anzeigeeinheit eingegeben und ist mindestens 1 mm, die relative in Prozent. Ungültige Werte werden nicht gespeichert und am Feld erklärt. Beide Screens nutzen `hiltViewModel()`, daher folgt T-APP-002 (Hilt-NavigationTest mit Fakes). `:testing:fixtures` ist jetzt Testabhängigkeit von `:app` und den Feature-Modulen.
 - 2026-11-25: Gate-Review Welle 2: `CHANGES_REQUESTED`. **Hoch:** Evaluator und `DefaultOpeningRules` verstehen unter `L_wirksam` Verschiedenes. Die Regeln nehmen das Overlay, wenn der Fingerabdruck passt, sonst die Rohlänge. Der Evaluator nimmt die angezeigte Form, bei `NEEDS_ADJUSTMENT` also die Vorschau und bei `PROPOSED` die Solverlänge, und verwirft strukturell ungültige Overlays. Ein Probetest belegt das in zwei Fällen. Folge: `AddOpening` nimmt Öffnungen an, die die Szene rot zeigt, oder umgekehrt. Fix als CR-W2-06 (Batch 2.4). **Mittel:** Der Prüfstand prüfte an der Schlussecke den Sollwert statt `τ_0,abgeleitet`. `flow.py` ist korrigiert, die Ausgabe ist bei voller Stichprobe identisch, README ergänzt. Drei niedrige Befunde stehen im Backlog. Ohne Befund: Historie, Property-Tests (alle `runBlocking<Unit>`), Unterdrückungen, Modulgrenzen, Sicherheit, Renderer-Speicher.
 - 2026-11-25: CR-W3-01 an `architect`: `@ApplicationScope` ist in `:app` deklariert und für `:feature:editor` nicht sichtbar. T-EDT-001 braucht den Scope (ARCHITECTURE §5). Vorab für Batch 3.1: `lifecycle-runtime-compose`, `coroutines-test` und `turbine` in den Modulen editor, projects und settings, `activity-compose` in projects für den Import per SAF.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2:** Gate technisch grün, Review `CHANGES_REQUESTED` (hoch: `L_wirksam`). Der Fix CR-W2-06 läuft bei `architect` (`worktree-agent-a09c0220a46258b35`, Basis `46d9f63`). Danach folgen Merge, ein gezieltes Nachreview durch `reviewer`, ein erneuter technischer Gate-Lauf, der Tag `wave-2` und der Push. Der Worktree des Reviews `worktree-agent-aca7ce9d2b1f3f62c` enthält nur einen nicht versionierten Probetest, eine Kopie liegt im Scratchpad. Er kann entfernt werden.
-- **Fertig, noch nicht gemergt** (erst nach dem Tag `wave-2`): CR-W3-01 (`a7fe3cd` auf `worktree-agent-a04a982527ded745d`, ADR 0020: Typ `ApplicationScope` in `:core:common.runtime`). T-EXP-002 (`fa64d28` auf `worktree-agent-ad83b19f22e11d02f`, 39 Tests, Kover 97,4 %).
-- **Läuft:** CR-W3-02 bei `architect` (Basis `fa64d28` mit Merge von `67e41c6`): öffentliche Stiltabelle statt `internal StyleLook`, die SVG bisher spiegelt. Gemeinsame Titelblock-Spezifikation, `DefaultExportPreflight` und ADR 0022. Muss vor T-EXP-003 fertig sein. Merge-Reihenfolge: T-EXP-002, dann CR-W3-02.
-- **Läuft** (Worktree-Branches `worktree-agent-*`, gemergt wird erst nach dem Tag `wave-2`): T-PRJ-001 bei `ui-engineer` (Basis `da4f190`), T-SET-001 bei `ui-engineer` (Basis `9f3c4ee`). Danach folgt T-EDT-001 auf Basis von CR-W3-01.
-- Den alten Worktree `worktree-agent-a6060eb82b04453d6` aus dem abgebrochenen ersten Review kann man entfernen. Er hat keine Commits, nur einen nicht versionierten Probetest. Das Entfernen mit `--force` hat das Berechtigungssystem abgelehnt.
+- **Welle 2:** Gate technisch grün, Review `CHANGES_REQUESTED` (hoch: `L_wirksam`). Der Fix CR-W2-06 läuft bei `architect` (`worktree-agent-a09c0220a46258b35`, Basis `46d9f63`). Danach folgen Merge, ein gezieltes Nachreview durch `reviewer`, ein erneuter technischer Gate-Lauf, der Tag `wave-2` und der Push.
+- **Fertig, noch nicht gemergt** (erst nach dem Tag `wave-2`, in dieser Reihenfolge):
+  1. CR-W3-01 `a7fe3cd` (`worktree-agent-a04a982527ded745d`): ADR 0020, Typ `ApplicationScope`.
+  2. T-EXP-002 `fa64d28` (`worktree-agent-ad83b19f22e11d02f`): SVG- und JSON-Export.
+  3. T-PRJ-001 `5670e2f` (`worktree-agent-aefb5d4f01dbc172e`): Projektliste und Import.
+  4. T-SET-001 `175cca4` (`worktree-agent-a4e86fa327c86d9e2`): Einstellungen.
+
+  T-PRJ-001 und T-SET-001 machen `:app` NavigationTest rot, weil sie `hiltViewModel()` ohne Hilt-Activity aufrufen. Deshalb nur zusammen mit T-APP-002 mergen.
+- **Läuft:**
+  - CR-W3-02 bei `architect` (Basis `fa64d28` + `67e41c6`): gemeinsame Stiltabelle, Titelblock und `DefaultExportPreflight`, ADR 0022. Muss vor T-EXP-003 fertig sein.
+  - T-APP-002 bei `test-engineer` (Basis `5670e2f` + `77053d0` + `175cca4`): Hilt-fähiger NavigationTest.
+- **Danach:** T-EDT-001 (braucht CR-W3-01), Batch 3.2.
+- Entfernen, sobald erlaubt: alte Worktrees `worktree-agent-a6060eb82b04453d6` (erster Review-Versuch, ohne Commits) und `worktree-agent-aca7ce9d2b1f3f62c` (Gate-Review, nur Probetest).
 
 ## Nächste Schritte
 
