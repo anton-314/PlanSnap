@@ -74,16 +74,16 @@ Keine.
 - 2026-11-25: T-DOM-001 gemergt (`2074112`). `:core:domain` hat 328 Tests. Alle 30 Katalogfälle liefern über den Produktions-Evaluator Status, Grund und Bestätigungsstufe. Für den Zahlenfall aus ADR 0019 ergibt die Auswertung SIMPLE bei `T_abs = 250` und EXPLICIT bei Standardtoleranz, wie es der Fake in T-DOM-002 angenommen hat. Ein Integrationstest mit echter Historie und echtem Evaluator wird Teil von T-DOM-007. A3 prüft die tatsächlich entstehende Drehung mit abgeleitetem `τ_0`. Folgepunkte: T-GEO-009 (Verdacht auf übersehene Richtungsverletzung an `V_0` im Solver) und CR-W2-02 (`ValueField` ohne Wandanzahl, der Evaluator liefert `RuleViolation(TOO_MANY_WALLS)`).
 - 2026-11-25: CR-W2-02 gemergt. Mehr als `MAX_WALLS_PER_ROOM` Wände ergeben in Auswertung und `AddWall` einheitlich `RuleViolation(TOO_MANY_WALLS)`. Die Wandanzahl ist eine Strukturregel, `ValueField` bleibt unverändert (DOMAIN §4 Schritt 1, §11).
 - 2026-11-25: T-DOM-004 gemergt. Der Abstand entspricht der Stärke der Wirtswand (ADR 0013). Räume ohne Form behalten Platzierung und Link. Eine Kette von 30 Räumen braucht 0,82 ms je `MoveRoom` (mit Fake-Evaluator). `DockTopology` (`linkError`, `resolutionOrder`) ist öffentlich zur Wiederverwendung. An `architect` als CR-W2-03: Bezugspunkt von `hostOffset`. Wörtlich nach DOMAIN §10 liegt der Gastraum bei `hostOffset = 0` neben dem Wandanfang und deckt eine Tür mit Offset 0 nicht ab. Außerdem überlappen sich Räume bei unterschiedlichem Umlaufsinn.
+- 2026-11-25: CR-W2-03 gemergt (`3374c32`), mit Verhaltensänderung. Die eigene Wand belegt entlang der Wirtswand `[a, a + L_j]` ab `V_i` mit `a = hostOffset` (bei einer Öffnung `opening.offset + hostOffset`). Bei 0 liegt der Raum bündig am Wandanfang bzw. Öffnungsbeginn. Die Richtung der eigenen Wand folgt dem Umlaufsinn (`e_j = −s_W · s_G · e_i`), das Innere des Gastes liegt also immer außen am Wirt. Es gibt keine Spiegelung und keine neue Regel. Folgepunkt in T-EDT-006 aufgenommen.
+- 2026-11-25: T-DOM-007 gemergt (`5286a59`). `:core:domain` hat 377 Tests. Integrationstest ADR 0019 mit echter Historie, echtem Evaluator und echten Regeln: 4 von 4 grün. Kleinere Aufräumpunkte stehen in BACKLOG.
 
 ## Wiedereinstieg (Stand 2026-11-25)
 
 - **Welle 1:** fertig, Tag `wave-1`, CI grün.
-- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, T-DOM-004.
+- **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
-  - T-DOM-007 (Projektvalidierung, mit Integrationstest ADR 0019), Basis `e107c82`.
-  - CR-W2-03 (`hostOffset` und Umlaufsinn beim Andocken, `architect`), Basis `e107c82`.
   - T-DRW-001 (SceneBuilder), Basis `5837c4b`.
-  - T-GEO-009 (Fix: Drehrichtung an der Schlussecke), Basis `5837c4b`.
+  - T-GEO-009 (Fix: Drehrichtung an der Schlussecke), Basis `5837c4b`. Commit `83bbd51` liegt vor, der Bericht steht aus.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
 
 ## Nächste Schritte

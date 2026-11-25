@@ -689,7 +689,7 @@ graph LR
 - **Abhängigkeiten:** T-EDT-004, T-DOM-004, T-DOM-006
 - **Besitzbereich:** `feature/editor/…/rooms/`
 - **Vertrag:** UX §3 und §4
-- **Akzeptanzkriterien:** Neuer Raum dockt an, Long-Press verschiebt und dreht. Raster und Einrasten sind abschaltbar. Anforderungen: REQ-MOD-006, REQ-MOD-007, REQ-MOD-008, REQ-UX-010
+- **Akzeptanzkriterien:** Neuer Raum dockt an, Long-Press verschiebt und dreht. Raster und Einrasten sind abschaltbar. Der Versatz ist mit 0 vorbelegt (bündig am Wandanfang bzw. Öffnungsbeginn, DOMAIN §10 nach CR-W2-03) und läuft in Messrichtung der Wirtswand. Die UI zeigt diese Richtung an. Anforderungen: REQ-MOD-006, REQ-MOD-007, REQ-MOD-008, REQ-UX-010
 - **Tests:** ViewModel, Gestentests
 
 #### T-EDT-007 – Raumdetails und Flächenübersicht

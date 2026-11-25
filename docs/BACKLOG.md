@@ -22,3 +22,6 @@
 - Optimierte Layouts für Querformat, Tablets und Faltbare
 - `OverdeterminedCases`: Für h2a-109471 und h2a-109472 die nicht kontrollierbaren Wände w1 und w3 mit Empfehlung (1,3) bzw. (0,2) aufnehmen (aus T-GEO-005).
 - `ProjectRepository.observeProjects()`: Speicherfehler erreichen den Collector als Exception, obwohl die Schnittstelle `DomainError.Storage` verspricht. Der Flow-Vertrag hat keinen Fehlerkanal. `architect` soll entscheiden, ob die KDoc den Aufrufer zum Fangen verpflichtet oder der Vertrag einen Fehlerzustand erhält (Gate-Review Welle 1, niedrig).
+- KDoc von `DockLink.hostOffset` in `core/model/…/Room.kt` auf DOMAIN §10 verweisen (Bezugspunkt nach CR-W2-03).
+- Überschneidungen angedockter Räume abseits der Andockwand werden nicht geprüft (nicht konvexe oder überstehende Räume). Bei Bedarf als eigene Anforderung aufnehmen.
+- `DefaultProjectValidator` dupliziert das Überlappungsprädikat aus `DefaultOpeningRules`, weil `OpeningRules.check` Grenzen vor Überlappung meldet. Ein gemeinsames internes Prädikat würde das beheben, ohne den Vertrag zu ändern. Außerdem `wallLengthError` und `thicknessError` aus `command/` in ein neutrales Paket verschieben, damit `validation/` nicht von `command/` abhängt.
