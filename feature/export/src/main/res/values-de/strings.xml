@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="export_title">Export</string>
+    <string name="export_back">Zurück</string>
+    <string name="export_empty_hint">Noch kein Raum</string>
+</resources>

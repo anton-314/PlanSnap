@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_title">Projects</string>
+    <string name="projects_open_settings">Settings</string>
+    <string name="projects_empty_explanation">Measure a room wall by wall and PlanSnap draws the floor plan. Start with a new project.</string>
+    <string name="projects_new_project">New project</string>
+</resources>

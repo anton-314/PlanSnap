@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects_title">Projekte</string>
+    <string name="projects_open_settings">Einstellungen</string>
+    <string name="projects_empty_explanation">Miss einen Raum Wand für Wand und PlanSnap zeichnet den Grundriss. Beginne mit einem neuen Projekt.</string>
+    <string name="projects_new_project">Neues Projekt</string>
+</resources>

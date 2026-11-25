@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_title">Editor</string>
+    <string name="editor_back">Back</string>
+    <string name="editor_open_export">Export</string>
+    <string name="editor_empty_hint">Enter the first wall</string>
+</resources>
