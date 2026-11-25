@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Keys of the input bar -->
+    <string name="input_key_angle_label">∠</string>
+    <string name="input_key_angle">Enter corner angle</string>
+    <string name="input_key_angle_set">Corner angle %1$s degrees, change</string>
+    <string name="input_key_thickness_label">D</string>
+    <string name="input_key_thickness">Wall thickness</string>
+    <string name="input_key_diagonal_label">Diag</string>
+    <string name="input_key_diagonal">Add diagonal</string>
+    <string name="input_key_close_label">Close</string>
+    <string name="input_key_close">Close room</string>
+
+    <!-- Sheets -->
+    <string name="shape_sheet_dismiss">Close sheet</string>
+    <string name="shape_sheet_apply_for">Apply %1$s</string>
+    <string name="shape_sheet_cancel">Cancel</string>
+    <string name="shape_sheet_value_empty">Enter a value</string>
+    <string name="shape_sheet_value_spoken">%1$s, %2$s</string>
+
+    <string name="shape_corner_title">Corner angle</string>
+    <string name="shape_corner_target_next">Corner before wall %1$d</string>
+    <string name="shape_corner_target_existing">Corner %1$d</string>
+    <string name="shape_corner_hint">Angle between the two walls, from 0° to 180°. A right angle is 90°.</string>
+    <string name="shape_corner_unit">°</string>
+    <string name="shape_corner_unit_spoken">degrees</string>
+
+    <string name="shape_diagonal_title">Diagonal</string>
+    <string name="shape_diagonal_hint">Measure the straight line between two corners. It checks the shape of the room.</string>
+    <string name="shape_diagonal_from">From corner</string>
+    <string name="shape_diagonal_to">To corner</string>
+    <string name="shape_diagonal_corner">Corner %1$d</string>
+
+    <string name="shape_thickness_title">Wall thickness</string>
+    <string name="shape_thickness_hint">Applies to the next wall. It grows outward and never changes the area of the room.</string>
+
+    <string name="shape_adjust_title">Adjust measurements</string>
+    <string name="shape_adjust_hint">The measurements do not close exactly. The app proposes small corrections. Your entered values stay unchanged and you can undo the adjustment.</string>
+    <string name="shape_adjust_largest">Largest correction: %1$s (%2$s)</string>
+    <string name="shape_adjust_largest_unknown">Largest correction: %1$s</string>
+    <string name="shape_adjust_sum">Corrections in total: %1$s</string>
+    <string name="shape_adjust_apply">Apply adjustment</string>
+    <string name="shape_adjust_review">Review large correction</string>
+    <string name="shape_adjust_explicit_note">This correction is large. You must confirm it separately.</string>
+
+    <string name="shape_explicit_title">Apply large correction?</string>
+    <string name="shape_explicit_body">The largest single change is %1$s (%2$s), and the corrections add up to %3$s. Check your measurements before you apply this. Apply it only if you are sure.</string>
+    <string name="shape_explicit_body_unknown">The largest single change is %1$s, and the corrections add up to %2$s. Check your measurements before you apply this. Apply it only if you are sure.</string>
+    <string name="shape_explicit_confirm">Apply correction</string>
+    <string name="shape_explicit_cancel">Check measurements first</string>
+
+    <!-- Names of measurements -->
+    <string name="shape_observation_wall">wall %1$d</string>
+    <string name="shape_observation_corner">angle at corner %1$d</string>
+    <string name="shape_observation_diagonal">diagonal from corner %1$d to corner %2$d</string>
+    <string name="shape_observation_diagonal_number">diagonal %1$d</string>
+
+    <!-- Recommendations and controllability -->
+    <string name="shape_recommend_diagonal">Measure the diagonal from corner %1$d to corner %2$d.</string>
+    <string name="shape_recommend_corner">Measure the angle at corner %1$d.</string>
+    <string name="shape_recommend_none">No single extra measurement would help.</string>
+    <string name="shape_uncontrolled_title">Measurements without a check</string>
+    <string name="shape_uncontrolled_item">Not checked: %1$s. An error here would go unnoticed. %2$s</string>
+    <string name="shape_action_add_diagonal">Add this diagonal</string>
+    <string name="shape_action_enter_angle">Enter this angle</string>
+
+    <!-- Status card -->
+    <string name="shape_status_confirmed">Shape confirmed</string>
+    <string name="shape_status_adjusted">Adjusted</string>
+    <string name="shape_status_unconfirmed">Shape not confirmed</string>
+    <string name="shape_status_conflict">Measurements conflict</string>
+    <string name="shape_status_area">%1$s m²</string>
+    <string name="shape_status_needs_adjustment">The room is almost closed. Largest correction: %1$s.</string>
+    <string name="shape_status_proposed_missing">Measurements are missing to fix the shape. The plan shows a proposal.</string>
+    <string name="shape_status_proposed_ambiguous">A second, different shape fits these measurements. The plan shows one of them.</string>
+    <string name="shape_status_proposed_correction">Largest correction in the proposal: %1$s.</string>
+    <string name="shape_status_failed">This room could not be evaluated. %1$s</string>
+    <string name="shape_action_adjust">Adjust</string>
+    <string name="shape_action_revert">Undo adjustment</string>
+
+    <string name="shape_conflict_wall_too_long">One wall is as long as all other walls together or longer. No room can have that shape. Check the longest wall.</string>
+    <string name="shape_conflict_diagonal_impossible">The diagonal from corner %1$d to corner %2$d is impossible with these walls. It is too long or too short. Change this measurement.</string>
+    <string name="shape_conflict_diagonal_impossible_unknown">A diagonal is impossible with these walls. It is too long or too short. Change this measurement.</string>
+    <string name="shape_conflict_no_simple_shape">These measurements give a room whose walls cross or touch. Check the directions and the lengths.</string>
+    <string name="shape_conflict_inconsistent">The measurements contradict each other by more than a measuring error. Most suspicious: %1$s.</string>
+    <string name="shape_conflict_inconsistent_unknown">The measurements contradict each other by more than a measuring error. Check them again.</string>
+    <string name="shape_conflict_not_converged">The measurements could not be balanced. Check the lengths, angles and diagonals.</string>
+    <string name="shape_conflict_turn_direction">The only shape that fits has a corner that turns the other way than entered. Check the left and right choices.</string>
+
+    <!-- Messages for rejected commands -->
+    <string name="error_with_field">%1$s %2$s</string>
+    <string name="error_field_wall_length">The wall length</string>
+    <string name="error_field_wall_thickness">The wall thickness</string>
+    <string name="error_field_corner_angle">The corner angle</string>
+    <string name="error_field_diagonal_length">The diagonal length</string>
+    <string name="error_field_opening_offset">The opening position</string>
+    <string name="error_field_opening_width">The opening width</string>
+    <string name="error_field_opening_height">The opening height</string>
+    <string name="error_field_sill_height">The sill height</string>
+    <string name="error_field_room_height">The room height</string>
+    <string name="error_field_area_factor">The area factor</string>
+    <string name="error_field_tolerance">The tolerance</string>
+    <string name="error_field_name">The name</string>
+    <string name="error_reason_malformed">is not a valid number.</string>
+    <string name="error_reason_too_small">is too small.</string>
+    <string name="error_reason_too_large">is too large.</string>
+    <string name="error_reason_not_representable">has too many decimal places.</string>
+    <string name="error_reason_not_applicable">does not apply here.</string>
+    <string name="error_corner_angle_range">The angle must be greater than 0° and at most 180°.</string>
+
+    <string name="error_not_found">%1$s was not found.</string>
+    <string name="error_entity_project">The project</string>
+    <string name="error_entity_room">The room</string>
+    <string name="error_entity_wall">The wall</string>
+    <string name="error_entity_corner">The corner</string>
+    <string name="error_entity_diagonal">The diagonal</string>
+    <string name="error_entity_opening">The opening</string>
+
+    <string name="error_rule_too_many_walls">This room has reached the maximum number of walls.</string>
+    <string name="error_rule_too_few_walls">The room needs at least three walls first.</string>
+    <string name="error_rule_room_already_closed">The room is already closed.</string>
+    <string name="error_rule_room_not_closed">Close the room first.</string>
+    <string name="error_rule_corner_must_be_specified">Only the closing corner may stay without an angle.</string>
+    <string name="error_rule_diagonal_invalid_corners">A diagonal must connect two different corners of the room.</string>
+    <string name="error_rule_opening_out_of_bounds">The opening does not fit on its wall.</string>
+    <string name="error_rule_opening_overlap">The opening overlaps another opening.</string>
+    <string name="error_rule_dock_cycle">These rooms cannot be docked to each other in a circle.</string>
+    <string name="error_rule_dock_opening_not_on_wall">That opening is not on the chosen wall.</string>
+    <string name="error_rule_adjustment_not_available">The proposal is out of date or no longer available. Review the room again.</string>
+    <string name="error_rule_duplicate_id">This element already exists.</string>
+    <string name="error_rule_dock_to_self">A room cannot be docked to itself.</string>
+    <string name="error_rule_no_wall_to_remove">There is no wall to remove.</string>
+    <string name="error_rule_wall_has_openings">Remove the openings of this wall first.</string>
+    <string name="error_rule_wall_has_docked_rooms">Release the rooms docked to this wall first.</string>
+    <string name="error_rule_corner_has_diagonals">Remove the diagonals at this corner first.</string>
+    <string name="error_rule_opening_has_docked_rooms">A room is docked to this opening. Release it before you move the opening.</string>
+    <string name="error_rule_explicit_confirmation_required">This is a large correction. Check your measurements and confirm it explicitly.</string>
+
+    <string name="error_document">The project file could not be read.</string>
+    <string name="error_storage_read">The project could not be read from the device.</string>
+    <string name="error_storage_write">The project could not be saved. Your changes are kept and saving can be tried again.</string>
+    <string name="error_storage_no_space">The device has no free space left.</string>
+    <string name="error_export">The export did not work.</string>
+</resources>
