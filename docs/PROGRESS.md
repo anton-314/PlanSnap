@@ -11,7 +11,7 @@
 | 1 – Umgebung | Fertig | `docs/ENVIRONMENT.md`, Emulator-Boot ausgeführt |
 | 2 – Spezifikation | Fertig | Vom Auftraggeber freigegeben am 2026-11-23 |
 | 3 – Fundament | Fertig | Gate 2026-11-24 auf `ebe15b1`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 381 JVM-Tests, Pitest Geometrie 82 %, 2 instrumentierte Tests, Review `APPROVE`. Vertragsfreeze, Tag `phase-3-foundation` |
-| 4 – Umsetzung | Wellen 1 und 2 fertig, Welle 3 läuft | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
+| 4 – Umsetzung | Wellen 1 und 2 fertig, Welle 3 läuft (Batch 3.3) | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
 | 5 – Härtung | Offen | |
 | 6 – Release | Offen | |
 | 7 – Abschlussbericht | Offen | |
@@ -99,16 +99,17 @@ Keine.
 - 2026-11-25: T-EDT-001 fertig (`cdb4366`, 29 Tests). Bestätigte Arbeit läuft in einer geordneten Warteschlange im `ApplicationScope`, Vorschauen über `collectLatest`, `AcceptAdjustment` wird vor dem Befehl neu ausgewertet. Teilfunktionen ergänzen `EditorHandler` per `@IntoSet`. T-EXP-003 fertig (`5411796`, `:core:export` 70 Tests, 96,4 %). PNG mit 200 dpi und Pixelgrenze 8 Mio. PDF über `PdfDocument` mit exaktem Maßstab, Kalibrierung per `PdfRenderer` im instrumentierten Test. Robolectric kann kein echtes `PdfDocument` schreiben.
 - 2026-11-25: Nachreview Welle 2 auf `4c5f514`: `APPROVE`. Der hohe Befund ist in allen Pfaden behoben (Befehle, Evaluator, Szene, Undo/Redo, Ausgleich). Probetest (a) und (b) stimmen überein, der Property-Generator unterscheidet die alte von der neuen Logik (7 von 43 Basen). Niedrige Hinweise stehen in T-EDT-005 und im Backlog.
 - 2026-11-25: CR-W3-01 an `architect`: `@ApplicationScope` ist in `:app` deklariert und für `:feature:editor` nicht sichtbar. T-EDT-001 braucht den Scope (ARCHITECTURE §5). Vorab für Batch 3.1: `lifecycle-runtime-compose`, `coroutines-test` und `turbine` in den Modulen editor, projects und settings, `activity-compose` in projects für den Import per SAF.
+- 2026-11-25: Neue Sitzung. Die übernommenen Worktrees und `integration-w3` sind entfernt. Der abgebrochene Stand von T-FEX-001 ist als WIP-Commit `1fc20e6` gesichert. `:feature:export` bekommt core-ktx (FileProvider), lifecycle-runtime-compose und die Testabhängigkeiten (`668149d`). Die Verdrahtung des Editor-Einstiegs übernimmt T-EDT-004, nicht der Orchestrator, weil sie in `feature/editor/…/navigation/` liegt und von den neuen Blättern abhängt. Die Exporter bindet T-FEX-001 in einem neuen `ExportersModule` in `:app`. Dafür hat der Orchestrator genau diese Datei freigegeben.
 
-## Wiedereinstieg (Stand 2026-11-25)
+## Wiedereinstieg (Stand 2026-11-25, Abend)
 
-- **Welle 2:** fertig, Tag `wave-2`, gepusht. CI-Ergebnis siehe Log.
-- **Integration Welle 3:** auf main gemergt (`209781f`), voller Build grün. Der Branch `integration-w3` im Worktree `../PlanSnap-int` kann weg. Stand vorher `7c9aadd`. Er enthält CR-W3-01, T-PRJ-001, T-SET-001, T-APP-002, T-EXP-002, CR-W3-02, T-EDT-001 und T-EXP-003, dazu den Integrations-Commit `32d596b`: Typ `ApplicationScope` im NavigationTest, `SceneBuilder` und `ExportPreflight` in `DomainModule` gebunden, `EditorSceneModule` entfernt. Voller Build ohne T-EXP-003 grün.
-- **Läuft** (Basis `7c9aadd`, Worktree-Branches `worktree-agent-*`): T-EDT-002 (`ui-engineer`, input/ und screen/EditorScreen mit Canvas-Slot), T-EDT-003 (`ui-engineer`, canvas/), T-FEX-001 (`ui-engineer`, feature/export, liefert DI-, Manifest- und FileProvider-Code für `:app`). Den Editor-Screen verdrahtet der Orchestrator beim Merge in `navigation/`.
-- **Offen für das nächste Gate:** Der instrumentierte `PdfExportInstrumentedTest` (T-EXP-003) lief noch nie, Schwellen ggf. anpassen. Die Exporter sind noch nicht in der DI gebunden (kommt mit T-FEX-001).
-- Entfernbare Worktrees (alle Inhalte übernommen): `agent-a6060eb82b04453d6`, `agent-aca7ce9d2b1f3f62c`, `agent-a42bb83f2e58fdaf8`, `agent-a09c0220a46258b35` sowie nach dem Merge der Integration die Worktrees von CR-W3-01, T-EXP-002, T-PRJ-001, T-SET-001, T-APP-002, CR-W3-02, T-EDT-001 und T-EXP-003.
+- **Welle 2:** fertig, Tag `wave-2`, gepusht. **Welle 3:** Batches 3.1 und 3.2 gemergt (T-EDT-002 `cf8cfbd`, T-EDT-003 `d2d3842`). Lokal liegt main vor `origin/main`. Gepusht wird erst nach Gate 3.
+- **Läuft, Batch 3.3** (Basis `668149d`, neue Worktrees starten per `git merge --ff-only`):
+  - T-FEX-001 (`ui-engineer`), Worktree `.claude/worktrees/agent-acee6e2b8c26a6c4d`, Branch `worktree-agent-acee6e2b8c26a6c4d`. Setzt den WIP-Stand `1fc20e6` des abgebrochenen Vorgängers fort (Branch `worktree-agent-aa27718540749198f`, kann nach dem Merge weg). Darf neu `app/.../di/ExportersModule.kt` anlegen und den Aufruf von `ExportEntry` im NavHost anpassen.
+  - T-EDT-004 (`ui-engineer`), Worktree `.claude/worktrees/agent-a42fc978de4fcda6a`, Branch `worktree-agent-a42fc978de4fcda6a`. Verdrahtet zusätzlich `EditorEntry` mit ViewModel, `EditorScreen` und `PlanCanvas` (feature/editor/…/navigation/).
+- **Offen für Gate 3:** `PdfExportInstrumentedTest` (T-EXP-003) lief noch nie, Schwellen ggf. anpassen. Danach Gate: Build mit Kover, Architektur und Roborazzi, Pitest, instrumentiert, Review, Tag `wave-3`, Push.
 
 ## Nächste Schritte
 
-1. Wellen-Gate 2 auswerten. Bei kritischen oder hohen Befunden Fix-Aufgaben anlegen. Sonst Tag `wave-2`, Push, CI prüfen.
-2. Welle 3, Batch 3.1: T-EDT-001, T-PRJ-001, T-SET-001, T-EXP-002.
+1. T-FEX-001 und T-EDT-004 übernehmen, dann Wellen-Gate 3.
+2. Welle 4, Batch 4.1: T-EDT-005 bis T-EDT-008.
