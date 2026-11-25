@@ -11,7 +11,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.Density
+import app.plansnap.core.common.units.Angle
+import app.plansnap.core.common.units.TurnDirection
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
+import app.plansnap.core.model.CornerSpec
 import app.plansnap.feature.editor.state.EditorUiState
 import com.github.takahirom.roborazzi.RoborazziOptions
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -56,11 +59,26 @@ class InputScreenshotTest {
     fun `given an empty room when shown then it matches the baseline`() =
         capture(editorState(), false, 1f, "input-empty.png")
 
+    @Test
+    fun `given a measured angle and three walls when shown then it matches the baseline`() =
+        capture(
+            editorState(input = "300", walls = 3)
+                .copy(nextCorner = CornerSpec.Measured(TurnDirection.RIGHT, Angle(75_500))),
+            false,
+            1f,
+            "input-measured-angle.png",
+        )
+
+    @Test
+    fun `given the extra keys when shown then they match the baseline`() =
+        capture(editorState(input = "300", walls = 3), false, 1f, "input-extra-keys.png", withExtraKeys = true)
+
     private fun capture(
         state: EditorUiState,
         darkTheme: Boolean,
         fontScale: Float,
         fileName: String,
+        withExtraKeys: Boolean = false,
     ) {
         composeRule.setContent {
             val density = LocalDensity.current
@@ -68,7 +86,16 @@ class InputScreenshotTest {
                 PlanSnapTheme(darkTheme = darkTheme) {
                     Surface {
                         Box(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-                            InputBar(state = state, onIntent = {})
+                            InputBar(
+                                state = state,
+                                onIntent = {},
+                                extraKeys =
+                                    if (withExtraKeys) {
+                                        listOf(ExtraKey("D", "Wall thickness") {}, ExtraKey("Diag", "Add diagonal") {})
+                                    } else {
+                                        emptyList()
+                                    },
+                            )
                         }
                     }
                 }

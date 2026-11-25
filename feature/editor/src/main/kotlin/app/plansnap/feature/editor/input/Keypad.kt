@@ -60,10 +60,12 @@ data class ExtraKey(
  *
  * @property onKey called for a key that edits the input text.
  * @property onConfirm called for `OK`.
+ * @property confirmDescription spoken label of `OK` if it confirms something other than a wall, `null` for a wall.
  */
 internal class KeypadActions(
     val onKey: (KeypadKey) -> Unit,
     val onConfirm: () -> Unit,
+    val confirmDescription: String? = null,
 )
 
 /**
@@ -104,6 +106,7 @@ internal fun Keypad(
             SeparatorKey(separator, enabled) { onKey(KeypadKey.Separator) }
             DigitKey(0, enabled, onKey)
             ConfirmKey(
+                description = actions.confirmDescription ?: stringResource(R.string.input_key_confirm),
                 enabled = enabled && canConfirm,
                 modifier = Modifier.weight(2f).fillMaxHeight(),
             ) {
@@ -187,11 +190,11 @@ private fun RowScope.ExtraKeyCell(
 
 @Composable
 private fun ConfirmKey(
+    description: String,
     enabled: Boolean,
     modifier: Modifier,
     onClick: () -> Unit,
 ) {
-    val description = stringResource(R.string.input_key_confirm)
     Button(
         onClick = onClick,
         enabled = enabled,

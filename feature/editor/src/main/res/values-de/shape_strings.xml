@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tasten der Eingabeleiste -->
+    <string name="input_key_angle_label">∠</string>
+    <string name="input_key_angle">Eckenwinkel eingeben</string>
+    <string name="input_key_angle_set">Eckenwinkel %1$s Grad, ändern</string>
+    <string name="input_key_thickness_label">D</string>
+    <string name="input_key_thickness">Wandstärke</string>
+    <string name="input_key_diagonal_label">Diag</string>
+    <string name="input_key_diagonal">Diagonale hinzufügen</string>
+    <string name="input_key_close_label">Schließen</string>
+    <string name="input_key_close">Raum schließen</string>
+
+    <!-- Blätter -->
+    <string name="shape_sheet_dismiss">Blatt schließen</string>
+    <string name="shape_sheet_apply_for">%1$s übernehmen</string>
+    <string name="shape_sheet_cancel">Abbrechen</string>
+    <string name="shape_sheet_value_empty">Wert eingeben</string>
+    <string name="shape_sheet_value_spoken">%1$s, %2$s</string>
+
+    <string name="shape_corner_title">Eckenwinkel</string>
+    <string name="shape_corner_target_next">Ecke vor Wand %1$d</string>
+    <string name="shape_corner_target_existing">Ecke %1$d</string>
+    <string name="shape_corner_hint">Winkel zwischen den beiden Wänden, von 0° bis 180°. Ein rechter Winkel hat 90°.</string>
+    <string name="shape_corner_unit">°</string>
+    <string name="shape_corner_unit_spoken">Grad</string>
+
+    <string name="shape_diagonal_title">Diagonale</string>
+    <string name="shape_diagonal_hint">Messen Sie die gerade Linie zwischen zwei Ecken. Sie prüft die Form des Raums.</string>
+    <string name="shape_diagonal_from">Von Ecke</string>
+    <string name="shape_diagonal_to">Bis Ecke</string>
+    <string name="shape_diagonal_corner">Ecke %1$d</string>
+
+    <string name="shape_thickness_title">Wandstärke</string>
+    <string name="shape_thickness_hint">Gilt für die nächste Wand. Sie wächst nach außen und ändert die Fläche des Raums nie.</string>
+
+    <string name="shape_adjust_title">Maße ausgleichen</string>
+    <string name="shape_adjust_hint">Die Maße schließen nicht exakt. Die App schlägt kleine Korrekturen vor. Ihre eingegebenen Werte bleiben unverändert, und Sie können den Ausgleich zurücknehmen.</string>
+    <string name="shape_adjust_largest">Größte Korrektur: %1$s (%2$s)</string>
+    <string name="shape_adjust_largest_unknown">Größte Korrektur: %1$s</string>
+    <string name="shape_adjust_sum">Korrekturen insgesamt: %1$s</string>
+    <string name="shape_adjust_apply">Ausgleich übernehmen</string>
+    <string name="shape_adjust_review">Große Korrektur prüfen</string>
+    <string name="shape_adjust_explicit_note">Diese Korrektur ist groß. Sie müssen sie gesondert bestätigen.</string>
+
+    <string name="shape_explicit_title">Große Korrektur übernehmen?</string>
+    <string name="shape_explicit_body">Die größte Einzeländerung beträgt %1$s (%2$s), die Korrekturen summieren sich auf %3$s. Prüfen Sie Ihre Maße, bevor Sie das übernehmen. Übernehmen Sie nur, wenn Sie sicher sind.</string>
+    <string name="shape_explicit_body_unknown">Die größte Einzeländerung beträgt %1$s, die Korrekturen summieren sich auf %2$s. Prüfen Sie Ihre Maße, bevor Sie das übernehmen. Übernehmen Sie nur, wenn Sie sicher sind.</string>
+    <string name="shape_explicit_confirm">Korrektur übernehmen</string>
+    <string name="shape_explicit_cancel">Erst Maße prüfen</string>
+
+    <!-- Namen von Messungen -->
+    <string name="shape_observation_wall">Wand %1$d</string>
+    <string name="shape_observation_corner">Winkel an Ecke %1$d</string>
+    <string name="shape_observation_diagonal">Diagonale von Ecke %1$d nach Ecke %2$d</string>
+    <string name="shape_observation_diagonal_number">Diagonale %1$d</string>
+
+    <!-- Empfehlungen und Kontrollierbarkeit -->
+    <string name="shape_recommend_diagonal">Messen Sie die Diagonale von Ecke %1$d nach Ecke %2$d.</string>
+    <string name="shape_recommend_corner">Messen Sie den Winkel an Ecke %1$d.</string>
+    <string name="shape_recommend_none">Kein einzelnes Zusatzmaß würde helfen.</string>
+    <string name="shape_uncontrolled_title">Messungen ohne Gegenprobe</string>
+    <string name="shape_uncontrolled_item">Nicht kontrolliert: %1$s. Ein Fehler bliebe hier unbemerkt. %2$s</string>
+    <string name="shape_action_add_diagonal">Diese Diagonale eintragen</string>
+    <string name="shape_action_enter_angle">Diesen Winkel eintragen</string>
+
+    <!-- Statuskarte -->
+    <string name="shape_status_confirmed">Form bestätigt</string>
+    <string name="shape_status_adjusted">Ausgeglichen</string>
+    <string name="shape_status_unconfirmed">Form nicht bestätigt</string>
+    <string name="shape_status_conflict">Maße widersprüchlich</string>
+    <string name="shape_status_area">%1$s m²</string>
+    <string name="shape_status_needs_adjustment">Der Raum schließt fast. Größte Korrektur: %1$s.</string>
+    <string name="shape_status_proposed_missing">Es fehlen Maße, um die Form festzulegen. Der Plan zeigt einen Vorschlag.</string>
+    <string name="shape_status_proposed_ambiguous">Eine zweite, andere Form passt zu diesen Maßen. Der Plan zeigt eine davon.</string>
+    <string name="shape_status_proposed_correction">Größte Korrektur im Vorschlag: %1$s.</string>
+    <string name="shape_status_failed">Dieser Raum konnte nicht ausgewertet werden. %1$s</string>
+    <string name="shape_action_adjust">Ausgleichen</string>
+    <string name="shape_action_revert">Ausgleich zurücknehmen</string>
+
+    <string name="shape_conflict_wall_too_long">Eine Wand ist so lang wie alle anderen zusammen oder länger. So ein Raum ist nicht möglich. Prüfen Sie die längste Wand.</string>
+    <string name="shape_conflict_diagonal_impossible">Die Diagonale von Ecke %1$d nach Ecke %2$d ist mit diesen Wänden unmöglich. Sie ist zu lang oder zu kurz. Ändern Sie dieses Maß.</string>
+    <string name="shape_conflict_diagonal_impossible_unknown">Eine Diagonale ist mit diesen Wänden unmöglich. Sie ist zu lang oder zu kurz. Ändern Sie dieses Maß.</string>
+    <string name="shape_conflict_no_simple_shape">Diese Maße ergeben einen Raum, dessen Wände sich kreuzen oder berühren. Prüfen Sie Richtungen und Längen.</string>
+    <string name="shape_conflict_inconsistent">Die Maße widersprechen sich um mehr als einen Messfehler. Am verdächtigsten: %1$s.</string>
+    <string name="shape_conflict_inconsistent_unknown">Die Maße widersprechen sich um mehr als einen Messfehler. Prüfen Sie sie noch einmal.</string>
+    <string name="shape_conflict_not_converged">Die Maße ließen sich nicht ausgleichen. Prüfen Sie Längen, Winkel und Diagonalen.</string>
+    <string name="shape_conflict_turn_direction">Die einzige passende Form hat eine Ecke, die andersherum dreht als eingegeben. Prüfen Sie die Wahl von Links und Rechts.</string>
+
+    <!-- Meldungen für abgelehnte Befehle -->
+    <string name="error_with_field">%1$s %2$s</string>
+    <string name="error_field_wall_length">Die Wandlänge</string>
+    <string name="error_field_wall_thickness">Die Wandstärke</string>
+    <string name="error_field_corner_angle">Der Eckenwinkel</string>
+    <string name="error_field_diagonal_length">Die Diagonale</string>
+    <string name="error_field_opening_offset">Die Position der Öffnung</string>
+    <string name="error_field_opening_width">Die Breite der Öffnung</string>
+    <string name="error_field_opening_height">Die Höhe der Öffnung</string>
+    <string name="error_field_sill_height">Die Brüstungshöhe</string>
+    <string name="error_field_room_height">Die Raumhöhe</string>
+    <string name="error_field_area_factor">Der Flächenfaktor</string>
+    <string name="error_field_tolerance">Die Toleranz</string>
+    <string name="error_field_name">Der Name</string>
+    <string name="error_reason_malformed">ist keine gültige Zahl.</string>
+    <string name="error_reason_too_small">ist zu klein.</string>
+    <string name="error_reason_too_large">ist zu groß.</string>
+    <string name="error_reason_not_representable">hat zu viele Nachkommastellen.</string>
+    <string name="error_reason_not_applicable">gilt hier nicht.</string>
+    <string name="error_corner_angle_range">Der Winkel muss größer als 0° und höchstens 180° sein.</string>
+
+    <string name="error_not_found">%1$s wurde nicht gefunden.</string>
+    <string name="error_entity_project">Das Projekt</string>
+    <string name="error_entity_room">Der Raum</string>
+    <string name="error_entity_wall">Die Wand</string>
+    <string name="error_entity_corner">Die Ecke</string>
+    <string name="error_entity_diagonal">Die Diagonale</string>
+    <string name="error_entity_opening">Die Öffnung</string>
+
+    <string name="error_rule_too_many_walls">Dieser Raum hat die maximale Wandanzahl erreicht.</string>
+    <string name="error_rule_too_few_walls">Der Raum braucht zuerst mindestens drei Wände.</string>
+    <string name="error_rule_room_already_closed">Der Raum ist schon geschlossen.</string>
+    <string name="error_rule_room_not_closed">Schließen Sie zuerst den Raum.</string>
+    <string name="error_rule_corner_must_be_specified">Nur die Schlussecke darf ohne Winkel bleiben.</string>
+    <string name="error_rule_diagonal_invalid_corners">Eine Diagonale muss zwei verschiedene Ecken des Raums verbinden.</string>
+    <string name="error_rule_opening_out_of_bounds">Die Öffnung passt nicht auf ihre Wand.</string>
+    <string name="error_rule_opening_overlap">Die Öffnung überlappt eine andere Öffnung.</string>
+    <string name="error_rule_dock_cycle">Diese Räume lassen sich nicht im Kreis aneinander andocken.</string>
+    <string name="error_rule_dock_opening_not_on_wall">Diese Öffnung liegt nicht an der gewählten Wand.</string>
+    <string name="error_rule_adjustment_not_available">Der Vorschlag ist veraltet oder nicht mehr verfügbar. Prüfen Sie den Raum noch einmal.</string>
+    <string name="error_rule_duplicate_id">Dieses Element gibt es schon.</string>
+    <string name="error_rule_dock_to_self">Ein Raum lässt sich nicht an sich selbst andocken.</string>
+    <string name="error_rule_no_wall_to_remove">Es gibt keine Wand zum Entfernen.</string>
+    <string name="error_rule_wall_has_openings">Entfernen Sie zuerst die Öffnungen dieser Wand.</string>
+    <string name="error_rule_wall_has_docked_rooms">Lösen Sie zuerst die an diese Wand angedockten Räume.</string>
+    <string name="error_rule_corner_has_diagonals">Entfernen Sie zuerst die Diagonalen an dieser Ecke.</string>
+    <string name="error_rule_opening_has_docked_rooms">An dieser Öffnung ist ein Raum angedockt. Lösen Sie ihn, bevor Sie die Öffnung verschieben.</string>
+    <string name="error_rule_explicit_confirmation_required">Das ist eine große Korrektur. Prüfen Sie Ihre Maße und bestätigen Sie sie ausdrücklich.</string>
+
+    <string name="error_document">Die Projektdatei konnte nicht gelesen werden.</string>
+    <string name="error_storage_read">Das Projekt konnte nicht vom Gerät gelesen werden.</string>
+    <string name="error_storage_write">Das Projekt konnte nicht gespeichert werden. Ihre Änderungen bleiben erhalten, und das Speichern lässt sich erneut versuchen.</string>
+    <string name="error_storage_no_space">Auf dem Gerät ist kein Speicherplatz mehr frei.</string>
+    <string name="error_export">Der Export hat nicht funktioniert.</string>
+</resources>

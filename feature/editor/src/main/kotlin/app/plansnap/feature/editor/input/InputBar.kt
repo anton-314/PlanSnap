@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.plansnap.core.common.result.DomainError
+import app.plansnap.core.common.units.DecimalAngleFormatter
 import app.plansnap.core.common.units.DecimalLengthFormatter
 import app.plansnap.core.common.units.LengthUnit
 import app.plansnap.core.common.units.TurnDirection
@@ -38,6 +39,8 @@ import app.plansnap.core.designsystem.component.PlanSnapIcons
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.model.CornerSpec
 import app.plansnap.feature.editor.R
+import app.plansnap.feature.editor.shape.CornerTarget
+import app.plansnap.feature.editor.shape.ShapeIntent
 import app.plansnap.feature.editor.state.CoreIntent
 import app.plansnap.feature.editor.state.EditorIntent
 import app.plansnap.feature.editor.state.EditorLoadState
@@ -45,6 +48,9 @@ import app.plansnap.feature.editor.state.EditorUiState
 import java.text.DecimalFormatSymbols
 import java.util.Locale
 import androidx.compose.ui.text.intl.Locale as ComposeLocale
+
+private const val MIN_WALLS_TO_CLOSE = 3
+private const val ANGLE_KEY_WEIGHT = 0.8f
 
 /**
  * Input bar at the bottom of the editor (UX sections 2 and 3): the live value of the wall being typed, the error
@@ -84,7 +90,17 @@ fun InputBar(
             selected = state.nextCorner.direction,
             enabled = open,
             onSelect = { onIntent(CoreIntent.SetNextCorner(CornerSpec.DeclaredRight(it))) },
-        )
+        ) {
+            AngleButton(
+                corner = state.nextCorner,
+                enabled = open && room?.walls?.isNotEmpty() == true,
+                locale = locale,
+                onClick = { onIntent(ShapeIntent.OpenCorner(CornerTarget.Next)) },
+            )
+        }
+        if (open && room != null && room.walls.size >= MIN_WALLS_TO_CLOSE) {
+            CloseButton(onClick = { onIntent(ShapeIntent.CloseRoom) })
+        }
         Keypad(
             separator = separator,
             enabled = open,
@@ -181,11 +197,16 @@ private fun InputError(error: DomainError) {
     }
 }
 
+/**
+ * The choice of the direction of the next wall: left and right, followed by [trailing], which sub-functions use for
+ * further corner keys such as the angle.
+ */
 @Composable
-private fun CornerChoice(
+internal fun CornerChoice(
     selected: TurnDirection?,
     enabled: Boolean,
     onSelect: (TurnDirection) -> Unit,
+    trailing: @Composable RowScope.() -> Unit = {},
 ) {
     val group = stringResource(R.string.input_corner_group)
     Row(
@@ -211,6 +232,54 @@ private fun CornerChoice(
             enabled = enabled,
             onClick = { onSelect(TurnDirection.RIGHT) },
         )
+        trailing()
+    }
+}
+
+@Composable
+private fun RowScope.AngleButton(
+    corner: CornerSpec,
+    enabled: Boolean,
+    locale: Locale,
+    onClick: () -> Unit,
+) {
+    val measured = corner as? CornerSpec.Measured
+    val degrees = measured?.let { DecimalAngleFormatter.format(it.angle, locale) }
+    val description =
+        if (degrees == null) {
+            stringResource(R.string.input_key_angle)
+        } else {
+            stringResource(R.string.input_key_angle_set, degrees)
+        }
+    val label = stringResource(R.string.input_key_angle_label) + if (degrees == null) "" else " $degrees°"
+    val modifier =
+        Modifier
+            .weight(ANGLE_KEY_WEIGHT)
+            .fillMaxHeight()
+            .sizeIn(minWidth = PlanSnapTheme.sizes.numericKey, minHeight = PlanSnapTheme.sizes.numericKey)
+            .semantics { contentDescription = description }
+    val content: @Composable RowScope.() -> Unit =
+        { Text(text = label, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center) }
+    if (measured == null) {
+        OutlinedButton(onClick = onClick, enabled = enabled, modifier = modifier, content = content)
+    } else {
+        Button(onClick = onClick, enabled = enabled, modifier = modifier, content = content)
+    }
+}
+
+@Composable
+private fun CloseButton(onClick: () -> Unit) {
+    val description = stringResource(R.string.input_key_close)
+    OutlinedButton(
+        onClick = onClick,
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .sizeIn(minHeight = PlanSnapTheme.sizes.numericKey)
+                .semantics { contentDescription = description },
+    ) {
+        Icon(imageVector = PlanSnapIcons.Check, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
+        Text(text = stringResource(R.string.input_key_close_label), textAlign = TextAlign.Center)
     }
 }
 
