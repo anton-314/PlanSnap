@@ -89,7 +89,7 @@ Keine.
 - **Welle 2 gemergt:** T-DOM-001, T-DOM-002, T-DOM-003, T-DOM-005, T-DOM-006, T-DRW-002, CR-W2-01, CR-W2-02, CR-W2-03, T-DOM-004, T-DOM-007, T-DRW-001, T-GEO-009, T-EXP-001, Build-Setup T-APP-001.
 - **Welle 2 laufend** (je eigener Worktree unter `.claude/worktrees/agent-*`, Branch `worktree-agent-*`):
   - CR-W2-04, Plotteil (`architect`): zweiter Commit auf `a338ede` und `2add1c0`. Der erste Commit ist schon gemergt (`71a32b4`), nur den neuen übernehmen.
-  - T-RND-001 (Canvas-Renderer), Basis siehe nächster Commit.
+  - T-RND-001 (Canvas-Renderer), Basis `c4aae29`.
   - T-APP-001 (Navigation und DI), gleiche Basis.
 - Vor dem Fortsetzen je Worktree `git -C <worktree> status` und `git log main..<branch>` prüfen. Fertige Commits übernehmen. Sonst einen neuen Agenten auf dem Worktree-Stand starten.
 
