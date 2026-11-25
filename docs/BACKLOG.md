@@ -43,4 +43,6 @@
 - Editor und Export lesen beim Öffnen das Repository, während ein Job im ApplicationScope noch speichert. Das kann einen veralteten Stand ergeben, und der nächste Speichervorgang überschreibt dann die letzte Wand. Laden soll auf den Saver warten (Gate-Review Welle 3, N4). Mit T-EDT-008 oder in Phase 5 umsetzen.
 - Szene: Maßbeschriftungen benachbarter Räume überlappen (`canvas-rooms.png`, Gate-Review Welle 3, N6).
 - Export: Prozess-Tod während eines laufenden Exports wird nicht wiederhergestellt (aus T-FEX-002).
-- Editor: Die Statuskarte bei wenig Planhöhe (360 × 640 dp oder 200 % Schrift) als einzeilige Kopfzeile einklappen, aufklappbar. Bisher sind es 64 dp mit Scrollen (aus T-EDT-011, `shape/`).
+- Editor: Hat der Nutzer schon weitergetippt, als eine Wand abgelehnt wird, geht deren Wert verloren (`EditorSession.kt:162`). Den abgelehnten Wert in der Fehlermeldung nennen (Nachreview Welle 3, N1).
+- Export: `onDocumentChosen` bedient eine zurückgestellte URI nicht, wenn das Laden schon mit `Failed` oder `Empty` geendet hat oder `fit == Checking` ist. Ohne Ergebnis nach der Wiederherstellung bleibt `awaitingDocument` gesetzt. Fix über `serveDeferredDocument` bzw. `previewJob?.join()` (Nachreview Welle 3, N2).
+- Editor: Die Tasten `D` und `Diag` skalieren bei 200 % Schrift nicht mit und sind sichtbar kleiner (Nachreview Welle 3, Nit).

@@ -1,6 +1,6 @@
 # Fortschritt
 
-**Aktuelle Phase:** 4 – Umsetzung, Welle 3
+**Aktuelle Phase:** 4 – Umsetzung, Welle 4
 **Letzte Aktualisierung:** 2026-11-25
 
 ## Phasen
@@ -11,7 +11,7 @@
 | 1 – Umgebung | Fertig | `docs/ENVIRONMENT.md`, Emulator-Boot ausgeführt |
 | 2 – Spezifikation | Fertig | Vom Auftraggeber freigegeben am 2026-11-23 |
 | 3 – Fundament | Fertig | Gate 2026-11-24 auf `ebe15b1`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 381 JVM-Tests, Pitest Geometrie 82 %, 2 instrumentierte Tests, Review `APPROVE`. Vertragsfreeze, Tag `phase-3-foundation` |
-| 4 – Umsetzung | Wellen 1 und 2 fertig, Welle 3 läuft (Batch 3.3) | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
+| 4 – Umsetzung | Wellen 1 bis 3 fertig, Welle 4 als Nächstes | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
 | 5 – Härtung | Offen | |
 | 6 – Release | Offen | |
 | 7 – Abschlussbericht | Offen | |
@@ -108,23 +108,16 @@ Keine.
 - 2026-11-25: T-EDT-010 gemergt (`002c67a`, `:feature:editor` 223 Tests). H1: `CoreIntent.AcceptAdjustment` trägt den angezeigten Vorschlag. Der Runner reicht ihn unverändert an `ProjectEdit.AcceptAdjustment` weiter, `verify` lehnt Veraltetes mit `ADJUSTMENT_NOT_AVAILABLE` ab. Die Neuauswertung dient nur noch der Fehlermeldung. M1: Die Eingabe wird beim Einreihen geleert und kommt bei Ablehnung zurück. M4: `SavedStateHandle` schreibt eine konflationierte Schleife im Screen-Scope auf Main. Vier Regressionstests (SIMPLE, EXPLICIT, doppeltes OK, Handle-Thread) waren vor dem Fix rot.
 - 2026-11-25: T-EDT-011 gemergt (`ec9dc41`, `:feature:editor` 233 Tests, 8 neue Layout-Baselines bei 360 × 640 und 360 × 740 dp). `Schließen` steht neben der Anzeige, die Leiste ist verdichtet und braucht 400 dp. OK ist in beiden Höhen bei 100 % Schrift voll sichtbar, mit und ohne Statuskarte, per Bounds-Test belegt. Bei 200 % Schrift scrollt die Leiste. **Entscheidung:** Das „ca. 50 %“ für den Plan aus UX §2 ist mit Tasten ab 56 dp (REQ-UX-001) nicht erreichbar. Der Eingabebereich hat Vorrang, der Plan bekommt den Rest mit mindestens 96 dp, die Statuskarte höchstens 35 % der Planfläche. UX §2 ist entsprechend angepasst. Backlog: Statuskarte bei wenig Höhe einzeilig einklappen (T-EDT-007 oder T-UX-001), Top-Bar-Titel bei 200 % Schrift (steht schon im Backlog).
 - 2026-11-26: Auf Wunsch des Nutzers gibt es eine Debug-APK zum Ansehen (`fee05ca`, 14,9 MB) im Windows-Download-Ordner. Das ist eine bewusste Ausnahme von „keine Zwischen-APKs“.
+- 2026-11-26: **Wellen-Gate 3 bestanden** auf `b53c9cb`. Build mit Kover, Architektur und Roborazzi grün, 2 140 JVM-Tests ohne Fehler. Pitest Geometrie 86 % (1 658 von 1 927). Instrumentiert 11 von 11, davon 8 PDF-Kalibrierungstests. Nachreview `APPROVE`: H1, M1 bis M4, N2 und N5 behoben, belegt durch Revert-Proben. Neu und mittel, nicht blockierend: Die Statuskarte zeigt bei 200 % Schrift im sichtbaren Bereich nichts, kommt als T-EDT-012 in Batch 4.1. N1, N2 und Nits stehen im Backlog. N3 hat der Orchestrator behoben: Eine `.pyc`-Datei war versehentlich eingecheckt, `.gitignore` deckt Python-Caches jetzt ab. Tag `wave-3`.
 
-## Wiedereinstieg (Stand 2026-11-25, Abend)
+## Wiedereinstieg (Stand 2026-11-26)
 
-- **Welle 2:** fertig, Tag `wave-2`, gepusht. **Welle 3:** Batches 3.1 und 3.2 gemergt (T-EDT-002 `cf8cfbd`, T-EDT-003 `d2d3842`). Lokal liegt main vor `origin/main`. Gepusht wird erst nach Gate 3.
-- **Läuft, Batch 3.3** (Basis `668149d`, neue Worktrees starten per `git merge --ff-only`):
-  - T-FEX-001: gemergt (`b0b3d83`), Worktrees entfernt.
-  - T-EDT-004: gemergt (`a475848`, Testfix `4e5152d`), Worktree entfernt.
-- **Wellen-Gate 3 auf `434ac37`:** Build grün (2 117 JVM-Tests). Review `CHANGES_REQUESTED` (H1, M1 bis M4). Pitest auf `434ac37`: 86 % (1 658 von 1 927), unverändert, weil sich `:core:geometry` in Welle 3 nicht geändert hat.
-- **Läuft, Batch 3.4 (Gate-Fix)**, Basis `c55d485`:
-  - T-EDT-010: gemergt (`002c67a`), Worktree entfernt.
-  - T-EDT-011: gemergt (`ec9dc41`), Worktree entfernt.
-  - T-FEX-002: gemergt (`816ee14`), Worktree entfernt.
-  - Branches jeweils `worktree-<Name>`. Die Probetests des Reviewers liegen nur im Scratchpad und gehen in T-EDT-010 auf.
-- **Gate 3, zweiter Lauf auf `b53c9cb`:** Build grün (2 140 JVM-Tests, 0 Fehler), instrumentiert 11 von 11. Das Nachreview läuft (`reviewer`, Worktree `.claude/worktrees/agent-a2aa61a7ee987e4cf`). Bei `APPROVE` folgen Tag `wave-3`, Push und CI-Prüfung.
-- **Vorab:** `PdfExportInstrumentedTest` läuft auf `da14d37` grün (instrumentiert 11 von 11, davon 8 PDF). Gate: Build mit Kover, Architektur und Roborazzi, Pitest, instrumentiert, Review, Tag `wave-3`, Push.
+- **Welle 3:** fertig, Tag `wave-3`, gepusht. CI-Ergebnis siehe Log.
+- **Keine laufenden Agenten.** Bis auf `main` sind keine Worktrees oder Branches offen.
+- **Als Nächstes:** Welle 4, Batch 4.1: T-EDT-005, T-EDT-006, T-EDT-007, T-EDT-008, T-EDT-012. Höchstens 4 Agenten gleichzeitig. Vor dem Start die Besitzbereiche prüfen: Alle liegen in `:feature:editor` in getrennten Unterpaketen. Gemeinsame Einhängepunkte (`navigation/EditorNavigation.kt`, `EditorActions`) vergibt der Orchestrator je Batch an genau einen Agenten oder verdrahtet sie selbst beim Merge.
+- Dem Nutzer wurde eine Debug-APK zur Ansicht in den Windows-Download-Ordner gelegt (`fee05ca`).
 
 ## Nächste Schritte
 
-1. Batch 3.4 übernehmen, Gate 3 wiederholen, Nachreview, Tag `wave-3`, Push, CI prüfen.
-2. Welle 4, Batch 4.1: T-EDT-005 bis T-EDT-008.
+1. Welle 4, Batch 4.1: T-EDT-005 bis T-EDT-008, T-EDT-012.
+2. Batch 4.2: T-EDT-009, T-UX-001, danach Wellen-Gate 4.

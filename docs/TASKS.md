@@ -40,7 +40,7 @@ graph LR
 | Welle 3 / 3.2 | T-EDT-002, T-EDT-003, T-EXP-003 |
 | Welle 3 / 3.3 | T-EDT-004, T-FEX-001 |
 | Welle 3 / 3.4 (Gate-Fix) | T-EDT-010, T-EDT-011, T-FEX-002 |
-| Welle 4 / 4.1 | T-EDT-005, T-EDT-006, T-EDT-007, T-EDT-008 |
+| Welle 4 / 4.1 | T-EDT-005, T-EDT-006, T-EDT-007, T-EDT-008, T-EDT-012 |
 | Welle 4 / 4.2 | T-EDT-009, T-UX-001 |
 | Welle 5 / 5.1 | T-A11-001, T-L10-001, T-UX-002, T-PRF-001 |
 | Phase 5 / H.1 | T-E2E-001, T-SEC-001 |
@@ -763,6 +763,17 @@ graph LR
 - **Vertrag:** DOMAIN §11
 - **Akzeptanzkriterien:** Tasten mit korrektem Aktivzustand. Undo und Redo aktualisieren Plan und Speicher. Anforderungen: REQ-UX-005
 - **Tests:** ViewModel, Compose-UI
+
+#### T-EDT-012 – Statuskarte bei großer Schrift und wenig Höhe
+
+- **Modul:** :feature:editor
+- **Rolle/Modell:** ui-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-EDT-004, T-EDT-011
+- **Besitzbereich:** `feature/editor/…/shape/` (nur `ShapeStatusCard` und Tests). Die Höhenregeln in `navigation/` dürfen in Absprache mit dem Orchestrator angepasst werden.
+- **Vertrag:** UX §2
+- **Akzeptanzkriterien:** Bei 200 % Schrift und bei 360 × 640 dp zeigt die Statuskarte im sichtbaren Bereich Status, Name und Fläche lesbar an, ohne leeren Bereich (Nachreview Welle 3, M-neu-1: `StatusRow` ohne Gewichte, Badge bricht um). Die Karte klappt bei wenig Höhe zu einer einzeiligen Kopfzeile ein und lässt sich aufklappen. Der Test prüft die 35-%-Grenze exakt, nicht `slot/2`. Die Layout-Baselines enthalten eine echte Szene.
+- **Tests:** Roborazzi (`layout-*-card*` mit Szene), Compose-Test für Einklappen und Aufklappen
 
 ### Batch 4.2
 
