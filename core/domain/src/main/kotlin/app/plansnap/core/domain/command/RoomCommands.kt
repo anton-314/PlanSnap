@@ -4,6 +4,7 @@ import app.plansnap.core.common.result.DomainError
 import app.plansnap.core.common.result.DomainResult
 import app.plansnap.core.common.result.DomainRule
 import app.plansnap.core.common.result.EntityKind
+import app.plansnap.core.domain.placement.DockTopology
 import app.plansnap.core.model.DockLink
 import app.plansnap.core.model.Project
 import app.plansnap.core.model.Room
@@ -67,26 +68,16 @@ internal fun dockRoom(
         dockError(project, room, edit.link).otherwise { room.copy(placement = room.placement.copy(dock = edit.link)) }
     }
 
-/** Checks [link] of [room], which must be part of [project], in the order of DOMAIN section 10. */
+/**
+ * Checks [link] of [room], which must be part of [project], in the order of DOMAIN section 10, then for a cycle.
+ */
 private fun dockError(
     project: Project,
     room: Room,
     link: DockLink,
-): DomainError? {
-    val host = project.rooms.firstOrNull { it.id == link.hostRoomId }
-    val openingId = link.hostOpeningId
-    val hostOpening = host?.openings?.firstOrNull { it.id == openingId }
-    return when {
-        link.hostRoomId == room.id -> rule(DomainRule.DOCK_TO_SELF)
-        host == null -> notFound(EntityKind.ROOM, link.hostRoomId.value)
-        host.walls.none { it.id == link.hostWallId } -> notFound(EntityKind.WALL, link.hostWallId.value)
-        room.walls.none { it.id == link.ownWallId } -> notFound(EntityKind.WALL, link.ownWallId.value)
-        openingId != null && hostOpening == null -> notFound(EntityKind.OPENING, openingId.value)
-        hostOpening != null && hostOpening.wallId != link.hostWallId -> rule(DomainRule.DOCK_OPENING_NOT_ON_WALL)
-        project.hostChainReaches(link.hostRoomId, room.id) -> rule(DomainRule.DOCK_CYCLE)
-        else -> null
-    }
-}
+): DomainError? =
+    DockTopology.linkError(project, room, link)
+        ?: if (project.hostChainReaches(link.hostRoomId, room.id)) rule(DomainRule.DOCK_CYCLE) else null
 
 /** Whether following the dock links upwards from [start] reaches [target]. Bounded, so it ends on any input. */
 private fun Project.hostChainReaches(
