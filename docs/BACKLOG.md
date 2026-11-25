@@ -42,3 +42,4 @@
 - Export: `NO_SPACE` wird beim Schreiben nie gemeldet, `PageExportFlow` und `JsonExporter` machen aus jeder `IOException` `WRITE_FAILED` (Gate-Review Welle 3, N3).
 - Editor und Export lesen beim Öffnen das Repository, während ein Job im ApplicationScope noch speichert. Das kann einen veralteten Stand ergeben, und der nächste Speichervorgang überschreibt dann die letzte Wand. Laden soll auf den Saver warten (Gate-Review Welle 3, N4). Mit T-EDT-008 oder in Phase 5 umsetzen.
 - Szene: Maßbeschriftungen benachbarter Räume überlappen (`canvas-rooms.png`, Gate-Review Welle 3, N6).
+- Export: Prozess-Tod während eines laufenden Exports wird nicht wiederhergestellt (aus T-FEX-002).
