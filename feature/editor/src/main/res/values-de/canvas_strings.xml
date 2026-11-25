@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="canvas_description_empty">Grundriss, leer</string>
+    <string name="canvas_description">Grundriss mit %1$s und %2$s</string>
+    <plurals name="canvas_rooms">
+        <item quantity="one">%d Raum</item>
+        <item quantity="other">%d Räumen</item>
+    </plurals>
+    <plurals name="canvas_walls">
+        <item quantity="one">%d Wand</item>
+        <item quantity="other">%d Wänden</item>
+    </plurals>
+    <string name="canvas_action_fit">Plan einpassen</string>
+</resources>
