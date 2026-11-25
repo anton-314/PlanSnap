@@ -1,48 +1,41 @@
 package app.plansnap.feature.settings.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import app.plansnap.core.designsystem.component.PlanSnapIconButton
-import app.plansnap.core.designsystem.component.PlanSnapIcons
-import app.plansnap.feature.settings.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.plansnap.feature.settings.ui.SettingsActions
+import app.plansnap.feature.settings.ui.SettingsScreen
+import app.plansnap.feature.settings.ui.SettingsViewModel
 
 /**
- * Public entry point of the settings feature: the screen frame of docs/UX.md section 1.
- *
- * The settings screen has no empty state. Its controls (unit, tolerance, grid, hints) follow with T-SET-001.
+ * Public entry point of the settings feature (docs/UX.md section 1): unit, closure tolerance, grid and hints.
+ * Every change is stored at once.
  *
  * @param onBack Returns to the previous screen.
  * @param modifier Modifier for the screen.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsEntry(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    Scaffold(
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    SettingsScreen(
+        state = state,
+        actions =
+            SettingsActions(
+                onUnitSelected = viewModel::onUnitSelected,
+                onAbsoluteToleranceChanged = viewModel::onAbsoluteToleranceChanged,
+                onRelativeToleranceChanged = viewModel::onRelativeToleranceChanged,
+                onGridChanged = viewModel::onGridChanged,
+                onSnapChanged = viewModel::onSnapChanged,
+                onResetHints = viewModel::onResetHints,
+                onSaveErrorDismissed = viewModel::onSaveErrorDismissed,
+            ),
+        onBack = onBack,
         modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
-                navigationIcon = {
-                    PlanSnapIconButton(
-                        icon = PlanSnapIcons.Back,
-                        contentDescription = stringResource(R.string.settings_back),
-                        onClick = onBack,
-                    )
-                },
-            )
-        },
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding))
-    }
+    )
 }

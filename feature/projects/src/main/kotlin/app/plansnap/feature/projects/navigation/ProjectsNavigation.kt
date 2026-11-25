@@ -1,68 +1,78 @@
 package app.plansnap.feature.projects.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import app.plansnap.core.designsystem.component.PlanSnapButton
-import app.plansnap.core.designsystem.theme.PlanSnapTheme
-import app.plansnap.feature.projects.R
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.plansnap.feature.projects.ImportSource
+import app.plansnap.feature.projects.ProjectsEvent
+import app.plansnap.feature.projects.ProjectsScreen
+import app.plansnap.feature.projects.ProjectsScreenActions
+import app.plansnap.feature.projects.ProjectsViewModel
 
 /**
- * Public entry point of the project list feature: the screen frame of docs/UX.md section 1 with the empty state.
- *
- * Project content, creation and import follow with the list implementation (T-PRJ-001); the import file dialog is an
- * ActivityResult contract and not a destination.
+ * Public entry point of the project list feature (docs/UX.md section 1). Connects the screen to its
+ * [ProjectsViewModel] and the system file dialog of the import; picking nothing is not an error and changes nothing.
  *
  * @param actions Navigation callbacks supplied by the app.
  * @param modifier Modifier for the screen.
+ * @param viewModel State holder, injected by Hilt.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectsEntry(
     actions: ProjectsNavigationActions,
     modifier: Modifier = Modifier,
+    viewModel: ProjectsViewModel = hiltViewModel(),
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.projects_title)) },
-                actions = {
-                    TextButton(onClick = actions.onOpenSettings) {
-                        Text(stringResource(R.string.projects_open_settings))
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(PlanSnapTheme.spacing.l),
-            verticalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.l, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = stringResource(R.string.projects_empty_explanation),
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-            )
-            // Creating a project belongs to the list implementation (T-PRJ-001), so the action is not yet available.
-            PlanSnapButton(
-                text = stringResource(R.string.projects_new_project),
-                onClick = {},
-                enabled = false,
-            )
+    val state = viewModel.state.collectAsStateWithLifecycle().value
+    val context = LocalContext.current
+    val importLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) viewModel.onImport(context.importSource(uri))
+        }
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is ProjectsEvent.OpenProject -> actions.onOpenProject(event.id)
+            }
         }
     }
+    val screenActions =
+        remember(viewModel, actions, importLauncher) {
+            ProjectsScreenActions(
+                onOpenProject = actions.onOpenProject,
+                onOpenSettings = actions.onOpenSettings,
+                onNewProject = viewModel::onNewProject,
+                onImport = { importLauncher.launch(IMPORT_MIME_TYPES) },
+                onRetry = viewModel::onRetry,
+                onRename = viewModel::onRenameRequested,
+                onDuplicate = viewModel::onDuplicate,
+                onDelete = viewModel::onDeleteRequested,
+                onNameChanged = viewModel::onNameChanged,
+                onDialogConfirmed = viewModel::onDialogConfirmed,
+                onDialogDismissed = viewModel::onDialogDismissed,
+                onErrorShown = viewModel::onErrorShown,
+            )
+        }
+    ProjectsScreen(state = state, actions = screenActions, modifier = modifier)
 }
+
+/** Project files are JSON, but file providers label them inconsistently, so generic types are accepted as well. */
+private val IMPORT_MIME_TYPES = arrayOf("application/json", "text/plain", "application/octet-stream")
+
+/** A provider that revokes access after picking throws a [SecurityException], handled like a missing file. */
+private fun Context.importSource(uri: Uri): ImportSource =
+    ImportSource {
+        try {
+            contentResolver.openInputStream(uri)
+        } catch (_: SecurityException) {
+            null
+        }
+    }
