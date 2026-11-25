@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="canvas_description_empty">Floor plan, empty</string>
+    <string name="canvas_description">Floor plan with %1$s and %2$s</string>
+    <plurals name="canvas_rooms">
+        <item quantity="one">%d room</item>
+        <item quantity="other">%d rooms</item>
+    </plurals>
+    <plurals name="canvas_walls">
+        <item quantity="one">%d wall</item>
+        <item quantity="other">%d walls</item>
+    </plurals>
+    <string name="canvas_action_fit">Fit plan to screen</string>
+</resources>
