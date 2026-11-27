@@ -119,13 +119,14 @@ Keine.
 - 2026-11-27: T-EXP-004 gemergt. Der Export nutzt die Ressourcen der Anfrage-Locale und den Raumtypkatalog des Editors, Statuskarte und Übersicht runden gleich. Die Lint-Unterdrückung `AppBundleLocaleChanges` an `formatterFactory` ist mit ADR 0014 (nur APK) abgenommen. Backlog: Flächenrundung in `:core:render` auf dieselbe Regel bringen.
 - 2026-11-27: T-EDT-009 gemergt (577 Editor-Tests laut Agent). Verdrahtung folgt mit T-UX-001. Entscheidungen: „Einmalig“ heißt bis zum Schließen (`dismissedHints`). Bei 360 × 640 dp und 200 % entfallen Hinweise, wenn unter der Karte weniger als 56 dp Plan bleiben. Nach beiden Merges Überlappung von Leerzustand und `NUMPAD`-Hinweis prüfen.
 - 2026-11-27: T-UX-001 und T-EDT-009 verdrahtet. **Kritischer Fehler gefunden und behoben:** In neu angelegten Projekten war der Ziffernblock deaktiviert, weil Projekte ohne Raum entstanden. Jetzt legt die Projektliste den ersten Raum an (UX §3), und die Eingabeleiste ist auch ohne Raum bedienbar. Beide Regressionstests waren vorher rot. Wellen-Gate 3 hatte den Fehler nicht erkannt, in Phase 5 muss ein E2E-Szenario beim leeren Start beginnen. Voller Build mit Kover, Architektur und Roborazzi danach grün.
+- 2026-11-27: T-PRJ-002 gemergt (`04c292e`). Wellen-Gate 4 auf `04c292e`: voller Build grün, 2 532 Testergebnisse ohne Fehler und Überspringer, instrumentiert 11 von 11. Pitest wird ohne Cache neu ausgeführt, das Review läuft.
 
 ## Wiedereinstieg (Stand 2026-11-27)
 
 - **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`), CI grün.
-- **Welle 4:** Batch 4.1 und 4.2 gemergt und verdrahtet, noch nicht gepusht.
-- **Läuft:** T-PRJ-002 (`ui-engineer`, `feature/projects/`, Basis: Commit dieses Eintrags). Parallel Pitest für das Wellen-Gate 4.
-- Danach: `scripts/run-instrumented-tests.sh`, voller Build, Review durch `reviewer`, Tag `wave-4`.
+- **Welle 4:** alle Aufgaben gemergt (`04c292e`), Wellen-Gate 4 läuft: Build und instrumentierte Tests grün, Pitest und Review (`reviewer`, Bereich `wave-3..04c292e`) offen.
+- Nach `APPROVE`: Tag `wave-4`, Push, CI prüfen, dann Welle 5.
+- **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator.
 
 ## Nächste Schritte
 
