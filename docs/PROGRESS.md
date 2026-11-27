@@ -125,13 +125,13 @@ Keine.
 - 2026-11-27: T-PRF-001 gemergt und eingehängt (`CachingSceneBuilder`, additiv, für die bestätigten Szenen in `EvaluationPipelines`). Der Editor hatte bereits je Raum gecacht und geculled, der Zusatzgewinn ist klein. JVM-Messung bei 200 Wänden und 30 Räumen: voller Szenenaufbau 1,2 bis 2,0 ms, ein geänderter Raum 73 µs im Median. Die 60 fps aus REQ-NFR-001 sind erst mit T-PRF-002 auf dem Emulator zu belegen.
 - 2026-11-27: T-EDT-014 gemergt, `androidx.activity.compose` im Editor-Build ergänzt. Nach dem Merge Editor-Tests, Roborazzi, detekt, Spotless, Lint, `:app`-Tests und `checkArchitecture` grün. Offen bleibt: Bei 360 × 640 dp lassen Andock-Leiste plus Speichermeldung kaum antippbaren Plan.
 - 2026-11-27: Nutzungslimit erreicht. Die Agenten für T-E2E-003 und T-UX-002 wurden beendet, ihre Worktrees bleiben erhalten.
+- 2026-11-27: T-E2E-003 gemergt. Der Ablauf läuft in `:app` mit `MainActivity` und Produktions-Verdrahtung (2 Tests, nach dem Merge `:app` Tests, detekt, Spotless grün), kein Produktionsfehler. Der Test läuft mit 320 dp Breite, weil ein Dialog mit Textfeld unter Robolectric bei 360 × 640 dp nicht idle wird. Auf dem Emulator in T-E2E-001 prüfen.
 
 ## Wiedereinstieg (Stand 2026-11-27, Welle 5 läuft)
 
 - **Welle 4:** fertig, Tag `wave-4`, gepusht (`392f918`), CI-Lauf grün.
-- **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014.
+- **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014, T-E2E-003.
 - **Laufend** (Basis `da8d13a`):
-  - T-E2E-003 (`test-engineer`): `.claude/worktrees/agent-a9deb2b010ca13c7c`, Branch `worktree-agent-a9deb2b010ca13c7c`
   - T-UX-002 (`test-engineer`): `.claude/worktrees/agent-a0a9bdde57f812f07`, Branch `worktree-agent-a0a9bdde57f812f07`
   - T-A11-001 (`ui-engineer`): neuer Worktree `.claude/worktrees/agent-a324afd5adc56bb94`
 - **Offen in Welle 5:** T-L10-001 (erst nach T-A11-001, weil beide `strings.xml` ändern), dann Wellen-Gate 5.

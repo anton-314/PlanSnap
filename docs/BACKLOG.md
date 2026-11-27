@@ -59,3 +59,4 @@
 - Export: Wird ein zurückgestelltes Dokument wegen unpassender Seite abgelehnt, bewirkt „Erneut versuchen“ nichts (aus T-EXP-005).
 - Export: Verlässt der Nutzer den Screen mit zurückgestellter URI, bleibt das leere Dokument liegen (aus T-EXP-005).
 - ADR 0008 und ARCHITECTURE §2 verorten das Culling in `:core:drawing`, es liegt in `:feature:editor` (`PlanViewMath.visibleRooms`). `architect` soll die Dokumente oder den Ort angleichen (aus T-PRF-001).
+- Projektnamen-Dialog bei 360 dp auf dem Emulator prüfen: Unter Robolectric wird ein `AlertDialog` mit `OutlinedTextField` bei 360 × 640 dp nicht idle, auch ohne App-Code (aus T-E2E-003).
