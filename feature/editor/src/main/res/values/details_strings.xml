@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Top bar menu -->
+    <string name="details_menu_room">Room details</string>
+    <string name="details_menu_overview">Rooms and areas</string>
+
+    <!-- Room details sheet -->
+    <string name="details_room_title">Room details</string>
+    <string name="details_room_fallback_name">Room %1$d</string>
+    <string name="details_name_label">Name</string>
+    <string name="details_type_label">Room type</string>
+    <string name="details_type_none">No type</string>
+    <string name="details_notes_label">Note</string>
+    <string name="details_height_label">Height (%1$s)</string>
+    <string name="details_height_hint">Leave empty to use the default height of the project: %1$s.</string>
+    <string name="details_factor_label" formatted="false">Area factor (%)</string>
+    <string name="details_factor_hint">Share of the measured area that counts, from 0 to 100 percent.</string>
+    <plurals name="details_error_name_too_long">
+        <item quantity="one">The name can have at most %1$d character.</item>
+        <item quantity="other">The name can have at most %1$d characters.</item>
+    </plurals>
+    <string name="details_apply">Apply</string>
+    <string name="details_cancel">Cancel</string>
+    <string name="details_close">Close</string>
+
+    <!-- Room types -->
+    <string name="room_type_living">Living room</string>
+    <string name="room_type_bedroom">Bedroom</string>
+    <string name="room_type_children">Child\'s room</string>
+    <string name="room_type_kitchen">Kitchen</string>
+    <string name="room_type_dining">Dining room</string>
+    <string name="room_type_bathroom">Bathroom</string>
+    <string name="room_type_toilet">Toilet</string>
+    <string name="room_type_hallway">Hallway</string>
+    <string name="room_type_office">Office</string>
+    <string name="room_type_storage">Storage room</string>
+    <string name="room_type_utility">Utility room</string>
+    <string name="room_type_balcony">Balcony</string>
+
+    <!-- Area overview -->
+    <string name="details_overview_title">Rooms and areas</string>
+    <string name="details_overview_empty">There are no rooms yet.</string>
+    <string name="details_row_title">%1$s · %2$s</string>
+    <string name="details_row_area">Area: %1$s m²</string>
+    <string name="details_row_perimeter">Perimeter: %1$s</string>
+    <string name="details_row_factor">Factor: %1$d %%</string>
+    <string name="details_row_credited">Credited area: %1$s m²</string>
+    <string name="details_row_volume">Volume: %1$s m³</string>
+    <string name="details_row_unconfirmed">Shape not confirmed</string>
+    <string name="details_row_no_shape_open">No shape yet: the room is not closed. It is missing in the totals.</string>
+    <string name="details_row_no_shape_conflict">No shape: the measurements conflict. The room is missing in the totals.</string>
+    <string name="details_row_no_shape_failed">No shape: the room could not be evaluated. It is missing in the totals.</string>
+    <string name="details_row_pending">Being calculated. The room is not in the totals yet.</string>
+    <string name="details_totals_title">Totals</string>
+    <string name="details_total_area">Measured area: %1$s m²</string>
+    <string name="details_total_credited">Credited area: %1$s m²</string>
+    <string name="details_total_perimeter">Perimeter: %1$s</string>
+    <string name="details_total_volume">Volume: %1$s m³</string>
+    <plurals name="details_total_omitted">
+        <item quantity="one">%1$d room without a shape is not included in the totals.</item>
+        <item quantity="other">%1$d rooms without a shape are not included in the totals.</item>
+    </plurals>
+    <string name="details_legal_note">This is not a legally binding living space calculation.</string>
+    <string name="details_project_height_title">Default room height</string>
+    <string name="details_project_height_hint">Applies to every room without its own height.</string>
+    <string name="details_project_height_apply">Apply default height</string>
+</resources>

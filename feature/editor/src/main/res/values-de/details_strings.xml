@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Menü der Top-Bar -->
+    <string name="details_menu_room">Raumdetails</string>
+    <string name="details_menu_overview">Räume und Flächen</string>
+
+    <!-- Blatt Raumdetails -->
+    <string name="details_room_title">Raumdetails</string>
+    <string name="details_room_fallback_name">Raum %1$d</string>
+    <string name="details_name_label">Name</string>
+    <string name="details_type_label">Raumtyp</string>
+    <string name="details_type_none">Ohne Typ</string>
+    <string name="details_notes_label">Notiz</string>
+    <string name="details_height_label">Höhe (%1$s)</string>
+    <string name="details_height_hint">Leer lassen, dann gilt die Standardhöhe des Projekts: %1$s.</string>
+    <string name="details_factor_label" formatted="false">Flächenfaktor (%)</string>
+    <string name="details_factor_hint">Anteil der gemessenen Fläche, der zählt, von 0 bis 100 Prozent.</string>
+    <plurals name="details_error_name_too_long">
+        <item quantity="one">Der Name darf höchstens %1$d Zeichen lang sein.</item>
+        <item quantity="other">Der Name darf höchstens %1$d Zeichen lang sein.</item>
+    </plurals>
+    <string name="details_apply">Übernehmen</string>
+    <string name="details_cancel">Abbrechen</string>
+    <string name="details_close">Schließen</string>
+
+    <!-- Raumtypen -->
+    <string name="room_type_living">Wohnzimmer</string>
+    <string name="room_type_bedroom">Schlafzimmer</string>
+    <string name="room_type_children">Kinderzimmer</string>
+    <string name="room_type_kitchen">Küche</string>
+    <string name="room_type_dining">Esszimmer</string>
+    <string name="room_type_bathroom">Bad</string>
+    <string name="room_type_toilet">WC</string>
+    <string name="room_type_hallway">Flur</string>
+    <string name="room_type_office">Arbeitszimmer</string>
+    <string name="room_type_storage">Abstellraum</string>
+    <string name="room_type_utility">Hauswirtschaftsraum</string>
+    <string name="room_type_balcony">Balkon</string>
+
+    <!-- Flächenübersicht -->
+    <string name="details_overview_title">Räume und Flächen</string>
+    <string name="details_overview_empty">Es gibt noch keine Räume.</string>
+    <string name="details_row_title">%1$s · %2$s</string>
+    <string name="details_row_area">Fläche: %1$s m²</string>
+    <string name="details_row_perimeter">Umfang: %1$s</string>
+    <string name="details_row_factor">Faktor: %1$d %%</string>
+    <string name="details_row_credited">Anrechenbare Fläche: %1$s m²</string>
+    <string name="details_row_volume">Volumen: %1$s m³</string>
+    <string name="details_row_unconfirmed">Form nicht bestätigt</string>
+    <string name="details_row_no_shape_open">Noch keine Form: Der Raum ist nicht geschlossen. Er fehlt in den Summen.</string>
+    <string name="details_row_no_shape_conflict">Keine Form: Die Maße widersprechen sich. Der Raum fehlt in den Summen.</string>
+    <string name="details_row_no_shape_failed">Keine Form: Der Raum konnte nicht ausgewertet werden. Er fehlt in den Summen.</string>
+    <string name="details_row_pending">Wird berechnet. Der Raum ist noch nicht in den Summen.</string>
+    <string name="details_totals_title">Summen</string>
+    <string name="details_total_area">Gemessene Fläche: %1$s m²</string>
+    <string name="details_total_credited">Anrechenbare Fläche: %1$s m²</string>
+    <string name="details_total_perimeter">Umfang: %1$s</string>
+    <string name="details_total_volume">Volumen: %1$s m³</string>
+    <plurals name="details_total_omitted">
+        <item quantity="one">%1$d Raum ohne Form ist in den Summen nicht enthalten.</item>
+        <item quantity="other">%1$d Räume ohne Form sind in den Summen nicht enthalten.</item>
+    </plurals>
+    <string name="details_legal_note">Dies ist keine rechtsverbindliche Wohnflächenberechnung.</string>
+    <string name="details_project_height_title">Standardhöhe der Räume</string>
+    <string name="details_project_height_hint">Gilt für jeden Raum ohne eigene Höhe.</string>
+    <string name="details_project_height_apply">Standardhöhe übernehmen</string>
+</resources>
