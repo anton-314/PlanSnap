@@ -60,3 +60,5 @@
 - Export: Verlässt der Nutzer den Screen mit zurückgestellter URI, bleibt das leere Dokument liegen (aus T-EXP-005).
 - ADR 0008 und ARCHITECTURE §2 verorten das Culling in `:core:drawing`, es liegt in `:feature:editor` (`PlanViewMath.visibleRooms`). `architect` soll die Dokumente oder den Ort angleichen (aus T-PRF-001).
 - Projektnamen-Dialog bei 360 dp auf dem Emulator prüfen: Unter Robolectric wird ein `AlertDialog` mit `OutlinedTextField` bei 360 × 640 dp nicht idle, auch ohne App-Code (aus T-E2E-003).
+- Querformat und Split-Screen: Mit Statuskarte bleiben vom Plan nur etwa 31 dp sichtbar (Schätzung aus T-UX-002). Ein eigenes Querformat-Layout wäre die Lösung.
+- Eingabeleiste bei 280 dp (Faltgerät zu): `Diag` bricht zu „Dia/g“ um, in `config-foldable-closed.png` festgehalten (aus T-UX-002).
