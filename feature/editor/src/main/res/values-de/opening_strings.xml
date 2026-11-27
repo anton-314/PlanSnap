@@ -40,6 +40,6 @@
     <string name="opening_cancel">Abbrechen</string>
     <string name="opening_delete">Öffnung löschen</string>
     <string name="opening_delete_title">Öffnung löschen?</string>
-    <string name="opening_delete_message">Die Öffnung wird aus der Wand entfernt. Sie können das rückgängig machen.</string>
+    <string name="opening_delete_message">Die Öffnung wird aus der Wand entfernt. Du kannst das rückgängig machen.</string>
     <string name="opening_delete_confirm">Löschen</string>
 </resources>

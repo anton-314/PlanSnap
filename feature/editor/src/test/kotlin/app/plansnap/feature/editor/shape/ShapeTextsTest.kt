@@ -118,11 +118,11 @@ class ShapeTextsTest {
     fun `given a recommendation then the sentence names its corners`() {
         val german = resources(Locale.GERMAN)
         assertEquals(
-            "Messen Sie die Diagonale von Ecke 2 nach Ecke 4.",
+            "Miss die Diagonale von Ecke 2 nach Ecke 4.",
             german.recommendationText(MeasurementRecommendation.DiagonalBetween(1, 3)),
         )
         assertEquals(
-            "Messen Sie den Winkel an Ecke 1.",
+            "Miss den Winkel an Ecke 1.",
             german.recommendationText(MeasurementRecommendation.CornerAngle(0)),
         )
     }
