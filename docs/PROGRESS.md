@@ -117,12 +117,13 @@ Keine.
 - 2026-11-27: Batch 4.1 komplett und verdrahtet (`4d3defc`, T-EDT-006 `26c9978`, T-EDT-013 `9798143`). Überlaufmenü ⋮ nach UX §2 mit Öffnungen, Räumen, Raster, Einrasten, Raumdetails, Übersicht und Export. Der Export liegt damit im Menü. Tippen: Beim Andocken gehört der Tipp allein `rooms/`, sonst Raumauswahl und danach Öffnung bzw. Wand. `SaveHost` liegt über Plan und Statuskarte, `retrySave` setzt jetzt `Saving`. `:feature:editor` 535 JVM-Tests vor dem letzten Baseline-Lauf, danach Tests, Roborazzi, detekt, Spotless, Lint, `:app`-Tests und `checkArchitecture` grün. T-EDT-006 ohne 15°-Dreheinrasten (nicht spezifiziert). Öffnungs-Einrasten aus REQ-UX-010 fehlt (Backlog, für den Abschlussbericht vormerken).
 - 2026-11-27: T-EXP-004 ändert kein `:core`: `:app` reicht den Typnamen aus dem Editor-Katalog an die Exporter.
 - 2026-11-27: T-EXP-004 gemergt. Der Export nutzt die Ressourcen der Anfrage-Locale und den Raumtypkatalog des Editors, Statuskarte und Übersicht runden gleich. Die Lint-Unterdrückung `AppBundleLocaleChanges` an `formatterFactory` ist mit ADR 0014 (nur APK) abgenommen. Backlog: Flächenrundung in `:core:render` auf dieselbe Regel bringen.
+- 2026-11-27: T-EDT-009 gemergt (577 Editor-Tests laut Agent). Verdrahtung folgt mit T-UX-001. Entscheidungen: „Einmalig“ heißt bis zum Schließen (`dismissedHints`). Bei 360 × 640 dp und 200 % entfallen Hinweise, wenn unter der Karte weniger als 56 dp Plan bleiben. Nach beiden Merges Überlappung von Leerzustand und `NUMPAD`-Hinweis prüfen.
 
 ## Wiedereinstieg (Stand 2026-11-27)
 
 - **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`), CI grün.
 - **Welle 4 / Batch 4.1:** komplett gemergt und verdrahtet, noch nicht gepusht.
-- **Läuft, Batch 4.2** (Basis: Commit dieses Eintrags, Worktrees siehe `git worktree list`): T-EDT-009 (`hints/`), T-UX-001 (`ui/states/`); gemergt: T-EXP-004.
+- **Läuft, Batch 4.2** (Basis: Commit dieses Eintrags, Worktrees siehe `git worktree list`): T-EDT-009 (`hints/`), T-UX-001 (`ui/states/`); gemergt: T-EXP-004, T-EDT-009 (noch zu verdrahten).
 - **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator.
 - Danach: verdrahten, Wellen-Gate 4.
 
