@@ -43,7 +43,7 @@ graph LR
 +--------------------------------+
 ```
 
-Alle Messaktionen liegen in der unteren Hälfte. Der Eingabebereich hat Vorrang, weil seine Tasten mindestens 56 dp hoch sind (etwa 400 dp bei normaler Schrift). Der Plan erhält den Rest, mindestens 96 dp (`PLAN_MIN_HEIGHT`). Bei 360 × 740 dp sind das ohne Statuskarte rund 40 % der Fläche unter der Top-Bar. Die Statuskarte belegt höchstens 35 % der Planfläche, mindestens 64 dp, und scrollt darunter in sich (T-EDT-011). Andere Geräteformen erhalten denselben Aufbau mit scrollbarem Eingabebereich. Ohne Optimierung für Querformat und Tablets bleiben sie bedienbar und verlieren keinen Zustand.
+Alle Messaktionen liegen in der unteren Hälfte. Der Eingabebereich hat Vorrang, weil seine Tasten mindestens 56 dp hoch sind (etwa 400 dp bei normaler Schrift). Der Plan erhält den Rest, mindestens 96 dp (`PLAN_MIN_HEIGHT`). Bei 360 × 740 dp sind das ohne Statuskarte rund 40 % der Fläche unter der Top-Bar. Die Statuskarte belegt höchstens 35 % der Planfläche, mindestens 64 dp, und scrollt darunter in sich (T-EDT-011). Reicht diese Höhe nicht für die ausgeklappte Kopfzeile bei der eingestellten Schriftgröße, startet die Karte eingeklappt mit Name, Fläche und Status (eine Zeile, bei großer Schrift zwei) und lässt sich aufklappen. Die Höhengrenze gilt auch aufgeklappt (T-EDT-012). Andere Geräteformen erhalten denselben Aufbau mit scrollbarem Eingabebereich. Ohne Optimierung für Querformat und Tablets bleiben sie bedienbar und verlieren keinen Zustand.
 
 ## 3. Messablauf
 
