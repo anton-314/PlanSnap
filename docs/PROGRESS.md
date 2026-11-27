@@ -125,7 +125,8 @@ Keine.
 ## Wiedereinstieg (Stand 2026-11-27)
 
 - **Welle 4:** fertig, Tag `wave-4`.
-- **Als Nächstes:** Batch 5.0 (T-EDT-014, T-E2E-003, T-EXP-005), dann Batch 5.1 und folgende laut `docs/TASKS.md`.
+- **Gepusht:** `392f918` mit Tag `wave-4`, CI-Ergebnis noch prüfen.
+- **Läuft:** T-EDT-014, T-E2E-003, T-EXP-005, T-PRF-001 (Basis `392f918`, Worktrees siehe `git worktree list`). Danach Batch 5.1 (T-A11-001, T-L10-001, T-UX-002) und folgende laut `docs/TASKS.md`.
 - **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
 
 ## Nächste Schritte
