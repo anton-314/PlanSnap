@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Plan outline: the text alternative to the plan -->
+    <string name="a11y_outline_menu">Plan als Liste</string>
+    <string name="a11y_outline_title">Räume und Wände</string>
+    <string name="a11y_outline_close">Liste schließen</string>
+    <string name="a11y_outline_action_show">Plan als Liste anzeigen</string>
+    <string name="a11y_outline_action_select">Raum auswählen</string>
+    <string name="a11y_outline_action_wall">Öffnungen dieser Wand anzeigen</string>
+    <string name="a11y_outline_action_opening">Öffnung bearbeiten</string>
+    <string name="a11y_outline_open">Nicht geschlossen</string>
+    <string name="a11y_outline_pending">Wird berechnet</string>
+    <string name="a11y_outline_no_walls">Noch keine Wände</string>
+    <plurals name="a11y_outline_wall_count">
+        <item quantity="one">%1$d Wand</item>
+        <item quantity="other">%1$d Wände</item>
+    </plurals>
+    <string name="a11y_outline_wall">Wand %1$d, %2$s</string>
+    <string name="a11y_outline_wall_length">Länge %1$s</string>
+    <string name="a11y_outline_wall_entered">Eingegebene Länge %1$s</string>
+    <string name="a11y_outline_wall_thickness">Stärke %1$s</string>
+    <string name="a11y_outline_corner_angle">Eingegebener Winkel an Ecke %1$d: %2$s°</string>
+    <string name="a11y_outline_opening">%1$s in Wand %2$d, %3$s</string>
+    <string name="a11y_outline_diagonal">Diagonale von Ecke %1$d zu Ecke %2$d, %3$s</string>
+
+    <!-- Input bar: what is spoken along with the typed value -->
+    <string name="a11y_input_thickness_spoken">Wandstärke %1$s %2$s</string>
+    <string name="a11y_input_state_with_hint">%1$s. %2$s</string>
+</resources>

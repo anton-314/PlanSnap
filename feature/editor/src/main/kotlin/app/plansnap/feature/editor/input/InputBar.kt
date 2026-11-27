@@ -1,7 +1,10 @@
 package app.plansnap.feature.editor.input
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -40,6 +43,8 @@ import app.plansnap.core.designsystem.component.PlanSnapIcons
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.model.CornerSpec
 import app.plansnap.feature.editor.R
+import app.plansnap.feature.editor.a11y.FittingText
+import app.plansnap.feature.editor.a11y.spokenInputValue
 import app.plansnap.feature.editor.shape.CornerTarget
 import app.plansnap.feature.editor.shape.ShapeIntent
 import app.plansnap.feature.editor.state.CoreIntent
@@ -127,6 +132,7 @@ fun InputBar(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun InputDisplay(
     state: EditorUiState,
@@ -147,18 +153,19 @@ private fun InputDisplay(
         } else {
             stringResource(R.string.input_value_spoken, wallLabel, state.inputText, unitSpoken)
         }
+    val hint = inputHint(state, roomClosed)?.let { stringResource(it) }
     Column(
-        modifier =
-            modifier.semantics(mergeDescendants = true) {
-                contentDescription = spoken
-                liveRegion = LiveRegionMode.Polite
-            },
+        modifier = modifier.spokenInputValue(spoken, thickness, unitSpoken, hint),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.s)) {
+        // The thickness moves to a line of its own when a large font leaves no room beside the wall number.
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
             Text(
                 text = wallLabel,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.padding(end = PlanSnapTheme.spacing.s),
             )
             Text(
                 text = stringResource(R.string.input_thickness_label, thickness),
@@ -181,7 +188,13 @@ private fun InputDisplay(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        InputHint(state = state, roomClosed = roomClosed)
+        if (hint != null) {
+            Text(
+                text = hint,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
@@ -313,7 +326,7 @@ private fun RowScope.CornerButton(
         if (isSelected) {
             Icon(imageVector = PlanSnapIcons.Check, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
         }
-        Text(text = label, textAlign = TextAlign.Center)
+        FittingText(label)
     }
     if (isSelected) {
         Button(
@@ -348,22 +361,14 @@ private fun unitSpokenRes(unit: LengthUnit): Int =
         LengthUnit.METER -> R.string.input_unit_m_spoken
     }
 
-@Composable
-private fun InputHint(
+/** The sentence below the value that says what to do, `null` while the typed value speaks for itself. */
+@StringRes
+private fun inputHint(
     state: EditorUiState,
     roomClosed: Boolean,
-) {
-    val hint =
-        when {
-            roomClosed -> R.string.input_room_closed_hint
-            state.inputText.isEmpty() && state.selectedRoom?.walls.isNullOrEmpty() -> R.string.editor_empty_hint
-            else -> null
-        }
-    hint?.let {
-        Text(
-            text = stringResource(it),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+): Int? =
+    when {
+        roomClosed -> R.string.input_room_closed_hint
+        state.inputText.isEmpty() && state.selectedRoom?.walls.isNullOrEmpty() -> R.string.editor_empty_hint
+        else -> null
     }
-}

@@ -130,7 +130,8 @@ internal fun ExplicitConfirmationContent(
     val sumText = resources.lengthText(proposal.correctionSumMm, unit)
     val largest = proposal.largestCorrection
     Column(
-        modifier = Modifier.padding(PlanSnapTheme.spacing.l),
+        // The dialog scrolls when a large font makes it higher than the screen, so both buttons stay reachable.
+        modifier = Modifier.verticalScroll(rememberScrollState()).padding(PlanSnapTheme.spacing.l),
         verticalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.m),
     ) {
         Text(

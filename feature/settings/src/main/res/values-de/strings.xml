@@ -41,4 +41,5 @@
     <string name="settings_save_failed_rejected">Die Einstellung wurde abgelehnt, weil ihr Wert nicht zulässig ist.</string>
     <string name="settings_save_failed_generic">Die Einstellung konnte nicht gespeichert werden.</string>
     <string name="settings_save_failed_dismiss">Schließen</string>
+    <string name="settings_a11y_loading">Einstellungen werden geladen</string>
 </resources>

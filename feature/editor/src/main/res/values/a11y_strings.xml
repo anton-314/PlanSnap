@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Plan outline: the text alternative to the plan -->
+    <string name="a11y_outline_menu">Plan as a list</string>
+    <string name="a11y_outline_title">Rooms and walls</string>
+    <string name="a11y_outline_close">Close list</string>
+    <string name="a11y_outline_action_show">Show the plan as a list</string>
+    <string name="a11y_outline_action_select">Select room</string>
+    <string name="a11y_outline_action_wall">Open openings of this wall</string>
+    <string name="a11y_outline_action_opening">Edit opening</string>
+    <string name="a11y_outline_open">Not closed</string>
+    <string name="a11y_outline_pending">Being calculated</string>
+    <string name="a11y_outline_no_walls">No walls yet</string>
+    <plurals name="a11y_outline_wall_count">
+        <item quantity="one">%1$d wall</item>
+        <item quantity="other">%1$d walls</item>
+    </plurals>
+    <string name="a11y_outline_wall">Wall %1$d, %2$s</string>
+    <string name="a11y_outline_wall_length">Length %1$s</string>
+    <string name="a11y_outline_wall_entered">Entered length %1$s</string>
+    <string name="a11y_outline_wall_thickness">Thickness %1$s</string>
+    <string name="a11y_outline_corner_angle">Entered angle at corner %1$d: %2$s°</string>
+    <string name="a11y_outline_opening">%1$s on wall %2$d, %3$s</string>
+    <string name="a11y_outline_diagonal">Diagonal from corner %1$d to corner %2$d, %3$s</string>
+
+    <!-- Input bar: what is spoken along with the typed value -->
+    <string name="a11y_input_thickness_spoken">Wall thickness %1$s %2$s</string>
+    <string name="a11y_input_state_with_hint">%1$s. %2$s</string>
+</resources>

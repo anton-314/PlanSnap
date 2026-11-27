@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -135,7 +136,11 @@ private fun <T : Any> ChoiceRow(
             horizontalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.s),
             verticalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.s),
         ) {
-            Choice(automatic, selected == null, enabled, Modifier) { onSelected(null) }
+            // "Automatic" stands in both rows, so a screen reader also names the row.
+            val spoken = stringResource(R.string.export_a11y_choice, label, automatic)
+            Choice(automatic, selected == null, enabled, Modifier.semantics { contentDescription = spoken }) {
+                onSelected(null)
+            }
             options.forEach { (value, text) ->
                 Choice(text, value == selected, enabled, Modifier) { onSelected(value) }
             }

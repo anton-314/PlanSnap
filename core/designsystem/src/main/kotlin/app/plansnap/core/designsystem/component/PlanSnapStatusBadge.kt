@@ -14,12 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 
 /**
  * Status indicator that never relies on color alone: it always shows a symbol and the given [label].
+ *
+ * The badge does not group its semantics, so inside a clickable row or header a screen reader speaks the label as
+ * part of that control.
  *
  * @param status State to display; selects color and symbol.
  * @param label Visible text, supplied by the caller from string resources.
@@ -52,7 +54,7 @@ fun PlanSnapStatusBadge(
         }
     }
     Surface(
-        modifier = modifier.semantics(mergeDescendants = true) {},
+        modifier = modifier,
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(width = BORDER_WIDTH, color = accent),

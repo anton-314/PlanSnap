@@ -9,6 +9,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
+import app.plansnap.core.designsystem.a11y.PlanSnapDragHandle
 import app.plansnap.feature.editor.R
 import app.plansnap.feature.editor.state.EditorIntent
 import app.plansnap.feature.editor.state.EditorUiState
@@ -47,6 +48,7 @@ fun OpeningHost(
     ModalBottomSheet(
         onDismissRequest = { onIntent(OpeningIntent.Dismiss) },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        dragHandle = { PlanSnapDragHandle() },
     ) {
         when (sheet) {
             is OpeningSheet.Wall -> WallSheetContent(room, sheet, statuses.orEmpty(), unit, onIntent)

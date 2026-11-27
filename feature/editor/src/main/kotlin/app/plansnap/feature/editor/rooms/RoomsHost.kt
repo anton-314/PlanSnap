@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import app.plansnap.core.designsystem.a11y.PlanSnapDragHandle
 import app.plansnap.core.designsystem.component.PlanSnapOutlinedButton
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.feature.editor.R
@@ -61,6 +62,7 @@ fun RoomsHost(
         ModalBottomSheet(
             onDismissRequest = { onIntent(RoomsIntent.Dismiss) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            dragHandle = { PlanSnapDragHandle() },
         ) {
             DockSheetContent(draft, state, onIntent)
         }

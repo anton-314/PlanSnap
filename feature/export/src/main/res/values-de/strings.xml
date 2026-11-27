@@ -70,4 +70,5 @@
     <string name="export_running">Export läuft</string>
     <string name="export_saved">Als %1$s-Datei gespeichert.</string>
     <string name="export_share_chooser_title">Plan teilen</string>
+    <string name="export_a11y_choice">%1$s: %2$s</string>
 </resources>

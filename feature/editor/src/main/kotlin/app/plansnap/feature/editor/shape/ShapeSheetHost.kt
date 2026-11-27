@@ -9,6 +9,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.unit.dp
+import app.plansnap.core.designsystem.a11y.PlanSnapDragHandle
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.feature.editor.state.EditorIntent
 import app.plansnap.feature.editor.state.EditorUiState
@@ -43,6 +44,7 @@ fun ShapeSheetHost(
     ModalBottomSheet(
         onDismissRequest = { onIntent(ShapeIntent.Dismiss) },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        dragHandle = { PlanSnapDragHandle() },
     ) {
         when (sheet) {
             is ShapeSheet.Corner -> CornerSheetContent(sheet, room, shape, onIntent)

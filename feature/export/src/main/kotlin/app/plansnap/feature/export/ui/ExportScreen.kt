@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -33,6 +34,9 @@ import app.plansnap.feature.export.R
 import app.plansnap.feature.export.ui.states.ExportEmptyState
 import app.plansnap.feature.export.ui.states.ExportLoadFailedState
 import app.plansnap.feature.export.ui.states.ExportLoadingState
+
+/** Font scale above which save and share stand below each other. */
+private const val STACKED_ACTIONS_FONT_SCALE = 1.3f
 
 /**
  * Stateless export dialog of docs/UX.md section 1: format, scale, paper, preflight warnings, share and save.
@@ -140,20 +144,46 @@ private fun ActionBar(
                     Text(stringResource(R.string.export_running), style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(spacing.s), modifier = Modifier.fillMaxWidth()) {
-                PlanSnapOutlinedButton(
-                    text = stringResource(R.string.export_action_save),
-                    onClick = actions.onSave,
-                    enabled = state.canExport,
-                    modifier = Modifier.weight(1f),
-                )
-                PlanSnapButton(
-                    text = stringResource(R.string.export_action_share),
-                    onClick = actions.onShare,
-                    enabled = state.canExport,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            ActionButtons(state, actions)
+        }
+    }
+}
+
+/**
+ * Save and share, side by side. With a large font, which leaves half the width too narrow for their words, they stand
+ * below each other.
+ */
+@Composable
+private fun ActionButtons(
+    state: ExportUiState.Ready,
+    actions: ExportActions,
+) {
+    val save: @Composable (Modifier) -> Unit = { modifier ->
+        PlanSnapOutlinedButton(
+            text = stringResource(R.string.export_action_save),
+            onClick = actions.onSave,
+            enabled = state.canExport,
+            modifier = modifier,
+        )
+    }
+    val share: @Composable (Modifier) -> Unit = { modifier ->
+        PlanSnapButton(
+            text = stringResource(R.string.export_action_share),
+            onClick = actions.onShare,
+            enabled = state.canExport,
+            modifier = modifier,
+        )
+    }
+    val gap = PlanSnapTheme.spacing.s
+    if (LocalDensity.current.fontScale > STACKED_ACTIONS_FONT_SCALE) {
+        Column(verticalArrangement = Arrangement.spacedBy(gap)) {
+            save(Modifier.fillMaxWidth())
+            share(Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(gap), modifier = Modifier.fillMaxWidth()) {
+            save(Modifier.weight(1f))
+            share(Modifier.weight(1f))
         }
     }
 }

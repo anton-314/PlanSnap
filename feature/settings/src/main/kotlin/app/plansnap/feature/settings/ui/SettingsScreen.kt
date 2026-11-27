@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -67,10 +70,17 @@ fun SettingsScreen(
         },
     ) { padding ->
         when (state) {
-            SettingsUiState.Loading -> Column(modifier = Modifier.fillMaxSize().padding(padding)) {}
+            SettingsUiState.Loading -> LoadingContent(Modifier.padding(padding))
             is SettingsUiState.Loaded -> SettingsContent(state, actions, Modifier.padding(padding))
         }
     }
+}
+
+/** The blank screen while the settings are read, with a spoken label so a screen reader is not silent. */
+@Composable
+private fun LoadingContent(modifier: Modifier) {
+    val loading = stringResource(R.string.settings_a11y_loading)
+    Column(modifier = modifier.fillMaxSize().semantics { contentDescription = loading }) {}
 }
 
 @Composable
@@ -134,6 +144,7 @@ internal fun Description(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SaveErrorBanner(
     error: DomainError,
@@ -148,19 +159,26 @@ private fun SaveErrorBanner(
         border = BorderStroke(1.dp, color),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        Row(
+        // The button moves below the message when a large font leaves the words no room beside it.
+        FlowRow(
             modifier = Modifier.padding(spacing.m),
-            horizontalArrangement = Arrangement.spacedBy(spacing.s),
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(spacing.s, Alignment.End),
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(imageVector = PlanSnapIcons.Warning, contentDescription = null, tint = color)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.settings_save_failed_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = color,
-                )
-                Text(text = stringResource(saveErrorMessage(error)), style = MaterialTheme.typography.bodyMedium)
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(spacing.s),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(imageVector = PlanSnapIcons.Warning, contentDescription = null, tint = color)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.settings_save_failed_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = color,
+                    )
+                    Text(text = stringResource(saveErrorMessage(error)), style = MaterialTheme.typography.bodyMedium)
+                }
             }
             TextButton(
                 onClick = onDismiss,

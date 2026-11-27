@@ -80,6 +80,8 @@ private const val DEFAULT_PIXELS_PER_MM = 0.1
  * @param roomGestures callbacks of the long-press gesture on a room, disabled by default.
  * @param roomPreview rigid transform drawn on the rooms that are being dragged, `null` for none.
  * @param showGrid whether the background grid is drawn.
+ * @param onShowOutline opens the list of rooms and walls, the alternative to the plan for screen reader users
+ * (UX section 7); offered as an accessibility action of the canvas, `null` for none.
  */
 @Suppress("LongParameterList") // Compose API: the content, the callbacks and the optional display settings.
 @Composable
@@ -95,6 +97,7 @@ fun PlanCanvas(
     roomGestures: RoomGestureCallbacks = RoomGestureCallbacks.None,
     roomPreview: RoomTransformPreview? = null,
     showGrid: Boolean = false,
+    onShowOutline: (() -> Unit)? = null,
 ) {
     val math = remember { PlanViewMath() }
     val shown = remember(scene, preview) { scene.withPreview(preview) }
@@ -132,19 +135,14 @@ fun PlanCanvas(
     val frame = rememberFrame(math, shown, viewport, roomPreview, showGrid)
     val renderer = rememberSceneRenderer(lengthUnit, roomTypeName)
     val appearance = rememberAppearance()
-    val description = planDescription(shown)
-    val fitLabel = stringResource(R.string.canvas_action_fit)
-
     Canvas(
         modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
             .clipToBounds()
             .onSizeChanged { size = it }
-            .semantics {
-                contentDescription = description
-                customActions = listOf(CustomAccessibilityAction(fitLabel) { fitNow().let { true } })
-            }.pointerInput(density.density) {
+            .planSemantics(shown, onFit = { fitNow() }, onShowOutline)
+            .pointerInput(density.density) {
                 detectTransformGestures { centroid, pan, zoom, _ ->
                     val step =
                         GestureStep(
@@ -194,6 +192,29 @@ private fun rememberAppearance(): EditorAppearance {
     val density = LocalDensity.current
     return remember(colors, surface, density) {
         EditorAppearance(colors.toRenderPalette(surface), density.density, density.fontScale)
+    }
+}
+
+/**
+ * What a screen reader hears from the plan and can do with it: its size in rooms and walls, fitting it and, with
+ * [onShowOutline], opening the list of rooms and walls.
+ */
+@Composable
+private fun Modifier.planSemantics(
+    scene: DrawingScene,
+    onFit: () -> Unit,
+    onShowOutline: (() -> Unit)?,
+): Modifier {
+    val description = planDescription(scene)
+    val fitLabel = stringResource(R.string.canvas_action_fit)
+    val outlineLabel = stringResource(R.string.a11y_outline_action_show)
+    return semantics {
+        contentDescription = description
+        customActions =
+            listOfNotNull(
+                CustomAccessibilityAction(fitLabel) { onFit().let { true } },
+                onShowOutline?.let { show -> CustomAccessibilityAction(outlineLabel) { show().let { true } } },
+            )
     }
 }
 
