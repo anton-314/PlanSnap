@@ -13,6 +13,8 @@ import app.plansnap.core.common.units.Length
 import app.plansnap.core.domain.repository.ProjectRepository
 import app.plansnap.core.model.Project
 import app.plansnap.core.model.ProjectId
+import app.plansnap.core.model.Room
+import app.plansnap.core.model.RoomId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -190,7 +192,8 @@ class ProjectsViewModel
                         id = ProjectId(ids.newId()),
                         name = name,
                         defaultHeight = DEFAULT_HEIGHT,
-                        rooms = persistentListOf(),
+                        // docs/UX.md section 3 step 1: a new project starts with its first room.
+                        rooms = persistentListOf(Room(RoomId(ids.newId()))),
                         createdAtEpochMs = now,
                         updatedAtEpochMs = now,
                     )

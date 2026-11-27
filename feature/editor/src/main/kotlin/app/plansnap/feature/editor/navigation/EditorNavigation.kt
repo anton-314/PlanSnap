@@ -37,6 +37,7 @@ import app.plansnap.feature.editor.canvas.PlanCanvas
 import app.plansnap.feature.editor.canvas.PlanTap
 import app.plansnap.feature.editor.details.DetailsHost
 import app.plansnap.feature.editor.details.rememberRoomTypeName
+import app.plansnap.feature.editor.hints.HintsHost
 import app.plansnap.feature.editor.input.ExtraKey
 import app.plansnap.feature.editor.opening.OpeningHost
 import app.plansnap.feature.editor.opening.openingTapIntent
@@ -190,19 +191,22 @@ private fun EditorCanvas(
         val cardMaxHeight = statusCardMaxHeight(maxHeight, cardPadding * 2)
         val expanded = userExpanded ?: statusCardStartsExpanded(cardMaxHeight, LocalDensity.current.fontScale)
         Column(modifier = Modifier.fillMaxSize()) {
-            PlanCanvas(
-                scene = state.scene,
-                view = state.view,
-                onViewChange = { onIntent(CoreIntent.ViewChanged(it)) },
-                onTap = { tap -> planTapIntents(tap, state).forEach(onIntent) },
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                preview = state.preview,
-                lengthUnit = state.settings.lengthUnit,
-                roomTypeName = rememberRoomTypeName(),
-                roomGestures = roomGestures,
-                roomPreview = roomsCanvasPreview(state),
-                showGrid = roomsShowGrid(state),
-            )
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                PlanCanvas(
+                    scene = state.scene,
+                    view = state.view,
+                    onViewChange = { onIntent(CoreIntent.ViewChanged(it)) },
+                    onTap = { tap -> planTapIntents(tap, state).forEach(onIntent) },
+                    modifier = Modifier.fillMaxSize(),
+                    preview = state.preview,
+                    lengthUnit = state.settings.lengthUnit,
+                    roomTypeName = rememberRoomTypeName(),
+                    roomGestures = roomGestures,
+                    roomPreview = roomsCanvasPreview(state),
+                    showGrid = roomsShowGrid(state),
+                )
+                HintsHost(state, onIntent, Modifier.align(Alignment.TopCenter))
+            }
             ShapeStatusCard(
                 room = room,
                 result = room?.let { evaluationOf(state, it.id) },

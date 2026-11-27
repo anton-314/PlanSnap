@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.plansnap.core.designsystem.component.PlanSnapButton
@@ -167,6 +168,7 @@ private fun FailedBody(
             text = stringResource(R.string.editor_load_failed),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center,
         )
         PlanSnapButton(text = stringResource(R.string.editor_retry), onClick = onRetry)
         TextButton(onClick = onBack) { Text(stringResource(R.string.editor_back_to_list)) }

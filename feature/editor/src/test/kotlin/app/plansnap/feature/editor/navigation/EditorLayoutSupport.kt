@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
+import app.plansnap.core.domain.repository.EditorHint
 import app.plansnap.core.drawing.scene.DefaultSceneBuilder
 import app.plansnap.core.drawing.scene.SceneOptions
 import app.plansnap.feature.editor.shape.almostRectangle
@@ -12,6 +13,7 @@ import app.plansnap.feature.editor.shape.stateOf
 import app.plansnap.feature.editor.state.EditorUiState
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.emptyFlow
 
 /**
@@ -28,7 +30,9 @@ internal fun layoutState(withCard: Boolean): EditorUiState {
     val project = state.project!!.copy(rooms = persistentListOf(open))
     val scene = DefaultSceneBuilder().build(project, state.evaluations, SceneOptions())
     val shown = state.copy(project = project, scene = scene)
-    return if (withCard) shown else shown.copy(evaluations = persistentMapOf())
+    // The layout tests measure plan, card and input bar; the hints have layout tests of their own.
+    val settled = shown.copy(settings = shown.settings.copy(dismissedHints = EditorHint.entries.toImmutableSet()))
+    return if (withCard) settled else settled.copy(evaluations = persistentMapOf())
 }
 
 /** The editor content at [fontScale] with the real plan canvas and no-op callbacks. */

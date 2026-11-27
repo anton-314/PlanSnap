@@ -129,7 +129,10 @@ class ProjectsViewModelTest {
             assertEquals("Flat", project.name)
             assertEquals(Length(2_500L), project.defaultHeight)
             assertEquals(42L, project.createdAtEpochMs)
-            assertTrue(project.rooms.isEmpty())
+            // docs/UX.md section 3 step 1: a new project starts with its first room.
+            val room = project.rooms.single()
+            assertTrue(room.walls.isEmpty())
+            assertFalse(room.isClosed)
         }
 
     @Test

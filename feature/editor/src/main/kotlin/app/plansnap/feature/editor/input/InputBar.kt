@@ -74,7 +74,9 @@ fun InputBar(
     val locale = ComposeLocale.current.platformLocale
     val separator = remember(locale) { DecimalFormatSymbols.getInstance(locale).decimalSeparator }
     val room = state.selectedRoom
-    val open = state.load == EditorLoadState.Loaded && room != null && !room.isClosed
+    // Without any room the first wall creates one, so the keys are usable then too.
+    val startsFirstRoom = state.project?.rooms?.isEmpty() == true
+    val open = state.load == EditorLoadState.Loaded && (startsFirstRoom || room?.isClosed == false)
     val canConfirm = state.inputText.isNotBlank() && state.inputError == null
     Column(
         modifier =

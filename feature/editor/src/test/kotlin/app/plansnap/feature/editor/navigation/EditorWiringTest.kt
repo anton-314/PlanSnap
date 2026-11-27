@@ -5,6 +5,8 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -24,6 +26,7 @@ import app.plansnap.core.model.RoomId
 import app.plansnap.core.model.WallId
 import app.plansnap.feature.editor.canvas.PlanTap
 import app.plansnap.feature.editor.details.DetailsHandler
+import app.plansnap.feature.editor.hints.HintsHandler
 import app.plansnap.feature.editor.opening.OpeningHandler
 import app.plansnap.feature.editor.opening.OpeningIntent
 import app.plansnap.feature.editor.rooms.RoomsHandler
@@ -44,6 +47,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -72,6 +76,7 @@ class EditorWiringTest {
         rig.handlers += OpeningHandler(ids, DefaultOpeningRules())
         rig.handlers += RoomsHandler(ids, rig.settingsRepository, ApplicationScope(scope.backgroundScope))
         rig.handlers += DetailsHandler()
+        rig.handlers += HintsHandler(rig.settingsRepository, ApplicationScope(scope.backgroundScope))
         val viewModel = rig.viewModel()
         compose.setContent {
             PlanSnapTheme {
@@ -203,6 +208,36 @@ class EditorWiringTest {
                 .id
         val intents = planTapIntents(PlanTap(Vec2(0.0, 0.0), SceneTarget.Wall(host, wall)), viewModel.state.value)
         assertEquals(listOf(RoomsIntent.SelectHost(host, wall, null)), intents)
+    }
+
+    @Test
+    fun `given a project without rooms when the first wall is typed then a room with that wall is stored`() {
+        show(emptyProject().copy(rooms = persistentListOf()))
+
+        listOf("3", "4", "5", "OK").forEach { label ->
+            compose.onNode(hasText(label) and hasClickAction()).assertIsEnabled().performClick()
+        }
+        settle()
+
+        assertEquals(
+            1,
+            rig.stored.rooms
+                .single()
+                .walls.size,
+        )
+    }
+
+    @Test
+    fun `given a first visit then a hint is shown over the plan and stays away once closed`() {
+        show(emptyProject())
+        compose.onNodeWithContentDescription("Close hint").assertIsDisplayed().performClick()
+        settle()
+
+        compose.onNodeWithContentDescription("Close hint").assertDoesNotExist()
+        assertTrue(
+            rig.settingsRepository.current.dismissedHints
+                .isNotEmpty(),
+        )
     }
 
     @Test
