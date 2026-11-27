@@ -1,7 +1,7 @@
 # Fortschritt
 
 **Aktuelle Phase:** 4 – Umsetzung, Welle 4
-**Letzte Aktualisierung:** 2026-11-25
+**Letzte Aktualisierung:** 2026-11-27
 
 ## Phasen
 
@@ -111,10 +111,10 @@ Keine.
 - 2026-11-26: **Wellen-Gate 3 bestanden** auf `b53c9cb`. Build mit Kover, Architektur und Roborazzi grün, 2 140 JVM-Tests ohne Fehler. Pitest Geometrie 86 % (1 658 von 1 927). Instrumentiert 11 von 11, davon 8 PDF-Kalibrierungstests. Nachreview `APPROVE`: H1, M1 bis M4, N2 und N5 behoben, belegt durch Revert-Proben. Neu und mittel, nicht blockierend: Die Statuskarte zeigt bei 200 % Schrift im sichtbaren Bereich nichts, kommt als T-EDT-012 in Batch 4.1. N1, N2 und Nits stehen im Backlog. N3 hat der Orchestrator behoben: Eine `.pyc`-Datei war versehentlich eingecheckt, `.gitignore` deckt Python-Caches jetzt ab. Tag `wave-3`.
 - 2026-11-26: CI-Lauf für `wave-3` (`0803790`) grün.
 
-## Wiedereinstieg (Stand 2026-11-26)
+## Wiedereinstieg (Stand 2026-11-27)
 
 - **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`), CI grün.
-- **Läuft, Welle 4 / Batch 4.1** (Basis `0803790`, Branches `worktree-<Worktree>`):
+- **Läuft, Welle 4 / Batch 4.1** (Basis `0803790`, Branches `worktree-<Worktree>`). Am 2026-11-27 mit neuen Agenten auf dem ungesicherten Worktree-Stand fortgesetzt (Agenten spulen auf `11061ff` vor und committen im Worktree):
   - T-EDT-005 (`ui-engineer`, `opening/`): `.claude/worktrees/agent-a55ec4cd278005d3e`
   - T-EDT-006 (`ui-engineer`, `rooms/` plus additiv `canvas/`): `.claude/worktrees/agent-a1029fa26f60a909a`
   - T-EDT-007 (`ui-engineer`, `details/`): `.claude/worktrees/agent-ae348f7fc05e55f0f`
