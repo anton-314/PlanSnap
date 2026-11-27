@@ -113,14 +113,14 @@ Keine.
 - 2026-11-27: T-EDT-012 gemergt (`24cfd78`, `:feature:editor` 256 Tests laut Agent, nach dem Merge Tests, Roborazzi, detekt und Spotless grün). Die Statuskarte hat einen Kompaktkopf, bei 200 % Schrift zweizeilig. Entscheidungen: Zwei Textzeilen sind dort zulässig. Die 35-%-Grenze gilt auch für die manuell aufgeklappte Karte (UX §2). Die Zustandsverdrahtung in `EditorNavigation.kt` ist abgenommen. Offen für die Verdrahtung durch den Orchestrator: Top-Bar-Titel einzeilig mit Ellipse, weil er bei 200 % auf drei Zeilen umbricht.
 - 2026-11-27: T-EDT-007 gemergt (`bb3ad60`, `:feature:editor` 311 Tests laut Agent im Worktree). Verdrahtung folgt gesammelt, wenn T-EDT-005, 006 und 008 gemergt sind: `DetailsHost`, `roomTypeName = rememberRoomTypeName()` am `PlanCanvas`, `DetailsMenu.entries` im Menü ⋮ (Raumdetails ohne Auswahl deaktiviert). Folgepunkte vor dem Gate: Raumtypnamen auch im Export (heute vermutlich Rohschlüssel, `:feature:export` darf nicht von `:feature:editor` abhängen), gemeinsame Flächenrundung für Statuskarte und Übersicht.
 - 2026-11-27: T-EDT-005 gemergt (`92bf74a`), nach dem Merge Tests, Roborazzi, detekt und Spotless von `:feature:editor` grün. Entscheidungen: Keine Ziehgeste für Öffnungen, weil UX §3/§4 keine definieren (Backlog). Rückmeldung entsteht bei jeder Formularänderung. Höhe, Brüstung und Anschlag sind nicht vorbelegt. Verdrahtung offen: `OpeningHost`, `openingTapIntent` (nach `SelectRoom`), `openingMenuEntries`. Backlog: Prüfung `OPENING_HAS_DOCKED_ROOMS` in die Domäne, Blatt-Helfer aus `shape/` in neutrales Paket.
+- 2026-11-27: T-EDT-008 gemergt (21 neue Tests, kein Funktionsfehler im Bestand). Verdrahtung offen: `HistoryButtons` in `EditorTopBar`, alte Strings `editor_undo`/`editor_redo` entfernen. Zu prüfen: Laut Agent zeigt kein Bildschirm `SaveStatus` an, ein Speicherfehler bliebe unsichtbar.
 
 ## Wiedereinstieg (Stand 2026-11-27)
 
 - **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`), CI grün.
 - **Läuft, Welle 4 / Batch 4.1** (Basis `0803790`, Branches `worktree-<Worktree>`). Am 2026-11-27 mit neuen Agenten auf dem ungesicherten Worktree-Stand fortgesetzt (Agenten spulen auf `11061ff` vor und committen im Worktree):
   - T-EDT-006 (`ui-engineer`, `rooms/` plus additiv `canvas/`): `.claude/worktrees/agent-a1029fa26f60a909a`
-  - T-EDT-008 (`ui-engineer`, `history/`): Basis `65217f3`, `.claude/worktrees/agent-ae74a92166760ba5e`
-  - Gemergt, noch zu verdrahten: T-EDT-005 (`92bf74a`), T-EDT-007 (`bb3ad60`). Gemergt: T-EDT-012 (`24cfd78`)
+  - Gemergt, noch zu verdrahten: T-EDT-008, T-EDT-005 (`92bf74a`), T-EDT-007 (`bb3ad60`). Gemergt: T-EDT-012 (`24cfd78`)
 - **Einhängeregel Batch 4.1:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator. Die Agenten liefern Handler per `@IntoSet`, `XxxHost(state, onIntent)`, ggf. `xxxTapIntent` und Menüeinträge als Daten. Der Orchestrator verdrahtet beim Merge (Top-Bar-Überlaufmenü ⋮) und testet die Integration.
 - Dem Nutzer wurde eine Debug-APK zur Ansicht in den Windows-Download-Ordner gelegt (`fee05ca`).
 
