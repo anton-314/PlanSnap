@@ -44,16 +44,17 @@ internal class CommandRunner(
 
     /**
      * Executes [edit] as one undo step and saves the result. A failure is sent as [EditorEffect.Error], project and
-     * history stay unchanged.
+     * history stay unchanged. [onCommitted] runs after a success is visible in the state, before saving.
      */
     suspend fun execute(
         edit: ProjectEdit,
         tolerance: ClosureTolerance? = null,
+        onCommitted: () -> Unit = {},
     ): DomainResult<Project> {
         val before = project
         val result = history.execute(factory.create(edit), tolerance ?: currentTolerance())
         when (result) {
-            is DomainResult.Success -> commit(before, result.value)
+            is DomainResult.Success -> commit(before, result.value, onCommitted)
             is DomainResult.Failure -> store.send(EditorEffect.Error(result.error))
         }
         return result
@@ -127,6 +128,7 @@ internal class CommandRunner(
     private suspend fun commit(
         before: Project,
         after: Project,
+        onCommitted: () -> Unit = {},
     ) {
         pendingRooms += changedRooms(before, after)
         needsSave = true
@@ -141,6 +143,7 @@ internal class CommandRunner(
                 save = SaveStatus.Saving,
             )
         }
+        onCommitted()
         save()
     }
 

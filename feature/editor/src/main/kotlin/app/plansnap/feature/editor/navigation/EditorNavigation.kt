@@ -12,6 +12,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -19,6 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -41,12 +43,10 @@ import app.plansnap.feature.editor.hints.HintsHost
 import app.plansnap.feature.editor.input.ExtraKey
 import app.plansnap.feature.editor.opening.OpeningHost
 import app.plansnap.feature.editor.opening.openingTapIntent
-import app.plansnap.feature.editor.rooms.RoomsHost
 import app.plansnap.feature.editor.rooms.roomGestureCallbacks
 import app.plansnap.feature.editor.rooms.roomsCanvasPreview
 import app.plansnap.feature.editor.rooms.roomsShowGrid
 import app.plansnap.feature.editor.rooms.roomsTapIntent
-import app.plansnap.feature.editor.save.SaveHost
 import app.plansnap.feature.editor.screen.EditorActions
 import app.plansnap.feature.editor.screen.EditorScreen
 import app.plansnap.feature.editor.screen.PLAN_MIN_HEIGHT
@@ -131,10 +131,7 @@ internal fun EditorContent(
             modifier = Modifier.fillMaxSize(),
             snackbarHost = { SnackbarHost(snackbar) },
         ) { canvasModifier ->
-            Box(modifier = canvasModifier) {
-                EditorCanvas(state, onIntent, Modifier.fillMaxSize())
-                SaveHost(state, onIntent, Modifier.align(Alignment.TopCenter))
-            }
+            EditorCanvas(state, onIntent, canvasModifier)
         }
         ShapeSheetHost(state, onIntent)
         OpeningHost(state, onIntent)
@@ -176,7 +173,10 @@ private fun rememberExtraKeys(onIntent: (EditorIntent) -> Unit): List<ExtraKey> 
     }
 }
 
-/** The plan with the status card of the selected room below it, so the card never covers part of the plan. */
+/**
+ * The plan with the status card of the selected room below it, so the card never covers part of the plan. The
+ * overlays of [PlanOverlays] lie above both.
+ */
 @Composable
 private fun EditorCanvas(
     state: EditorUiState,
@@ -186,12 +186,13 @@ private fun EditorCanvas(
     val room = state.selectedRoom
     var userExpanded by rememberSaveable { mutableStateOf<Boolean?>(null) }
     val roomGestures = remember(onIntent) { roomGestureCallbacks(onIntent) }
+    var planHeightPx by remember { mutableIntStateOf(0) }
     BoxWithConstraints(modifier = modifier) {
         val cardPadding = PlanSnapTheme.spacing.s
         val cardMaxHeight = statusCardMaxHeight(maxHeight, cardPadding * 2)
         val expanded = userExpanded ?: statusCardStartsExpanded(cardMaxHeight, LocalDensity.current.fontScale)
         Column(modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth().onSizeChanged { planHeightPx = it.height }) {
                 PlanCanvas(
                     scene = state.scene,
                     view = state.view,
@@ -219,7 +220,7 @@ private fun EditorCanvas(
                         .heightIn(max = cardMaxHeight),
             )
         }
-        RoomsHost(state, onIntent, Modifier.align(Alignment.TopCenter))
+        PlanOverlays(state, onIntent, with(LocalDensity.current) { planHeightPx.toDp() })
     }
 }
 

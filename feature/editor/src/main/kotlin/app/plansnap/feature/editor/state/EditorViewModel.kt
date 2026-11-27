@@ -72,6 +72,9 @@ class EditorViewModel
                 applicationScope = applicationScope,
                 scope = screenScope,
                 submitEdit = { edit -> session?.submit(edit) ?: rejectUnloaded() },
+                submitBuiltEdit = { build, onCommitted ->
+                    session?.submitQueued(build, onCommitted) ?: rejectUnloaded()
+                },
             )
 
         @Volatile

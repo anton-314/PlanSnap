@@ -2,7 +2,12 @@ package app.plansnap.feature.editor.navigation
 
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
+import app.plansnap.core.common.result.DomainError
+import app.plansnap.core.common.result.StorageProblem
+import app.plansnap.feature.editor.rooms.DockDraft
+import app.plansnap.feature.editor.rooms.RoomsState
 import app.plansnap.feature.editor.state.EditorUiState
+import app.plansnap.feature.editor.state.SaveStatus
 import com.github.takahirom.roborazzi.RoborazziOptions
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Rule
@@ -47,6 +52,37 @@ class EditorLayoutScreenshotTest {
     @Test
     @Config(qualifiers = "en-rUS-w360dp-h640dp-port-notnight-mdpi")
     fun `h640 card font 2`() = capture(layoutState(true), 2f, "layout-640-card-fontscale-2.png")
+
+    @Test
+    @Config(qualifiers = "en-rUS-w360dp-h640dp-port-notnight-mdpi")
+    fun `h640 picking after a failed save`() = capture(pickingAfterFailedSave(), 1f, "layout-640-picking-save.png")
+
+    @Test
+    @Config(qualifiers = "en-rUS-w360dp-h640dp-port-notnight-mdpi")
+    fun `h640 picking font 2 after a failed save`() =
+        capture(pickingAfterFailedSave(), 2f, "layout-640-picking-save-fontscale-2.png")
+
+    @Test
+    @Config(qualifiers = "de-rDE-w360dp-h640dp-port-notnight-mdpi")
+    fun `h640 german picking after a failed save`() =
+        capture(pickingAfterFailedSave(), 1f, "layout-640-picking-save-de.png")
+
+    @Test
+    @Config(qualifiers = "en-rUS-w360dp-h640dp-port-notnight-mdpi")
+    fun `h640 failed save font 2`() = capture(failedSave(), 2f, "layout-640-save-fontscale-2.png")
+
+    @Test
+    @Config(qualifiers = "de-rDE-w360dp-h690dp-port-notnight-mdpi")
+    fun `h690 german failed save font 2`() = capture(failedSave(), 2f, "layout-690-save-de-fontscale-2.png")
+
+    private fun failedSave(): EditorUiState =
+        layoutState(true).copy(save = SaveStatus.Failed(DomainError.Storage(StorageProblem.WRITE_FAILED)))
+
+    private fun pickingAfterFailedSave(): EditorUiState {
+        val state = failedSave()
+        val dock = DockDraft(guestId = checkNotNull(state.selectedRoomId), picking = true)
+        return state.withSection(RoomsState::class, RoomsState(dock = dock))
+    }
 
     private fun capture(
         state: EditorUiState,

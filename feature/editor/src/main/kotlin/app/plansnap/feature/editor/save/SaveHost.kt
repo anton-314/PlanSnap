@@ -23,11 +23,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.plansnap.core.designsystem.component.PlanSnapIcons
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
@@ -61,6 +64,23 @@ fun SaveHost(
     SideEffect { remembered = failure }
     if (failure != null) {
         SaveFailureMessage(failure, onRetry = { onIntent(CoreIntent.RetrySave) }, modifier = modifier)
+    }
+}
+
+/**
+ * The least height in which [SaveHost] shows its title and the complete button at the current font size. A caller
+ * that limits the message to a part of the plan area never limits it below this.
+ */
+@Composable
+internal fun saveMessageMinHeight(): Dp {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val typography = MaterialTheme.typography
+    val spacing = PlanSnapTheme.spacing
+    val title = measurer.measure(stringResource(R.string.save_failed_title), typography.titleSmall).size.height
+    val label = measurer.measure(stringResource(R.string.save_retry), typography.labelLarge).size.height
+    return with(density) {
+        spacing.xs + title.toDp() + maxOf(PlanSnapTheme.sizes.minTouchTarget, label.toDp() + spacing.xs * 2)
     }
 }
 

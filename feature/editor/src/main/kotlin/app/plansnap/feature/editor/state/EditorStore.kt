@@ -6,6 +6,7 @@ import app.plansnap.core.common.runtime.ApplicationScope
 import app.plansnap.core.domain.command.ProjectEdit
 import app.plansnap.core.domain.repository.EditorDraft
 import app.plansnap.core.domain.repository.EditorDraftRepository
+import app.plansnap.core.model.Project
 import app.plansnap.core.model.ProjectId
 import app.plansnap.core.model.RoomId
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +30,7 @@ import kotlinx.coroutines.launch
  * dispatcher of the screen [scope], always with the latest state. A changed input text or room is also queued for the
  * draft in the database.
  */
+@Suppress("LongParameterList") // One dependency or callback of the view model per parameter.
 internal class EditorStore(
     initial: EditorUiState,
     private val handle: SavedStateHandle,
@@ -36,6 +38,7 @@ internal class EditorStore(
     applicationScope: ApplicationScope,
     override val scope: CoroutineScope,
     private val submitEdit: (ProjectEdit) -> Unit,
+    private val submitBuiltEdit: ((Project) -> ProjectEdit, () -> Unit) -> Unit = { _, _ -> },
 ) : EditorHost {
     private val mutableState = MutableStateFlow(initial)
     private val effectChannel = Channel<EditorEffect>(Channel.UNLIMITED)
@@ -66,6 +69,11 @@ internal class EditorStore(
     }
 
     override fun submit(edit: ProjectEdit) = submitEdit(edit)
+
+    override fun submitQueued(
+        build: (Project) -> ProjectEdit,
+        onCommitted: () -> Unit,
+    ) = submitBuiltEdit(build, onCommitted)
 
     override fun send(effect: EditorEffect) {
         effectChannel.trySend(effect)

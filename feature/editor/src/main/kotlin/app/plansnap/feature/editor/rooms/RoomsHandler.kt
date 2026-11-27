@@ -6,6 +6,8 @@ import app.plansnap.core.common.runtime.IdGenerator
 import app.plansnap.core.domain.command.ProjectEdit
 import app.plansnap.core.domain.repository.AppSettings
 import app.plansnap.core.domain.repository.SettingsRepository
+import app.plansnap.core.drawing.scene.WorldBounds
+import app.plansnap.core.model.Project
 import app.plansnap.core.model.Room
 import app.plansnap.core.model.RoomId
 import app.plansnap.core.model.RoomPlacement
@@ -14,6 +16,9 @@ import app.plansnap.feature.editor.state.EditorHandler
 import app.plansnap.feature.editor.state.EditorHost
 import app.plansnap.feature.editor.state.EditorIntent
 import app.plansnap.feature.editor.state.EditorUiState
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,7 +27,8 @@ import javax.inject.Inject
  * moves and rotates a room. It turns choices into commands and previews. Whether a dock is possible and where the
  * room ends up is decided by the domain, snapping by its `Snapper`, and the picture by the canvas.
  *
- * Every confirmed change is one [EditorHost.submit], so one undo step reverts it. A gesture changes only the preview in
+ * Every confirmed change is one command ([EditorHost.submit], for a new room [EditorHost.submitQueued]), so one undo
+ * step reverts it. A gesture changes only the preview in
  * [RoomsState.drag] until all fingers are lifted. Grid and snapping are settings: they are written to the
  * [SettingsRepository] in the application scope, and the state follows them at once.
  */
@@ -58,20 +64,32 @@ class RoomsHandler
             return true
         }
 
+        /**
+         * The room is placed when the turn of its command comes, so it sees the rooms queued before it, and it is
+         * selected only if the command succeeded.
+         */
         private fun addRoom(host: EditorHost) {
-            val room = Room(RoomId(ids.newId()), placement = placementBeside(host.state.value))
-            host.update { it.copy(selectedRoomId = room.id) }
-            host.submit(ProjectEdit.AddRoom(room))
+            val id = RoomId(ids.newId())
+            host.submitQueued(
+                build = { project ->
+                    val bounds =
+                        host.state.value.scene
+                            ?.bounds
+                    ProjectEdit.AddRoom(Room(id, placement = placementBeside(project, bounds)))
+                },
+                onCommitted = { host.update { it.copy(selectedRoomId = id) } },
+            )
         }
 
         /**
          * To the right of everything: of the drawn plan and of the origins of all rooms, because a room without walls
          * is not drawn. The first room of a project keeps the default placement.
          */
-        private fun placementBeside(state: EditorUiState): RoomPlacement {
-            val rooms = state.project?.rooms.orEmpty()
-            val bounds = state.scene?.bounds
-            val right = (rooms.map { it.placement.originX } + listOfNotNull(bounds?.maxX)).maxOrNull()
+        private fun placementBeside(
+            project: Project,
+            bounds: WorldBounds?,
+        ): RoomPlacement {
+            val right = (project.rooms.map { it.placement.originX } + listOfNotNull(bounds?.maxX)).maxOrNull()
             return if (right == null) {
                 RoomPlacement.DEFAULT
             } else {
@@ -133,7 +151,10 @@ class RoomsHandler
             val state = host.state.value
             val draft = state.section(RoomsState::class)?.dock
             if (intent == RoomsIntent.OpenDock) {
-                DockDrafts.open(state)?.let { opened -> host.updateRooms { it.copy(dock = opened) } }
+                DockDrafts.open(state)?.let { opened ->
+                    host.updateRooms { it.copy(dock = opened) }
+                    revalidateOnChange(host)
+                }
             } else if (draft != null) {
                 if (intent == RoomsIntent.ConfirmDock) {
                     confirmDock(draft, host)
@@ -142,6 +163,26 @@ class RoomsHandler
                     host.updateRooms { it.copy(dock = next?.let { edited -> DockDrafts.validated(edited, state) }) }
                 }
             }
+        }
+
+        /**
+         * Checks the open draft again whenever the project or the unit changes, for example by undo while the host is
+         * chosen on the plan. Ends when the draft is closed.
+         */
+        private fun revalidateOnChange(host: EditorHost) {
+            host.scope.launch {
+                host.state
+                    .map { Triple(it.section(RoomsState::class)?.dock != null, it.project, it.settings.lengthUnit) }
+                    .distinctUntilChanged()
+                    .takeWhile { (open) -> open }
+                    .collect { host.update(::withValidatedDock) }
+            }
+        }
+
+        private fun withValidatedDock(state: EditorUiState): EditorUiState {
+            val rooms = state.section(RoomsState::class)
+            val dock = rooms?.dock ?: return state
+            return state.withSection(RoomsState::class, rooms.copy(dock = DockDrafts.validated(dock, state)))
         }
 
         private fun confirmDock(

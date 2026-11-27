@@ -1,9 +1,12 @@
 package app.plansnap.feature.editor.rooms
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -28,6 +31,9 @@ import app.plansnap.feature.editor.state.EditorUiState
 /**
  * The surfaces of the rooms function above the editor: the dock sheet, or, while the host is chosen on the plan, a
  * small hint bar instead of the sheet so the plan stays tappable (route those taps through [roomsTapIntent]).
+ *
+ * The bar takes no more than the height it gets: its text scrolls and the cancel button stays reachable. While it is
+ * shown, the system back action returns to the sheet.
  *
  * The sheet closes itself if its room or the project is gone. Without a dock in progress the composable emits
  * nothing, so it can stay in the screen permanently.
@@ -66,6 +72,8 @@ private fun PickingBar(
     onIntent: (EditorIntent) -> Unit,
     modifier: Modifier,
 ) {
+    // Back ends only the selection on the plan, not the editor.
+    BackHandler { onIntent(RoomsIntent.StopPicking) }
     Surface(
         modifier = modifier.fillMaxWidth().padding(PlanSnapTheme.spacing.s),
         shape = MaterialTheme.shapes.large,
@@ -79,7 +87,11 @@ private fun PickingBar(
             Text(
                 text = stringResource(R.string.rooms_dock_picking_hint),
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite },
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .semantics { liveRegion = LiveRegionMode.Polite },
             )
             PlanSnapOutlinedButton(
                 text = stringResource(R.string.rooms_dock_cancel),

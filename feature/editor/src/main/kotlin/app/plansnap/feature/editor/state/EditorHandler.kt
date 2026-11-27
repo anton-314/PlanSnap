@@ -1,6 +1,7 @@
 package app.plansnap.feature.editor.state
 
 import app.plansnap.core.domain.command.ProjectEdit
+import app.plansnap.core.model.Project
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
@@ -31,6 +32,21 @@ interface EditorHost {
      * the editor, followed by saving. A failure is reported as [EditorEffect.Error] or [SaveStatus.Failed].
      */
     fun submit(edit: ProjectEdit)
+
+    /**
+     * Like [submit], for an edit that depends on the commands queued before it: [build] receives the project that is
+     * committed when the turn of the edit comes. [onCommitted] runs once the command changed that project, before it
+     * is saved and before any later command runs. It does not run if the command is rejected.
+     *
+     * A host without a work queue keeps this default: it builds the edit from the displayed project, submits it and
+     * never calls [onCommitted], because it does not learn the outcome.
+     */
+    fun submitQueued(
+        build: (Project) -> ProjectEdit,
+        onCommitted: () -> Unit,
+    ) {
+        state.value.project?.let { submit(build(it)) }
+    }
 
     /** Sends a one-time [effect] to the screen. */
     fun send(effect: EditorEffect)

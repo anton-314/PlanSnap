@@ -11,6 +11,7 @@ import app.plansnap.core.domain.command.ProjectEdit
 import app.plansnap.core.domain.repository.SettingsRepository
 import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.model.CornerSpec
+import app.plansnap.core.model.Project
 import app.plansnap.core.model.Room
 import app.plansnap.core.model.RoomId
 import app.plansnap.core.model.Wall
@@ -103,6 +104,14 @@ internal class EditorSession(
     /** Queues [edit] as a confirmed command. */
     fun submit(edit: ProjectEdit) {
         store.enqueue { runner.execute(edit) }
+    }
+
+    /** Queues the edit that [build] makes as a confirmed command, see `EditorHost.submitQueued`. */
+    fun submitQueued(
+        build: (Project) -> ProjectEdit,
+        onCommitted: () -> Unit,
+    ) {
+        store.enqueue { runner.execute(build(runner.project), onCommitted = onCommitted) }
     }
 
     private fun selectRoom(roomId: RoomId?) {
