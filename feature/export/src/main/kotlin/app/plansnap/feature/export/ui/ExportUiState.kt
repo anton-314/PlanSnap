@@ -109,9 +109,14 @@ sealed interface ExportUiState {
         val error: DomainError,
     ) : ExportUiState
 
-    /** The project has no room yet (docs/UX.md section 1). */
+    /**
+     * No room of the project has a wall yet, which the user knows as "no room yet" (docs/UX.md section 1).
+     *
+     * @property documentRejected whether a chosen document was discarded because there is nothing to export.
+     */
     data class Empty(
         val projectName: String,
+        val documentRejected: Boolean = false,
     ) : ExportUiState
 
     /**

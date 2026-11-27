@@ -75,6 +75,15 @@ class ExportScreenTest {
     }
 
     @Test
+    fun `given a rejected document when shown then the hint and the reason are displayed`() {
+        show(ExportUiState.Empty("Flat", documentRejected = true))
+        compose.onNodeWithText("No room yet").assertExists()
+        compose
+            .onNodeWithText("Nothing was saved because no room has a wall yet. The empty file is discarded.")
+            .assertExists()
+    }
+
+    @Test
     fun `given a load failure when shown then the cause is explained and retry is offered`() {
         show(ExportUiState.Failed(DomainError.Storage(StorageProblem.READ_FAILED)))
         compose.onNodeWithText("The project could not be read. Try again.").assertExists()

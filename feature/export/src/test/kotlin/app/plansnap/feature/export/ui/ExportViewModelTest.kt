@@ -28,8 +28,10 @@ import app.plansnap.core.geometry.primitives.ClosureTolerance
 import app.plansnap.core.model.OpeningId
 import app.plansnap.core.model.Project
 import app.plansnap.core.model.Room
+import app.plansnap.core.model.RoomId
 import app.plansnap.feature.export.data.DefaultPlotPreview
 import app.plansnap.feature.export.data.ExportFileNames
+import app.plansnap.feature.export.data.PlotPreview
 import app.plansnap.feature.export.data.mimeType
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableSet
@@ -88,13 +90,14 @@ class ExportViewModelTest {
         evaluator: RoomEvaluator = DefaultRoomEvaluator(dispatchers),
         exporterSet: Set<Exporter> = exporters.values.toSet(),
         savedState: SavedStateHandle = SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1")),
+        preview: PlotPreview = DefaultPlotPreview(DefaultSceneBuilder(), DefaultPlotLayout(), dispatchers),
     ) = ExportViewModel(
         savedState = savedState,
         projects = FakeProjects(project),
         settings = FakeSettings(settings),
         evaluator = evaluator,
         preflight = preflight,
-        preview = DefaultPlotPreview(DefaultSceneBuilder(), DefaultPlotLayout(), dispatchers),
+        preview = preview,
         exporters = exporterSet,
         files = files,
         dispatchers = dispatchers,
@@ -187,6 +190,21 @@ class ExportViewModelTest {
             val viewModel = viewModel(DomainResult.Success(ExportRooms.project()))
             advanceUntilIdle()
             assertEquals(ExportUiState.Empty("Flat <1>"), viewModel.state.value)
+        }
+
+    @Test
+    fun `given only rooms without walls when loaded then the empty state is shown`() =
+        runTest(testDispatcher) {
+            val viewModel = viewModel(ExportRooms.bare, ExportRooms.bare.copy(id = RoomId("bare-2")))
+            advanceUntilIdle()
+            assertEquals(ExportUiState.Empty("Flat <1>"), viewModel.state.value)
+        }
+
+    @Test
+    fun `given one room with walls beside a room without walls when loaded then the options are shown`() =
+        runTest(testDispatcher) {
+            val state = ready(viewModel(ExportRooms.bare, ExportRooms.confirmed))
+            assertTrue(state.canExport)
         }
 
     @Test
@@ -607,5 +625,87 @@ class ExportViewModelTest {
             assertTrue(state.error is DomainError.Export)
             assertTrue(files.targets.single().discarded)
             assertTrue(exporters.values.all { it.requests.isEmpty() })
+        }
+
+    @Test
+    fun `given a uri that arrives after an empty project was loaded then the empty document is discarded`() =
+        runTest(testDispatcher) {
+            val savedState =
+                SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1", "export.awaitingDocument" to true))
+            val restored = viewModel(ExportRooms.bare, savedState = savedState)
+            advanceUntilIdle()
+            restored.onDocumentChosen(Uri.parse("content://docs/tree/Flat_1.pdf"))
+            advanceUntilIdle()
+
+            assertTrue(files.targets.single().discarded)
+            assertTrue(exporters.values.all { it.requests.isEmpty() })
+            assertEquals(ExportUiState.Empty("Flat <1>", documentRejected = true), restored.state.value)
+        }
+
+    @Test
+    fun `given an early uri when the restored project has no wall then the rejection is shown and it is discarded`() =
+        runTest(testDispatcher) {
+            val savedState =
+                SavedStateHandle(
+                    mapOf(
+                        ExportViewModel.PROJECT_ID_KEY to "p1",
+                        "export.format" to ExportFormat.JSON.name,
+                        "export.awaitingDocument" to true,
+                    ),
+                )
+            val restored = viewModel(ExportRooms.bare, savedState = savedState)
+            restored.onDocumentChosen(Uri.parse("content://docs/tree/Flat_1.json"))
+            advanceUntilIdle()
+
+            assertEquals(ExportUiState.Empty("Flat <1>", documentRejected = true), restored.state.value)
+            assertTrue(files.targets.single().discarded)
+            assertTrue(exporters.values.all { it.requests.isEmpty() })
+        }
+
+    @Test
+    fun `given a uri that arrives after the load failed then the empty document is discarded`() =
+        runTest(testDispatcher) {
+            val savedState =
+                SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1", "export.awaitingDocument" to true))
+            val restored = viewModel(DomainResult.Failure(notFound()), savedState = savedState)
+            advanceUntilIdle()
+            restored.onDocumentChosen(Uri.parse("content://docs/tree/Flat_1.pdf"))
+            advanceUntilIdle()
+
+            assertEquals(ExportUiState.Failed(notFound()), restored.state.value)
+            assertTrue(files.targets.single().discarded)
+        }
+
+    @Test
+    fun `given a uri that arrives while the page is being checked then it is exported afterwards`() =
+        runTest(testDispatcher) {
+            val gate = CompletableDeferred<Unit>()
+            val real = DefaultPlotPreview(DefaultSceneBuilder(), DefaultPlotLayout(), dispatchers)
+            val gated =
+                PlotPreview { project, evaluations, selection ->
+                    gate.await()
+                    real.plan(project, evaluations, selection)
+                }
+            val savedState =
+                SavedStateHandle(mapOf(ExportViewModel.PROJECT_ID_KEY to "p1", "export.awaitingDocument" to true))
+            val restored =
+                viewModel(
+                    DomainResult.Success(ExportRooms.project(ExportRooms.confirmed)),
+                    savedState = savedState,
+                    preview = gated,
+                )
+            advanceUntilIdle()
+            assertEquals(PlanFit.Checking, restored.current.fit)
+            val document = Uri.parse("content://docs/tree/Flat_1.pdf")
+            restored.onDocumentChosen(document)
+            advanceUntilIdle()
+            assertTrue(files.targets.isEmpty())
+            assertTrue(restored.current.isBusy)
+
+            gate.complete(Unit)
+            advanceUntilIdle()
+
+            assertEquals(ExportNotice.Saved(ExportFormat.PDF), restored.current.notice)
+            assertEquals(document, files.targets.single().uri)
         }
 }

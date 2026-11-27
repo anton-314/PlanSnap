@@ -62,6 +62,7 @@
     <string name="export_error_encoding_failed">The file could not be created. Try again, or choose another format.</string>
     <string name="export_error_no_space">There is not enough free storage space for the file.</string>
     <string name="export_error_load_failed">The project could not be read. Try again.</string>
+    <string name="export_error_document_rejected_empty">Nothing was saved because no room has a wall yet. The empty file is discarded.</string>
     <string name="export_error_generic">The export did not work. Try again.</string>
 
     <string name="export_action_share">Share</string>

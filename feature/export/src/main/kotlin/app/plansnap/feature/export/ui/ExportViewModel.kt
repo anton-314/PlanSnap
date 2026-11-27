@@ -100,7 +100,7 @@ class ExportViewModel
         private var session: Session? = null
         private var previewJob: Job? = null
         private var lastAction: ExportAction? = null
-        private var deferredDocument: Uri? = null
+        private var pendingDocument: Uri? = null
 
         /** State of the dialog. */
         val state: StateFlow<ExportUiState> = mutableState.asStateFlow()
@@ -160,17 +160,18 @@ class ExportViewModel
         /**
          * Takes the result of the document picker. A `null` [uri] means the user cancelled, which is no error.
          *
-         * After a process death the result can arrive before the project is loaded. It is then held back and served
-         * with the restored options as soon as the load is done.
+         * After a process death the result can arrive before the project is loaded or its page is known. It is then
+         * held back and served with the restored options as soon as both are done. A document that cannot be served
+         * is discarded and the dialog shows why.
          */
         fun onDocumentChosen(uri: Uri?) {
             savedState[AWAITING_KEY] = false
-            if (session == null && mutableState.value !is ExportUiState.Ready) {
-                if (uri != null) deferredDocument = uri
+            if (uri == null) {
+                updateReady { it.copy(awaitingDocument = false) }
                 return
             }
-            updateReady { it.copy(awaitingDocument = false) }
-            if (uri != null) launchExport(ExportAction.SAVE) { files.openDocument(uri) }
+            pendingDocument = uri
+            servePendingDocument()
         }
 
         /** Repeats the action that failed last. */
@@ -193,33 +194,53 @@ class ExportViewModel
             viewModelScope.launch(dispatchers.main) {
                 mutableState.value = readSession()
                 refreshFit()
-                previewJob?.join()
-                serveDeferredDocument()
+                servePendingDocument()
             }
         }
 
-        /** Exports into a document that arrived before the load was done, or rejects it with a visible error. */
-        private suspend fun serveDeferredDocument() {
-            val uri = deferredDocument ?: return
-            deferredDocument = null
-            val current = mutableState.value
-            if (current is ExportUiState.Ready) {
-                updateReady { it.copy(awaitingDocument = false) }
-                val fit = (mutableState.value as ExportUiState.Ready).fit
-                if (fit is PlanFit.Unavailable) {
-                    updateReady { it.copy(error = fit.error) }
+        /**
+         * Exports into the pending document or rejects it with a visible error. Does nothing while the project is
+         * loading or the page is being checked, because both call this again when they are done.
+         */
+        private fun servePendingDocument() {
+            val uri = pendingDocument ?: return
+            when (val current = mutableState.value) {
+                // Served when the load is done.
+                ExportUiState.Loading -> {}
+
+                // The load error is already on screen.
+                is ExportUiState.Failed -> {
                     discardDocument(uri)
-                } else {
-                    launchExport(ExportAction.SAVE) { files.openDocument(uri) }
                 }
-            } else {
-                // Failed shows its own error and Empty explains itself; the empty document must not stay behind.
-                discardDocument(uri)
+
+                is ExportUiState.Empty -> {
+                    mutableState.value = current.copy(documentRejected = true)
+                    discardDocument(uri)
+                }
+
+                is ExportUiState.Ready -> {
+                    when (val fit = current.fit) {
+                        // Served when the page is known.
+                        PlanFit.Checking -> {}
+
+                        is PlanFit.Unavailable -> {
+                            updateReady { it.copy(awaitingDocument = false, error = fit.error) }
+                            discardDocument(uri)
+                        }
+
+                        is PlanFit.Fits, PlanFit.NotApplicable -> {
+                            pendingDocument = null
+                            updateReady { it.copy(awaitingDocument = false) }
+                            launchExport(ExportAction.SAVE) { files.openDocument(uri) }
+                        }
+                    }
+                }
             }
         }
 
-        private suspend fun discardDocument(uri: Uri) {
-            withContext(dispatchers.io) {
+        private fun discardDocument(uri: Uri) {
+            pendingDocument = null
+            viewModelScope.launch(dispatchers.io) {
                 try {
                     files.openDocument(uri).let {
                         runCatching { it.stream.close() }
@@ -238,7 +259,7 @@ class ExportViewModel
                     is DomainResult.Success -> result.value
                     is DomainResult.Failure -> return ExportUiState.Failed(result.error)
                 }
-            if (project.rooms.isEmpty()) return ExportUiState.Empty(project.name)
+            if (project.rooms.all { it.walls.isEmpty() }) return ExportUiState.Empty(project.name)
             val appSettings = settings.settings.first()
             val evaluations = LinkedHashMap<RoomId, RoomEvaluation>()
             for (room in project.rooms) {
@@ -259,7 +280,7 @@ class ExportViewModel
                     unit = appSettings.lengthUnit,
                     findings = findings(project, report),
                     fit = PlanFit.Checking,
-                    awaitingDocument = savedState.get<Boolean>(AWAITING_KEY) == true,
+                    awaitingDocument = pendingDocument != null || savedState.get<Boolean>(AWAITING_KEY) == true,
                 )
             return ready
         }
@@ -292,6 +313,7 @@ class ExportViewModel
                             }
                         }
                     updateReady { it.copy(fit = fit) }
+                    servePendingDocument()
                 }
         }
 

@@ -69,7 +69,7 @@ fun ExportScreen(
         val content = Modifier.fillMaxSize().padding(padding)
         when (state) {
             ExportUiState.Loading -> ExportLoadingState(content)
-            is ExportUiState.Empty -> ExportEmptyState(content)
+            is ExportUiState.Empty -> ExportEmptyState(state.documentRejected, content)
             is ExportUiState.Failed -> ExportLoadFailedState(state.error, actions.onRetryLoad, content)
             is ExportUiState.Ready -> ReadyContent(state, actions, content)
         }

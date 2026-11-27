@@ -39,18 +39,31 @@ internal fun ExportLoadingState(modifier: Modifier = Modifier) {
 }
 
 /**
- * State of a project without a room: only the hint "no room yet".
+ * State of a project without a room that has a wall: the hint "no room yet".
  *
+ * @param documentRejected whether to explain that a chosen document was discarded.
  * @param modifier modifier of the state, the space below the top bar.
  */
 @Composable
-internal fun ExportEmptyState(modifier: Modifier = Modifier) {
+internal fun ExportEmptyState(
+    documentRejected: Boolean,
+    modifier: Modifier = Modifier,
+) {
     CenteredState(modifier) {
         Text(
             text = stringResource(R.string.export_empty_hint),
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
         )
+        if (documentRejected) {
+            MessageCard(
+                title = stringResource(R.string.export_error_title),
+                message = stringResource(R.string.export_error_document_rejected_empty),
+                action = null,
+                onAction = {},
+                onDismiss = null,
+            )
+        }
     }
 }
 

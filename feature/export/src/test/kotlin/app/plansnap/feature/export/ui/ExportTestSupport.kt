@@ -53,6 +53,9 @@ internal object ExportRooms {
         List(count) { if (it == 0) CornerSpec.Unspecified else CornerSpec.DeclaredRight(TurnDirection.LEFT) }
             .toImmutableList()
 
+    /** A room without any wall, as every new project starts with one. */
+    val bare = Room(id = RoomId("bare"))
+
     /** 4 m by 3 m, confirmed. */
     val confirmed =
         Room(
