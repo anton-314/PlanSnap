@@ -9,6 +9,7 @@ import app.plansnap.core.domain.command.ProjectCommandFactory
 import app.plansnap.core.domain.command.ProjectEdit
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.domain.evaluation.RoomEvaluator
+import app.plansnap.core.drawing.cache.CachingSceneBuilder
 import app.plansnap.core.drawing.scene.DrawingScene
 import app.plansnap.core.drawing.scene.RoomScene
 import app.plansnap.core.drawing.scene.SceneBuilder
@@ -49,6 +50,10 @@ internal class EvaluationPipelines(
 ) {
     private var cache: Map<RoomKey, Computed> = emptyMap()
 
+    // Reuses the scene of a room whose evaluation did not change, for example after a change of the tolerance. The
+    // preview uses the plain builder, so it never displaces the confirmed scene of its room.
+    private val confirmedScenes = CachingSceneBuilder(sceneBuilder)
+
     /** Starts both derivations in the scope of the screen. */
     fun start() {
         store.scope.launch {
@@ -86,12 +91,13 @@ internal class EvaluationPipelines(
             } else {
                 when (val result = evaluator.evaluate(room, input.tolerance)) {
                     is DomainResult.Failure -> errors[room.id] = result.error
-                    is DomainResult.Success -> computed[key] = computeScene(room, result.value)
+                    is DomainResult.Success -> computed[key] = computeScene(confirmedScenes, room, result.value)
                 }
             }
         }
         currentCoroutineContext().ensureActive()
         cache = computed
+        confirmedScenes.retainRooms(project.rooms.mapTo(HashSet()) { it.id })
         val perRoom =
             project.rooms.mapNotNull { room ->
                 computed[RoomKey(room, input.tolerance)]?.let { room.id to it }
@@ -109,12 +115,13 @@ internal class EvaluationPipelines(
     }
 
     private suspend fun computeScene(
+        builder: SceneBuilder,
         room: Room,
         evaluation: RoomEvaluation,
     ): Computed =
         withContext(
             dispatchers.default,
-        ) { Computed(evaluation, sceneBuilder.buildRoom(room, evaluation, SceneOptions())) }
+        ) { Computed(evaluation, builder.buildRoom(room, evaluation, SceneOptions())) }
 
     private suspend fun preview(input: PreviewInput) {
         val outcome = previewOf(input)
@@ -156,7 +163,7 @@ internal class EvaluationPipelines(
                     }
 
                     is DomainResult.Success -> {
-                        val scene = computeScene(extended, evaluated.value).scene
+                        val scene = computeScene(sceneBuilder, extended, evaluated.value).scene
                         PreviewOutcome(WallPreview(room.id, extended, evaluated.value, scene), null)
                     }
                 }

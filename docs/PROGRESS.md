@@ -122,12 +122,13 @@ Keine.
 - 2026-11-27: T-PRJ-002 gemergt (`04c292e`). Wellen-Gate 4 auf `04c292e`: voller Build grün, 2 532 Testergebnisse ohne Fehler und Überspringer, instrumentiert 11 von 11. Pitest wird ohne Cache neu ausgeführt, das Review läuft.
 - 2026-11-27: **Wellen-Gate 4 bestanden** auf `04c292e`: voller Build grün, 2 532 Testergebnisse ohne Fehler, Pitest Geometrie 86 % (1 660 von 1 927, ohne Cache), instrumentiert 11 von 11, Review `APPROVE` ohne kritische und hohe Befunde. M1, M2, N1, N2 und N5 sind Batch 5.0, N3 und N4 im Backlog. Tag `wave-4`.
 - 2026-11-27: T-EXP-005 gemergt, `NavigationTest` an die neue Erwartung angepasst. Entscheidung: Ohne jede Wand gibt es auch keinen JSON-Export (folgt aus dem Leerzustand nach UX §1). Beim Fix wurden drei Wege gefunden und geschlossen, auf denen eine gewählte Exportdatei still verloren ging.
+- 2026-11-27: T-PRF-001 gemergt und eingehängt (`CachingSceneBuilder`, additiv, für die bestätigten Szenen in `EvaluationPipelines`). Der Editor hatte bereits je Raum gecacht und geculled, der Zusatzgewinn ist klein. JVM-Messung bei 200 Wänden und 30 Räumen: voller Szenenaufbau 1,2 bis 2,0 ms, ein geänderter Raum 73 µs im Median. Die 60 fps aus REQ-NFR-001 sind erst mit T-PRF-002 auf dem Emulator zu belegen.
 
 ## Wiedereinstieg (Stand 2026-11-27)
 
 - **Welle 4:** fertig, Tag `wave-4`.
 - **Gepusht:** `392f918` mit Tag `wave-4`, CI-Ergebnis noch prüfen.
-- **Läuft:** T-EDT-014, T-E2E-003, T-PRF-001 (Basis `392f918`, Worktrees siehe `git worktree list`). Danach Batch 5.1 (T-A11-001, T-L10-001, T-UX-002) und folgende laut `docs/TASKS.md`.
+- **Läuft:** T-EDT-014, T-E2E-003 (Basis `392f918`, Worktrees siehe `git worktree list`). Danach Batch 5.1 (T-A11-001, T-L10-001, T-UX-002) und folgende laut `docs/TASKS.md`.
 - **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
 
 ## Nächste Schritte

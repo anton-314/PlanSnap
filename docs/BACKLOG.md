@@ -58,3 +58,4 @@
 - Entwürfe von Öffnung, Raumdetails und Andocken überleben keinen Prozess-Tod. ARCHITECTURE §5 verlangt das nur für die laufende Eingabe (Gate-Review Welle 4, N4).
 - Export: Wird ein zurückgestelltes Dokument wegen unpassender Seite abgelehnt, bewirkt „Erneut versuchen“ nichts (aus T-EXP-005).
 - Export: Verlässt der Nutzer den Screen mit zurückgestellter URI, bleibt das leere Dokument liegen (aus T-EXP-005).
+- ADR 0008 und ARCHITECTURE §2 verorten das Culling in `:core:drawing`, es liegt in `:feature:editor` (`PlanViewMath.visibleRooms`). `architect` soll die Dokumente oder den Ort angleichen (aus T-PRF-001).
