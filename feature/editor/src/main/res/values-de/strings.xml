@@ -2,10 +2,9 @@
 <resources>
     <string name="editor_title">Editor</string>
     <string name="editor_back">Zurück</string>
+    <string name="editor_menu">Weitere Aktionen</string>
     <string name="editor_open_export">Export</string>
     <string name="editor_empty_hint">Erste Wand eingeben</string>
-    <string name="editor_undo">Rückgängig</string>
-    <string name="editor_redo">Wiederholen</string>
     <string name="editor_loading">Projekt wird geladen</string>
     <string name="editor_load_failed">Das Projekt konnte nicht geladen werden.</string>
     <string name="editor_retry">Erneut versuchen</string>

@@ -46,4 +46,9 @@ internal object InputIcons {
     val Redo: ImageVector by lazy(LazyThreadSafetyMode.NONE) {
         symbol("Redo", "M15 6 L20 11 L15 16 M20 11 L10 11 C6 11 4 13.5 4 18")
     }
+
+    /** Three dots in a column: further actions. */
+    val More: ImageVector by lazy(LazyThreadSafetyMode.NONE) {
+        symbol("More", "M12 5 L12 5.1 M12 12 L12 12.1 M12 19 L12 19.1")
+    }
 }

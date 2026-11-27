@@ -131,6 +131,7 @@ class NavigationTest {
         show()
         compose.runOnUiThread { controller.navigateToEditor(ProjectId("p-1")) }
         compose.waitForIdle()
+        compose.onNodeWithContentDescription("More actions").performClick()
         compose.onNodeWithText("Export").performClick()
         compose.waitForIdle()
         assertEquals(listOf("projects", "editor:p-1", "export:p-1"), backStackRoutes())
@@ -142,6 +143,7 @@ class NavigationTest {
         show()
         compose.runOnUiThread { controller.navigateToEditor(ProjectId("p-1")) }
         compose.waitForIdle()
+        compose.onNodeWithContentDescription("More actions").performClick()
         compose.onNodeWithText("Export").performClick()
         compose.waitForIdle()
 

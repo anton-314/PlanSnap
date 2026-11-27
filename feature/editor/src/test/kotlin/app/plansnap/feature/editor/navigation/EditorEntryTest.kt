@@ -16,11 +16,13 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.lifecycle.SavedStateHandle
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
+import app.plansnap.core.domain.opening.DefaultOpeningRules
 import app.plansnap.core.domain.repository.AppSettings
 import app.plansnap.core.model.CornerSpec
 import app.plansnap.core.model.Project
 import app.plansnap.core.model.RoomId
 import app.plansnap.feature.editor.canvas.CanvasTestScenes
+import app.plansnap.feature.editor.opening.OpeningHandler
 import app.plansnap.feature.editor.shape.ShapeHandler
 import app.plansnap.feature.editor.state.EditorIntent
 import app.plansnap.feature.editor.state.EditorRig
@@ -64,6 +66,7 @@ class EditorEntryTest {
     ): Pair<EditorRig, EditorViewModel> {
         val rig = EditorRig(scope, project, AppSettings())
         rig.handlers += ShapeHandler(SequentialIdGenerator("gen"))
+        rig.handlers += OpeningHandler(SequentialIdGenerator("opening"), DefaultOpeningRules())
         val viewModel = if (handle == null) rig.viewModel() else rig.viewModel(handle)
         return rig to viewModel
     }
@@ -291,6 +294,7 @@ class EditorEntryTest {
         show(viewModel)
         settle()
         compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithContentDescription("More actions").performClick()
         compose.onNodeWithText("Export").performClick()
         assertEquals(1 to 1, backs to exports)
     }

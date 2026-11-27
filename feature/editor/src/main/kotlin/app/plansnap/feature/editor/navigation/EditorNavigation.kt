@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -33,7 +34,17 @@ import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.model.RoomId
 import app.plansnap.feature.editor.R
 import app.plansnap.feature.editor.canvas.PlanCanvas
+import app.plansnap.feature.editor.canvas.PlanTap
+import app.plansnap.feature.editor.details.DetailsHost
+import app.plansnap.feature.editor.details.rememberRoomTypeName
 import app.plansnap.feature.editor.input.ExtraKey
+import app.plansnap.feature.editor.opening.OpeningHost
+import app.plansnap.feature.editor.opening.openingTapIntent
+import app.plansnap.feature.editor.rooms.RoomsHost
+import app.plansnap.feature.editor.rooms.roomGestureCallbacks
+import app.plansnap.feature.editor.rooms.roomsCanvasPreview
+import app.plansnap.feature.editor.rooms.roomsShowGrid
+import app.plansnap.feature.editor.rooms.roomsTapIntent
 import app.plansnap.feature.editor.screen.EditorActions
 import app.plansnap.feature.editor.screen.EditorScreen
 import app.plansnap.feature.editor.screen.PLAN_MIN_HEIGHT
@@ -121,6 +132,8 @@ internal fun EditorContent(
             EditorCanvas(state, onIntent, canvasModifier)
         }
         ShapeSheetHost(state, onIntent)
+        OpeningHost(state, onIntent)
+        DetailsHost(state, onIntent)
     }
 }
 
@@ -167,6 +180,7 @@ private fun EditorCanvas(
 ) {
     val room = state.selectedRoom
     var userExpanded by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    val roomGestures = remember(onIntent) { roomGestureCallbacks(onIntent) }
     BoxWithConstraints(modifier = modifier) {
         val cardPadding = PlanSnapTheme.spacing.s
         val cardMaxHeight = statusCardMaxHeight(maxHeight, cardPadding * 2)
@@ -176,10 +190,14 @@ private fun EditorCanvas(
                 scene = state.scene,
                 view = state.view,
                 onViewChange = { onIntent(CoreIntent.ViewChanged(it)) },
-                onTap = { tap -> tap.target?.let { onIntent(CoreIntent.SelectRoom(it.roomId)) } },
+                onTap = { tap -> planTapIntents(tap, state).forEach(onIntent) },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 preview = state.preview,
                 lengthUnit = state.settings.lengthUnit,
+                roomTypeName = rememberRoomTypeName(),
+                roomGestures = roomGestures,
+                roomPreview = roomsCanvasPreview(state),
+                showGrid = roomsShowGrid(state),
             )
             ShapeStatusCard(
                 room = room,
@@ -193,8 +211,24 @@ private fun EditorCanvas(
                         .heightIn(max = cardMaxHeight),
             )
         }
+        RoomsHost(state, onIntent, Modifier.align(Alignment.TopCenter))
     }
 }
+
+/**
+ * What a tap on the plan means, in order. While the host of a dock is being chosen the tap belongs to the rooms
+ * function alone. Otherwise the tapped room is selected first, so it receives the input, and then the opening or wall
+ * that was hit opens its sheet.
+ */
+internal fun planTapIntents(
+    tap: PlanTap,
+    state: EditorUiState,
+): List<EditorIntent> =
+    roomsTapIntent(tap, state)?.let(::listOf)
+        ?: listOfNotNull(
+            tap.target?.let { CoreIntent.SelectRoom(it.roomId) },
+            openingTapIntent(tap, state),
+        )
 
 /** The evaluation of [roomId], or why there is none, `null` while the evaluation is pending. */
 private fun evaluationOf(

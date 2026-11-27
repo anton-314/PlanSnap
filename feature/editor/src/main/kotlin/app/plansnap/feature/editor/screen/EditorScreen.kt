@@ -24,16 +24,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.plansnap.core.designsystem.component.PlanSnapButton
 import app.plansnap.core.designsystem.component.PlanSnapIconButton
 import app.plansnap.core.designsystem.component.PlanSnapIcons
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.feature.editor.R
+import app.plansnap.feature.editor.history.HistoryButtons
 import app.plansnap.feature.editor.input.ExtraKey
 import app.plansnap.feature.editor.input.InputBar
-import app.plansnap.feature.editor.input.InputIcons
-import app.plansnap.feature.editor.state.CoreIntent
 import app.plansnap.feature.editor.state.EditorIntent
 import app.plansnap.feature.editor.state.EditorLoadState
 import app.plansnap.feature.editor.state.EditorUiState
@@ -63,9 +63,9 @@ class EditorActions(
 )
 
 /**
- * Stateless frame of the editor in portrait (UX section 2): the top bar with back, undo, redo and export, the plan
- * in the upper part and the input bar in the thumb zone at the bottom. The input bar scrolls when it does not fit,
- * for example at a font scale of 200 percent.
+ * Stateless frame of the editor in portrait (UX section 2): the top bar with back, undo, redo and the overflow
+ * menu, the plan in the upper part and the input bar in the thumb zone at the bottom. The input bar scrolls when it
+ * does not fit, for example at a font scale of 200 percent.
  *
  * @param state state of the editor.
  * @param actions receives the taps of the screen.
@@ -192,21 +192,12 @@ private fun EditorTopBar(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f).padding(horizontal = 4.dp).semantics { heading() },
             )
-            PlanSnapIconButton(
-                icon = InputIcons.Undo,
-                contentDescription = stringResource(R.string.editor_undo),
-                onClick = { actions.onIntent(CoreIntent.Undo) },
-                enabled = state.canUndo,
-            )
-            PlanSnapIconButton(
-                icon = InputIcons.Redo,
-                contentDescription = stringResource(R.string.editor_redo),
-                onClick = { actions.onIntent(CoreIntent.Redo) },
-                enabled = state.canRedo,
-            )
-            TextButton(onClick = actions.onOpenExport) { Text(stringResource(R.string.editor_open_export)) }
+            HistoryButtons(state = state, onIntent = actions.onIntent)
+            EditorOverflowMenu(state = state, actions = actions)
         }
     }
 }

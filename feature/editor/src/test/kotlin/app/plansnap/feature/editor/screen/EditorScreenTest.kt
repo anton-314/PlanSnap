@@ -75,6 +75,7 @@ class EditorScreenTest {
         show(editorState())
 
         compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithContentDescription("More actions").performClick()
         compose.onNodeWithText("Export").performClick()
 
         assertEquals(1, backs)
