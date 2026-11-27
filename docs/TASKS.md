@@ -44,6 +44,7 @@ graph LR
 | Welle 4 / 4.2 | T-EDT-009, T-UX-001, T-EDT-013 (Fix), T-EXP-004 (Fix), T-PRJ-002 (Fix) |
 | Welle 5 / 5.0 (Gate-4-Befunde) | T-EDT-014, T-E2E-003, T-EXP-005 |
 | Welle 5 / 5.1 | T-A11-001, T-L10-001, T-UX-002, T-PRF-001 |
+| Welle 5 / 5.2 | T-L10-002 |
 | Phase 5 / H.1 | T-E2E-001, T-SEC-001 |
 | Phase 5 / H.2 | T-E2E-002 |
 | Phase 5 / H.3 | T-PRF-002 |
@@ -916,6 +917,17 @@ graph LR
 - **Vertrag:** ADR 0008
 - **Akzeptanzkriterien:** Szenen-Cache je Raum und Culling. Änderung eines Raums baut nur dessen Szene neu. Anforderungen: REQ-NFR-001
 - **Tests:** Cache-Tests, Allokationsmessung
+
+#### T-L10-002 – Einheitliche Anrede
+
+- **Modul:** **/res/values-de
+- **Rolle/Modell:** boilerplate-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-L10-001
+- **Besitzbereich:** `**/src/main/res/values-de/`, betroffene Tests und Roborazzi-Baselines
+- **Vertrag:** UX §7
+- **Akzeptanzkriterien:** Alle deutschen Texte duzen, keine Siez-Form bleibt. Anforderungen: REQ-UX-008
+- **Tests:** Bestehende Tests, Roborazzi
 
 ## Phase 5
 
