@@ -123,13 +123,17 @@ Keine.
 - 2026-11-27: **Wellen-Gate 4 bestanden** auf `04c292e`: voller Build grün, 2 532 Testergebnisse ohne Fehler, Pitest Geometrie 86 % (1 660 von 1 927, ohne Cache), instrumentiert 11 von 11, Review `APPROVE` ohne kritische und hohe Befunde. M1, M2, N1, N2 und N5 sind Batch 5.0, N3 und N4 im Backlog. Tag `wave-4`.
 - 2026-11-27: T-EXP-005 gemergt, `NavigationTest` an die neue Erwartung angepasst. Entscheidung: Ohne jede Wand gibt es auch keinen JSON-Export (folgt aus dem Leerzustand nach UX §1). Beim Fix wurden drei Wege gefunden und geschlossen, auf denen eine gewählte Exportdatei still verloren ging.
 - 2026-11-27: T-PRF-001 gemergt und eingehängt (`CachingSceneBuilder`, additiv, für die bestätigten Szenen in `EvaluationPipelines`). Der Editor hatte bereits je Raum gecacht und geculled, der Zusatzgewinn ist klein. JVM-Messung bei 200 Wänden und 30 Räumen: voller Szenenaufbau 1,2 bis 2,0 ms, ein geänderter Raum 73 µs im Median. Die 60 fps aus REQ-NFR-001 sind erst mit T-PRF-002 auf dem Emulator zu belegen.
+- 2026-11-27: T-EDT-014 gemergt, `androidx.activity.compose` im Editor-Build ergänzt. Nach dem Merge Editor-Tests, Roborazzi, detekt, Spotless, Lint, `:app`-Tests und `checkArchitecture` grün. Offen bleibt: Bei 360 × 640 dp lassen Andock-Leiste plus Speichermeldung kaum antippbaren Plan.
+- 2026-11-27: Nutzungslimit erreicht. Die Agenten für T-E2E-003 und T-UX-002 wurden beendet, ihre Worktrees bleiben erhalten.
 
-## Wiedereinstieg (Stand 2026-11-27)
+## Wiedereinstieg (Stand 2026-11-27, Abbruch wegen Nutzungslimit)
 
-- **Welle 4:** fertig, Tag `wave-4`.
-- **Gepusht:** `392f918` mit Tag `wave-4`, CI-Ergebnis noch prüfen.
-- **Läuft:** T-EDT-014, T-E2E-003 (Basis `392f918`), T-UX-002 (Basis `3936e3d`), Worktrees siehe `git worktree list`. Danach T-A11-001 und T-L10-001, dann Wellen-Gate 5.
-- **Gemergt in Welle 5:** T-EXP-005, T-PRF-001.
+- **Welle 4:** fertig, Tag `wave-4`, gepusht (`392f918`). CI-Ergebnis noch prüfen.
+- **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014.
+- **Unterbrochen** (Stand in den Worktrees prüfen, nichts verwerfen, neue Agenten darauf fortsetzen):
+  - T-E2E-003 (`test-engineer`, Basis `392f918`): `.claude/worktrees/agent-a9deb2b010ca13c7c`. Nach dem Fortsetzen auf `main` heben.
+  - T-UX-002 (`test-engineer`, Basis `3936e3d`): `.claude/worktrees/agent-a0a9bdde57f812f07`
+- **Offen in Welle 5:** T-A11-001, T-L10-001, dann Wellen-Gate 5.
 - **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
 
 ## Nächste Schritte
