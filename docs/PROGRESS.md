@@ -128,7 +128,8 @@ Keine.
 
 - **Welle 4:** fertig, Tag `wave-4`.
 - **Gepusht:** `392f918` mit Tag `wave-4`, CI-Ergebnis noch prüfen.
-- **Läuft:** T-EDT-014, T-E2E-003, T-UX-002 (Basis `3936e3d`) (Basis `392f918`, Worktrees siehe `git worktree list`). Danach Batch 5.1 (T-A11-001, T-L10-001, T-UX-002) und folgende laut `docs/TASKS.md`.
+- **Läuft:** T-EDT-014, T-E2E-003 (Basis `392f918`), T-UX-002 (Basis `3936e3d`), Worktrees siehe `git worktree list`. Danach T-A11-001 und T-L10-001, dann Wellen-Gate 5.
+- **Gemergt in Welle 5:** T-EXP-005, T-PRF-001.
 - **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
 
 ## Nächste Schritte
