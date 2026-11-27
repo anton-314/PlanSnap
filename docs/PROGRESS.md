@@ -121,6 +121,7 @@ Keine.
 - **Läuft, Welle 4 / Batch 4.1** (Basis `0803790`, Branches `worktree-<Worktree>`). Am 2026-11-27 mit neuen Agenten auf dem ungesicherten Worktree-Stand fortgesetzt (Agenten spulen auf `11061ff` vor und committen im Worktree):
   - T-EDT-006 (`ui-engineer`, `rooms/` plus additiv `canvas/`): `.claude/worktrees/agent-a1029fa26f60a909a`
   - Gemergt, noch zu verdrahten: T-EDT-008, T-EDT-005 (`92bf74a`), T-EDT-007 (`bb3ad60`). Gemergt: T-EDT-012 (`24cfd78`)
+- Läuft zusätzlich: T-EDT-013 (`ui-engineer`, `save/`, Basis `7169d95`, Worktree siehe `git worktree list`). Danach T-EXP-004.
 - **Einhängeregel Batch 4.1:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator. Die Agenten liefern Handler per `@IntoSet`, `XxxHost(state, onIntent)`, ggf. `xxxTapIntent` und Menüeinträge als Daten. Der Orchestrator verdrahtet beim Merge (Top-Bar-Überlaufmenü ⋮) und testet die Integration.
 - Dem Nutzer wurde eine Debug-APK zur Ansicht in den Windows-Download-Ordner gelegt (`fee05ca`).
 
