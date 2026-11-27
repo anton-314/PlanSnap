@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Menu entries and actions that add an opening -->
+    <string name="opening_add_door">Add door</string>
+    <string name="opening_add_window">Add window</string>
+    <string name="opening_add_passage">Add passage</string>
+
+    <!-- Types -->
+    <string name="opening_type_door">Door</string>
+    <string name="opening_type_window">Window</string>
+    <string name="opening_type_passage">Passage</string>
+
+    <!-- Wall sheet -->
+    <string name="opening_wall_title">Wall %1$d</string>
+    <string name="opening_wall_subtitle">Doors, windows and passages on this wall</string>
+    <string name="opening_wall_empty">This wall has no openings yet.</string>
+    <string name="opening_row_summary">%1$s, %2$s wide, starts %3$s from the start of the wall</string>
+    <string name="opening_row_edit">Edit opening</string>
+    <string name="opening_status_valid">Fits on the wall</string>
+    <string name="opening_status_out_of_bounds">Does not fit on the wall</string>
+
+    <!-- Form -->
+    <string name="opening_title_new">New opening</string>
+    <string name="opening_title_edit">Edit opening</string>
+    <string name="opening_field_wall">Wall</string>
+    <string name="opening_wall_chip">Wall %1$d</string>
+    <string name="opening_field_offset">Distance (%1$s)</string>
+    <string name="opening_field_offset_hint">Measured from corner %1$d</string>
+    <string name="opening_field_width">Width (%1$s)</string>
+    <string name="opening_field_height">Height (%1$s)</string>
+    <string name="opening_field_sill">Sill height (%1$s)</string>
+    <string name="opening_field_optional">Optional</string>
+    <string name="opening_field_swing">Hinge side and opening direction</string>
+    <string name="opening_swing_none">Not specified</string>
+    <string name="opening_swing_left_inward">Hinge left, opens into the room</string>
+    <string name="opening_swing_left_outward">Hinge left, opens out of the room</string>
+    <string name="opening_swing_right_inward">Hinge right, opens into the room</string>
+    <string name="opening_swing_right_outward">Hinge right, opens out of the room</string>
+    <string name="opening_save">Save opening</string>
+    <string name="opening_cancel">Cancel</string>
+    <string name="opening_delete">Delete opening</string>
+    <string name="opening_delete_title">Delete opening?</string>
+    <string name="opening_delete_message">The opening is removed from the wall. You can undo this.</string>
+    <string name="opening_delete_confirm">Delete</string>
+</resources>

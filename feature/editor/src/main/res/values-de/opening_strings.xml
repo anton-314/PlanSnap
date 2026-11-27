@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Menüeinträge und Aktionen zum Hinzufügen einer Öffnung -->
+    <string name="opening_add_door">Tür hinzufügen</string>
+    <string name="opening_add_window">Fenster hinzufügen</string>
+    <string name="opening_add_passage">Durchgang hinzufügen</string>
+
+    <!-- Typen -->
+    <string name="opening_type_door">Tür</string>
+    <string name="opening_type_window">Fenster</string>
+    <string name="opening_type_passage">Durchgang</string>
+
+    <!-- Wandblatt -->
+    <string name="opening_wall_title">Wand %1$d</string>
+    <string name="opening_wall_subtitle">Türen, Fenster und Durchgänge dieser Wand</string>
+    <string name="opening_wall_empty">Diese Wand hat noch keine Öffnungen.</string>
+    <string name="opening_row_summary">%1$s, %2$s breit, beginnt %3$s ab Wandanfang</string>
+    <string name="opening_row_edit">Öffnung bearbeiten</string>
+    <string name="opening_status_valid">Passt in die Wand</string>
+    <string name="opening_status_out_of_bounds">Passt nicht in die Wand</string>
+
+    <!-- Formular -->
+    <string name="opening_title_new">Neue Öffnung</string>
+    <string name="opening_title_edit">Öffnung bearbeiten</string>
+    <string name="opening_field_wall">Wand</string>
+    <string name="opening_wall_chip">Wand %1$d</string>
+    <string name="opening_field_offset">Abstand (%1$s)</string>
+    <string name="opening_field_offset_hint">Gemessen ab Ecke %1$d</string>
+    <string name="opening_field_width">Breite (%1$s)</string>
+    <string name="opening_field_height">Höhe (%1$s)</string>
+    <string name="opening_field_sill">Brüstungshöhe (%1$s)</string>
+    <string name="opening_field_optional">Optional</string>
+    <string name="opening_field_swing">Bandseite und Öffnungsrichtung</string>
+    <string name="opening_swing_none">Keine Angabe</string>
+    <string name="opening_swing_left_inward">Band links, öffnet in den Raum</string>
+    <string name="opening_swing_left_outward">Band links, öffnet aus dem Raum</string>
+    <string name="opening_swing_right_inward">Band rechts, öffnet in den Raum</string>
+    <string name="opening_swing_right_outward">Band rechts, öffnet aus dem Raum</string>
+    <string name="opening_save">Öffnung speichern</string>
+    <string name="opening_cancel">Abbrechen</string>
+    <string name="opening_delete">Öffnung löschen</string>
+    <string name="opening_delete_title">Öffnung löschen?</string>
+    <string name="opening_delete_message">Die Öffnung wird aus der Wand entfernt. Sie können das rückgängig machen.</string>
+    <string name="opening_delete_confirm">Löschen</string>
+</resources>
