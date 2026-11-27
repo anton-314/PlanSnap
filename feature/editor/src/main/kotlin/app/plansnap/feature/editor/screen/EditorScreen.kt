@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -118,6 +119,7 @@ private fun LoadedBody(
     canvas: @Composable (Modifier) -> Unit,
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val inputMaxHeight = (maxHeight - PLAN_MIN_HEIGHT - DividerDefaults.Thickness).coerceAtLeast(0.dp)
         Column(modifier = Modifier.fillMaxSize()) {
             canvas(Modifier.weight(1f).fillMaxWidth())
             HorizontalDivider()
@@ -127,7 +129,7 @@ private fun LoadedBody(
                 extraKeys = extraKeys,
                 modifier =
                     Modifier
-                        .heightIn(max = (this@BoxWithConstraints.maxHeight - PLAN_MIN_HEIGHT).coerceAtLeast(0.dp))
+                        .heightIn(max = inputMaxHeight)
                         .verticalScroll(rememberScrollState()),
             )
         }
