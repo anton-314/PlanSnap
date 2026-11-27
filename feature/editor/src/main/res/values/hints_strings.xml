@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hints_close">Close hint</string>
+    <string name="hints_numpad">Hint: Type the wall length on the number pad, then tap OK.</string>
+    <string name="hints_direction">Hint: “Left” or “Right” sets where the next wall turns.</string>
+    <string name="hints_close_room">Hint: All walls entered? “Close” checks the room.</string>
+    <string name="hints_diagonal">Hint: A measured diagonal (key “Diag”) helps to confirm the shape.</string>
+    <string name="hints_adjustment">Hint: “Adjust” below the plan shows the corrections before anything changes.</string>
+</resources>

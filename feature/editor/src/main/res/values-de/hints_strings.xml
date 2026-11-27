@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hints_close">Hinweis schließen</string>
+    <string name="hints_numpad">Hinweis: Wandlänge mit dem Ziffernblock eingeben, dann OK.</string>
+    <string name="hints_direction">Hinweis: „Links“ oder „Rechts“ bestimmt, wohin die nächste Wand abbiegt.</string>
+    <string name="hints_close_room">Hinweis: Alle Wände erfasst? „Schließen“ prüft den Raum.</string>
+    <string name="hints_diagonal">Hinweis: Eine gemessene Diagonale (Taste „Diag“) hilft, die Form zu bestätigen.</string>
+    <string name="hints_adjustment">Hinweis: „Ausgleichen“ unter dem Plan zeigt die Korrekturen, bevor sich etwas ändert.</string>
+</resources>
