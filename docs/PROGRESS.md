@@ -1,6 +1,6 @@
 # Fortschritt
 
-**Aktuelle Phase:** 4 – Umsetzung, Welle 5
+**Aktuelle Phase:** 5 – Härtung
 **Letzte Aktualisierung:** 2026-11-27
 
 ## Phasen
@@ -11,7 +11,7 @@
 | 1 – Umgebung | Fertig | `docs/ENVIRONMENT.md`, Emulator-Boot ausgeführt |
 | 2 – Spezifikation | Fertig | Vom Auftraggeber freigegeben am 2026-11-23 |
 | 3 – Fundament | Fertig | Gate 2026-11-24 auf `ebe15b1`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 381 JVM-Tests, Pitest Geometrie 82 %, 2 instrumentierte Tests, Review `APPROVE`. Vertragsfreeze, Tag `phase-3-foundation` |
-| 4 – Umsetzung | Wellen 1 bis 4 fertig, Welle 5 läuft | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
+| 4 – Umsetzung | Fertig, Wellen 1 bis 5 | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
 | 5 – Härtung | Offen | |
 | 6 – Release | Offen | |
 | 7 – Abschlussbericht | Offen | |
@@ -131,15 +131,18 @@ Keine.
 - 2026-11-27: T-L10-001 gemergt (`d7c3513`, Paritätstest über alle Module in `:app`). `:core:render` nutzt jetzt wie alle Module `values/` für Englisch und `values-de/` für Deutsch, zwei deutsche Plurale korrigiert.
 - 2026-11-27: Anrede wird auf „du“ vereinheitlicht (T-L10-002, vor dem Gate), weil Projektliste und Leerzustände schon duzen und die App privat genutzt wird.
 - 2026-11-27: T-L10-002 gemergt (`1c6fd40`, drei Baselines neu). Damit sind alle Aufgaben der Welle 5 gemergt. Auf `1c6fd40`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 2 900 Testergebnisse ohne Fehler und Überspringer, instrumentiert 11 von 11. Pitest und Review laufen.
+- 2026-11-27: **Wellen-Gate 5 bestanden** auf `1c6fd40` (danach nur Doku): voller Build mit Kover, Architektur und Roborazzi grün, 2 900 Testergebnisse ohne Fehler und Überspringer, Pitest Geometrie 86 % (1 660 von 1 927, ohne Cache), instrumentiert 11 von 11, Review `APPROVE`. Mittel M1 (Planliste stürzt bei veralteter Auswertung ab) und M2 (Wirtswahl bei 360 × 640 dp unbenutzbar) werden T-EDT-015 zu Beginn von Phase 5, ebenso N1, N2 und N5. N3 und N4 stehen im Backlog. Tag `wave-5`. Damit ist Phase 4 abgeschlossen.
 
-## Wiedereinstieg (Stand 2026-11-27, Welle 5 läuft)
 
-- **Welle 4:** fertig, Tag `wave-4`, gepusht (`392f918`), CI-Lauf grün.
-- **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014, T-E2E-003, T-UX-002, T-A11-001, T-L10-001, T-L10-002.
-- **Laufend:** Wellen-Gate 5 auf `1c6fd40`: Build und instrumentiert bestanden, Pitest und `reviewer` offen.
-- **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
+
+## Wiedereinstieg (Stand 2026-11-27, Phase 5 beginnt)
+
+- **Phase 4:** fertig. Tag `wave-5` gesetzt und gepusht, CI-Ergebnis noch prüfen.
+- **Laufend:** T-EDT-015 (`ui-engineer`, neuer Worktree ab `main`).
+- **Danach:** Batch H.1 (T-E2E-001, T-SEC-001), H.2, H.3, H.4, dann Gate `phase-5-hardening`.
+- **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-015 darf `navigation/` ändern).
 
 ## Nächste Schritte
 
-1. Welle 5: Batch 5.0, 5.1 und folgende, dann Wellen-Gate 5.
-2. Phase 5 bis 7 laut `docs/ORCHESTRATION.md`.
+1. Phase 5 laut `docs/TASKS.md`.
+2. Phase 6 und 7 laut `docs/ORCHESTRATION.md`.

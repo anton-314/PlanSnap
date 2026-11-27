@@ -45,6 +45,7 @@ graph LR
 | Welle 5 / 5.0 (Gate-4-Befunde) | T-EDT-014, T-E2E-003, T-EXP-005 |
 | Welle 5 / 5.1 | T-A11-001, T-L10-001, T-UX-002, T-PRF-001 |
 | Welle 5 / 5.2 | T-L10-002 |
+| Phase 5 / H.0 | T-EDT-015 |
 | Phase 5 / H.1 | T-E2E-001, T-SEC-001 |
 | Phase 5 / H.2 | T-E2E-002 |
 | Phase 5 / H.3 | T-PRF-002 |
@@ -930,6 +931,19 @@ graph LR
 - **Tests:** Bestehende Tests, Roborazzi
 
 ## Phase 5
+
+### Batch H.0 (Fixes aus Gate-Review 5)
+
+#### T-EDT-015 – Planliste und Wirtswahl (Gate-Review Welle 5: M1, M2, N1, N2, N5)
+
+- **Modul:** :feature:editor
+- **Rolle/Modell:** ui-engineer
+- **Größe:** S
+- **Abhängigkeiten:** Wave 5
+- **Besitzbereich:** `feature/editor/…/a11y/`, `rooms/`, `save/`, `state/`, `navigation/`
+- **Vertrag:** UX §3, §7
+- **Akzeptanzkriterien:** Die Planliste stürzt bei veralteter Auswertung nicht ab und zeigt keine falschen Längen. Bei 360 × 640 dp lässt sich während „Auf dem Plan wählen“ eine Wirtswand antippen, bei 100 % und 200 % Schrift. `submitBuiltEdit` verwirft nichts stillschweigend. `SaveHost` misst Text nicht bei jeder Rekomposition. `FittingText` verträgt Stile ohne Schriftgröße. Anforderungen: REQ-UX-008
+- **Tests:** Regressionstests vorher rot, Compose-Test bei 360 × 640 dp, Roborazzi
 
 ### Batch H.1
 

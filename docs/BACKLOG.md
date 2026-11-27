@@ -64,3 +64,5 @@
 - Diagonalen-Chips heißen unter „Von“ und „Bis“ beide „Ecke n“, für Screenreader nicht unterscheidbar (aus T-A11-001).
 - Längenanzeige in Liste und Wandblatt uneinheitlich („400.0 cm“ und „90 cm“) (aus T-A11-001).
 - Barrierefreiheit mit TalkBack auf Gerät oder Emulator prüfen, optional Google-ATF-Prüfungen (`ui-test-junit4-accessibility`) (aus T-A11-001).
+- `CachingSceneBuilderPerformanceTest`: Kommentar spricht von einem längeren Wandpaar, der Code ändert die Wandstärke (Gate-Review Welle 5, N3).
+- `AccessibilityAudit` behandelt `TextOverflow.Visible` wie eine Ellipse, Regel oder Name präzisieren (Gate-Review Welle 5, N4).
