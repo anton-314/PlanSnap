@@ -15,12 +15,8 @@ import app.plansnap.core.geometry.determinacy.MeasurementRecommendation
 import app.plansnap.core.model.ConflictReason
 import app.plansnap.core.model.Room
 import app.plansnap.feature.editor.R
-import java.math.RoundingMode
-import java.text.NumberFormat
+import app.plansnap.feature.editor.details.DetailsFormat
 import java.util.Locale
-
-private const val SQUARE_MM_PER_SQUARE_METER = 1_000_000.0
-private const val AREA_DECIMALS = 2
 
 // Texts of the shape sheets. Every function resolves string resources of the current configuration, so a message that
 // was created before a language change is still shown in the language the user sees now. Corners and walls are shown
@@ -142,13 +138,5 @@ internal fun Resources.conflictText(
         }
     }
 
-/** Area in square meters with two decimals, rounded half up (DOMAIN section 7). */
-internal fun areaText(areaMm2: Double): String =
-    NumberFormat
-        .getNumberInstance(Locale.getDefault())
-        .apply {
-            minimumFractionDigits = AREA_DECIMALS
-            maximumFractionDigits = AREA_DECIMALS
-            roundingMode = RoundingMode.HALF_UP
-            isGroupingUsed = false
-        }.format(areaMm2 / SQUARE_MM_PER_SQUARE_METER)
+/** Area in square meters in the default locale, rounded exactly like the area overview ([DetailsFormat.area]). */
+internal fun areaText(areaMm2: Double): String = DetailsFormat.area(areaMm2, Locale.getDefault())

@@ -10,9 +10,9 @@ private const val SQUARE_MM_TO_SQUARE_M_SHIFT = 6
 private const val CUBIC_MM_TO_CUBIC_M_SHIFT = 9
 
 /**
- * Display formats of the overview. Values arrive unrounded and are rounded here, half up, as the last step
- * (DOMAIN section 7). The conversion uses the exact decimal value of the double, so a value that lies exactly on a
- * half is rounded up and never down by binary representation error.
+ * Display formats of areas and volumes, shared by the overview and the status card. Values arrive unrounded and are
+ * rounded here, half up, as the last step (DOMAIN section 7). The conversion uses the exact decimal value of the
+ * double, so a value that lies exactly on a half is rounded up and never down by binary representation error.
  */
 internal object DetailsFormat {
     /** Area in square meters with two decimals, without unit. */

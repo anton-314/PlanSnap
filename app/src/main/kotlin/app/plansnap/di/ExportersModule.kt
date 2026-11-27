@@ -1,6 +1,8 @@
 package app.plansnap.di
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import app.plansnap.core.common.runtime.DispatcherProvider
 import app.plansnap.core.common.units.LengthUnit
 import app.plansnap.core.document.DocumentCodec
@@ -12,6 +14,7 @@ import app.plansnap.core.export.pdf.PdfExporter
 import app.plansnap.core.export.png.PngExporter
 import app.plansnap.core.export.svg.SvgExporter
 import app.plansnap.core.render.LabelTextFormatter
+import app.plansnap.feature.editor.details.RoomTypeCatalog
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,8 +28,17 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ExportersModule {
-    private fun formatterFactory(context: Context): (Locale, LengthUnit) -> LabelTextFormatter =
-        { locale, unit -> LabelTextFormatter(context.resources, locale, unit) }
+    /**
+     * Creates the label formatter of an export. All texts, including the room type names of the editor's catalog
+     * (REQ-MOD-011), come from the resources of the requested locale, not of the device configuration.
+     */
+    @SuppressLint("AppBundleLocaleChanges") // APK only (ADR 0014): no bundle split can drop a language.
+    internal fun formatterFactory(context: Context): (Locale, LengthUnit) -> LabelTextFormatter =
+        { locale, unit ->
+            val configuration = Configuration(context.resources.configuration).apply { setLocale(locale) }
+            val resources = context.createConfigurationContext(configuration).resources
+            LabelTextFormatter(resources, locale, unit) { RoomTypeCatalog.displayName(resources, it) }
+        }
 
     /** SVG export. */
     @Provides
