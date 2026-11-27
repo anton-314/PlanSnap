@@ -52,7 +52,6 @@
 - Plan: Richtungspfeil oder Eckennummern der Wirtswand beim Andocken (aus T-EDT-006).
 - `:core:domain`: Vorbedingung `OPENING_HAS_DOCKED_ROOMS` in `OpeningRules`, `opening/` bildet sie nach (aus T-EDT-005).
 - Editor: Blatt- und Texthelfer aus `shape/` in ein neutrales Paket verschieben (aus T-EDT-005).
-- Eingabeleiste: Bei Deutsch und 200 % Schrift bricht „Wand 5“ mitten im Wort um (`save-de-fontscale-2.png`), in T-A11-001 prüfen.
 - `:core:render`: `LabelTextFormatter` rundet Flächen über Double-Division, `DetailsFormat.area` über `BigDecimal`. Vereinheitlichen per Change-Request (aus T-EXP-004).
 - Vor einem App Bundle: `bundle.language.enableSplit = false` in `app/build.gradle.kts`, sonst fallen Exportsprachen weg (Gate-Review Welle 4, N3).
 - Entwürfe von Öffnung, Raumdetails und Andocken überleben keinen Prozess-Tod. ARCHITECTURE §5 verlangt das nur für die laufende Eingabe (Gate-Review Welle 4, N4).
@@ -61,4 +60,7 @@
 - ADR 0008 und ARCHITECTURE §2 verorten das Culling in `:core:drawing`, es liegt in `:feature:editor` (`PlanViewMath.visibleRooms`). `architect` soll die Dokumente oder den Ort angleichen (aus T-PRF-001).
 - Projektnamen-Dialog bei 360 dp auf dem Emulator prüfen: Unter Robolectric wird ein `AlertDialog` mit `OutlinedTextField` bei 360 × 640 dp nicht idle, auch ohne App-Code (aus T-E2E-003).
 - Querformat und Split-Screen: Mit Statuskarte bleiben vom Plan nur etwa 31 dp sichtbar (Schätzung aus T-UX-002). Ein eigenes Querformat-Layout wäre die Lösung.
-- Eingabeleiste bei 280 dp (Faltgerät zu): `Diag` bricht zu „Dia/g“ um, in `config-foldable-closed.png` festgehalten (aus T-UX-002).
+- Raum verschieben und drehen per langem Drücken hat keine Screenreader-Alternative, nur Andocken (aus T-A11-001).
+- Diagonalen-Chips heißen unter „Von“ und „Bis“ beide „Ecke n“, für Screenreader nicht unterscheidbar (aus T-A11-001).
+- Längenanzeige in Liste und Wandblatt uneinheitlich („400.0 cm“ und „90 cm“) (aus T-A11-001).
+- Barrierefreiheit mit TalkBack auf Gerät oder Emulator prüfen, optional Google-ATF-Prüfungen (`ui-test-junit4-accessibility`) (aus T-A11-001).

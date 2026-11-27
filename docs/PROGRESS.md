@@ -127,14 +127,14 @@ Keine.
 - 2026-11-27: Nutzungslimit erreicht. Die Agenten für T-E2E-003 und T-UX-002 wurden beendet, ihre Worktrees bleiben erhalten.
 - 2026-11-27: T-E2E-003 gemergt. Der Ablauf läuft in `:app` mit `MainActivity` und Produktions-Verdrahtung (2 Tests, nach dem Merge `:app` Tests, detekt, Spotless grün), kein Produktionsfehler. Der Test läuft mit 320 dp Breite, weil ein Dialog mit Textfeld unter Robolectric bei 360 × 640 dp nicht idle wird. Auf dem Emulator in T-E2E-001 prüfen.
 - 2026-11-27: T-UX-002 gemergt (69 Konfigurationstests, 7 neue Baselines). Gefundenen Fehler behoben: Die Trennlinie wurde bei der Höhengrenze der Eingabeleiste nicht abgezogen, der Plan war in niedrigen Fenstern 95 statt 96 dp hoch. Drei Baselines verschieben sich um 1 dp und sind neu aufgezeichnet. Danach Editor-Tests, Roborazzi, detekt, Spotless, Lint, `:app`-Tests und `checkArchitecture` grün. Drehung und Prozess-Tod sind nur unter Robolectric geprüft.
+- 2026-11-27: T-A11-001 gemergt und verdrahtet („Plan als Liste“ im Menü ⋮ nach „Export“, sonst fällt „Export“ aus dem sichtbaren Menü). Danach `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün. Die neuen öffentlichen Typen in `:core:designsystem` (`AccessibilityAudit`, `AccessibilityFinding`, `AccessibilityRule`, `PlanSnapDragHandle`) sind ohne eigene ADR abgenommen: Das Paket `core/designsystem/…/a11y/` war in T-A11-001 eingeplant, bestehende Verträge ändern sich nicht. Nicht mit echtem TalkBack oder Gerät geprüft. Google-ATF-Prüfungen nicht eingebaut.
 
 ## Wiedereinstieg (Stand 2026-11-27, Welle 5 läuft)
 
 - **Welle 4:** fertig, Tag `wave-4`, gepusht (`392f918`), CI-Lauf grün.
-- **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014, T-E2E-003, T-UX-002.
-- **Laufend** (Basis `da8d13a`):
-  - T-A11-001 (`ui-engineer`): neuer Worktree `.claude/worktrees/agent-a324afd5adc56bb94`
-- **Offen in Welle 5:** T-L10-001 (erst nach T-A11-001, weil beide `strings.xml` ändern), dann Wellen-Gate 5.
+- **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014, T-E2E-003, T-UX-002, T-A11-001.
+- **Laufend:** T-L10-001 (`boilerplate-engineer`, neuer Worktree ab `main`).
+- **Offen in Welle 5:** danach Wellen-Gate 5.
 - **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
 
 ## Nächste Schritte
