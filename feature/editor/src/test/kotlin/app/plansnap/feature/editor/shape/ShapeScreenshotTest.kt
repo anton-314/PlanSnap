@@ -196,6 +196,36 @@ class ShapeScreenshotTest {
         card("shape-card-uncontrolled.png", base, evaluation)
     }
 
+    @Test
+    fun `given a collapsed card when shown then it matches the baseline`() =
+        collapsedCard("shape-card-collapsed.png", almostRectangle(3030))
+
+    @Test
+    fun `given a collapsed card at font scale 2 when shown then it matches the baseline`() =
+        collapsedCard("shape-card-collapsed-fontscale-2.png", almostRectangle(3030), fontScale = 2f)
+
+    @Test
+    @Config(qualifiers = "de-rDE-w360dp-h800dp-port-notnight-mdpi")
+    fun `given a collapsed german conflict at font scale 2 when dark then it matches the baseline`() =
+        collapsedCard("shape-card-collapsed-fontscale-2-de-dark.png", impossibleRoom(), fontScale = 2f, dark = true)
+
+    private fun collapsedCard(
+        fileName: String,
+        room: Room,
+        fontScale: Float = 1f,
+        dark: Boolean = false,
+    ) = capture(fileName, dark = dark, fontScale = fontScale) {
+        Box(Modifier.padding(8.dp)) {
+            ShapeStatusCard(
+                room,
+                DomainResult.Success(evaluate(room)),
+                LengthUnit.CENTIMETER,
+                {},
+                toggle = StatusCardToggle(false) {},
+            )
+        }
+    }
+
     private fun card(
         fileName: String,
         room: Room,

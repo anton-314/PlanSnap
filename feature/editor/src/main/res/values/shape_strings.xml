@@ -141,4 +141,11 @@
     <string name="error_storage_write">The project could not be saved. Your changes are kept and saving can be tried again.</string>
     <string name="error_storage_no_space">The device has no free space left.</string>
     <string name="error_export">The export did not work.</string>
+
+    <!-- Status card toggle -->
+    <string name="shape_card_state_expanded">Expanded</string>
+    <string name="shape_card_state_collapsed">Collapsed</string>
+    <string name="shape_card_action_expand">Show details</string>
+    <string name="shape_card_action_collapse">Hide details</string>
+    <string name="shape_card_summary_separator">" · "</string>
 </resources>

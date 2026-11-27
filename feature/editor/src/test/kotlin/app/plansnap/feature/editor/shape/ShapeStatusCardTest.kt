@@ -1,9 +1,28 @@
 package app.plansnap.feature.editor.shape
 
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import app.plansnap.core.common.result.DomainError
 import app.plansnap.core.common.result.DomainResult
 import app.plansnap.core.common.result.StorageProblem
@@ -168,5 +187,116 @@ class ShapeStatusCardTest {
             ).assertIsDisplayed()
         compose.onNodeWithText("Add this diagonal").performClick()
         assertEquals(listOf<EditorIntent>(ShapeIntent.OpenDiagonal(0, 2)), intents)
+    }
+
+    @Test
+    fun `given a toggle then the header collapses and expands the card and reports its state`() {
+        val room = almostRectangle(3030)
+        compose.setContent {
+            PlanSnapTheme {
+                var expanded by remember { mutableStateOf(true) }
+                ShapeStatusCard(
+                    room,
+                    DomainResult.Success(evaluate(room)),
+                    LengthUnit.CENTIMETER,
+                    { intents += it },
+                    toggle = StatusCardToggle(expanded) { expanded = it },
+                )
+            }
+        }
+        val header = compose.onNode(hasText("Küche", substring = true) and hasClickAction())
+        header.assertIsDisplayed().assertHeightIsAtLeast(48.dp)
+        header.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Expanded"))
+        compose.onNodeWithText("Adjust").assertIsDisplayed()
+
+        header.performClick()
+        compose.onNodeWithText("Adjust").assertDoesNotExist()
+        header.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Collapsed"))
+        compose.onNodeWithText("Shape not confirmed", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Küche", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("12.", substring = true).assertIsDisplayed()
+
+        header.performClick()
+        compose.onNodeWithText("Adjust").assertIsDisplayed()
+    }
+
+    @Test
+    fun `given no toggle then the header is no button`() {
+        show(almostRectangle(3030))
+        compose.onNode(hasText("Küche", substring = true) and hasClickAction()).assertDoesNotExist()
+    }
+
+    @Test
+    fun `given a card without details then no empty area follows the header`() {
+        show(almostRectangle(3000))
+        val card = compose.onRoot().fetchSemanticsNode().boundsInRoot
+        val badge = compose.onNodeWithText("Shape confirmed").fetchSemanticsNode().boundsInRoot
+        assertEquals(badge.top - card.top, card.bottom - badge.bottom, 1f)
+    }
+
+    @Test
+    fun `given font scale 2 and an expanded card then status name and area are complete`() {
+        showAtDoubleFont(almostRectangle(3030), maxHeight = 176.dp, expanded = true)
+        listOf("Shape not confirmed", "Küche", "12.06 m²").forEach { compose.assertTextComplete(it) }
+    }
+
+    @Test
+    fun `given font scale 2 and only 64 dp then the collapsed card shows status name and area completely`() {
+        showAtDoubleFont(almostRectangle(3030), maxHeight = 64.dp, expanded = false)
+        listOf("Shape not confirmed", "Küche", "12.06 m²").forEach { compose.assertTextComplete(it) }
+    }
+
+    @Test
+    fun `given a confirmed room at font scale 2 and 64 dp then the collapsed card is complete`() {
+        showAtDoubleFont(almostRectangle(3000), maxHeight = 64.dp, expanded = false)
+        listOf("Shape confirmed", "Küche", "12.00 m²").forEach { compose.assertTextComplete(it) }
+    }
+
+    @Test
+    fun `given a conflict at font scale 2 and 64 dp then the collapsed card is complete`() {
+        showAtDoubleFont(impossibleRoom(), maxHeight = 64.dp, expanded = false)
+        listOf("Measurements conflict", "Küche").forEach { compose.assertTextComplete(it) }
+    }
+
+    @Test
+    @Config(qualifiers = "de-rDE-w360dp-h800dp")
+    fun `given a german conflict at font scale 2 and 64 dp then the collapsed card is complete`() {
+        showAtDoubleFont(impossibleRoom(), maxHeight = 64.dp, expanded = false)
+        listOf("Maße widersprüchlich", "Küche").forEach { compose.assertTextComplete(it) }
+    }
+
+    @Test
+    fun `given a very long name at font scale 2 then only the name is cut off`() {
+        val name = "Wohnzimmer mit offener Küche und Essbereich"
+        showAtDoubleFont(almostRectangle(3030).copy(name = name), maxHeight = 64.dp, expanded = false)
+        listOf("Shape not confirmed", "12.06 m²").forEach { compose.assertTextComplete(it) }
+        compose.onNodeWithText(name, useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    private fun showAtDoubleFont(
+        room: Room,
+        maxHeight: Dp,
+        expanded: Boolean,
+    ) {
+        compose.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, 2f)) {
+                PlanSnapTheme {
+                    ShapeStatusCard(
+                        room,
+                        DomainResult.Success(evaluate(room)),
+                        LengthUnit.CENTIMETER,
+                        {},
+                        modifier = Modifier.width(CARD_WIDTH).heightIn(max = maxHeight),
+                        toggle = StatusCardToggle(expanded) {},
+                    )
+                }
+            }
+        }
+    }
+
+    private companion object {
+        /** Width of the card on a 360 dp phone with its 8 dp padding. */
+        val CARD_WIDTH = 344.dp
     }
 }
