@@ -41,7 +41,7 @@ graph LR
 | Welle 3 / 3.3 | T-EDT-004, T-FEX-001 |
 | Welle 3 / 3.4 (Gate-Fix) | T-EDT-010, T-EDT-011, T-FEX-002 |
 | Welle 4 / 4.1 | T-EDT-005, T-EDT-006, T-EDT-007, T-EDT-008, T-EDT-012 |
-| Welle 4 / 4.2 | T-EDT-009, T-UX-001 |
+| Welle 4 / 4.2 | T-EDT-009, T-UX-001, T-EDT-013 (Fix), T-EXP-004 (Fix) |
 | Welle 5 / 5.1 | T-A11-001, T-L10-001, T-UX-002, T-PRF-001 |
 | Phase 5 / H.1 | T-E2E-001, T-SEC-001 |
 | Phase 5 / H.2 | T-E2E-002 |
@@ -798,6 +798,28 @@ graph LR
 - **Vertrag:** UX §1
 - **Akzeptanzkriterien:** Jeder Screen zeigt alle Zustände aus UX §1. Anforderungen: REQ-UX-007
 - **Tests:** Roborazzi je Zustand
+
+#### T-EDT-013 – Speicherfehler im Editor anzeigen
+
+- **Modul:** :feature:editor
+- **Rolle/Modell:** ui-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-EDT-008
+- **Besitzbereich:** `feature/editor/…/save/`
+- **Vertrag:** ARCHITECTURE §5
+- **Akzeptanzkriterien:** Bei `SaveStatus.Failed` sieht der Nutzer eine dauerhafte, verständliche Meldung mit „Erneut speichern“ (`CoreIntent.RetrySave`). Sie verschwindet erst nach erfolgreichem Speichern und verdeckt die Eingabeleiste nicht. Anforderungen: REQ-DATA-002
+- **Tests:** ViewModel, Compose-UI, Roborazzi
+
+#### T-EXP-004 – Raumtypnamen im Export und gemeinsame Flächenrundung
+
+- **Modul:** :app, :feature:editor, gemeinsames Modul nach Wahl des Orchestrators
+- **Rolle/Modell:** feature-engineer
+- **Größe:** S
+- **Abhängigkeiten:** T-EDT-007, Verdrahtung Batch 4.1
+- **Besitzbereich:** `RoomTypeCatalog` samt `room_type_*`-Strings, `app/…/di/ExportersModule.kt`, Flächenformatierung in `shape/ShapeTexts.kt` und `details/DetailsFormat.kt`
+- **Vertrag:** DOMAIN §12
+- **Akzeptanzkriterien:** SVG, PNG und PDF zeigen den lokalisierten Raumtypnamen statt des Schlüssels. Statuskarte und Übersicht runden Flächen identisch (auch bei exakten Halbwerten). Anforderungen: REQ-MOD-011
+- **Tests:** Exporter-Test mit Raumtyp (de/en), Rundungstest mit Halbwert
 
 ## Welle 5
 
