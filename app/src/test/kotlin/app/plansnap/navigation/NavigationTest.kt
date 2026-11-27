@@ -135,7 +135,7 @@ class NavigationTest {
         compose.onNodeWithText("Export").performClick()
         compose.waitForIdle()
         assertEquals(listOf("projects", "editor:p-1", "export:p-1"), backStackRoutes())
-        compose.onNodeWithText("Format").assertExists()
+        compose.onNodeWithText("No room yet").assertExists()
     }
 
     @Test

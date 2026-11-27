@@ -56,3 +56,5 @@
 - `:core:render`: `LabelTextFormatter` rundet Flächen über Double-Division, `DetailsFormat.area` über `BigDecimal`. Vereinheitlichen per Change-Request (aus T-EXP-004).
 - Vor einem App Bundle: `bundle.language.enableSplit = false` in `app/build.gradle.kts`, sonst fallen Exportsprachen weg (Gate-Review Welle 4, N3).
 - Entwürfe von Öffnung, Raumdetails und Andocken überleben keinen Prozess-Tod. ARCHITECTURE §5 verlangt das nur für die laufende Eingabe (Gate-Review Welle 4, N4).
+- Export: Wird ein zurückgestelltes Dokument wegen unpassender Seite abgelehnt, bewirkt „Erneut versuchen“ nichts (aus T-EXP-005).
+- Export: Verlässt der Nutzer den Screen mit zurückgestellter URI, bleibt das leere Dokument liegen (aus T-EXP-005).
