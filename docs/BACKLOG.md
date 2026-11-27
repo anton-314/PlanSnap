@@ -53,3 +53,4 @@
 - `:core:domain`: Vorbedingung `OPENING_HAS_DOCKED_ROOMS` in `OpeningRules`, `opening/` bildet sie nach (aus T-EDT-005).
 - Editor: Blatt- und Texthelfer aus `shape/` in ein neutrales Paket verschieben (aus T-EDT-005).
 - Eingabeleiste: Bei Deutsch und 200 % Schrift bricht „Wand 5“ mitten im Wort um (`save-de-fontscale-2.png`), in T-A11-001 prüfen.
+- `:core:render`: `LabelTextFormatter` rundet Flächen über Double-Division, `DetailsFormat.area` über `BigDecimal`. Vereinheitlichen per Change-Request (aus T-EXP-004).
