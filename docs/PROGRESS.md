@@ -128,12 +128,14 @@ Keine.
 - 2026-11-27: T-E2E-003 gemergt. Der Ablauf läuft in `:app` mit `MainActivity` und Produktions-Verdrahtung (2 Tests, nach dem Merge `:app` Tests, detekt, Spotless grün), kein Produktionsfehler. Der Test läuft mit 320 dp Breite, weil ein Dialog mit Textfeld unter Robolectric bei 360 × 640 dp nicht idle wird. Auf dem Emulator in T-E2E-001 prüfen.
 - 2026-11-27: T-UX-002 gemergt (69 Konfigurationstests, 7 neue Baselines). Gefundenen Fehler behoben: Die Trennlinie wurde bei der Höhengrenze der Eingabeleiste nicht abgezogen, der Plan war in niedrigen Fenstern 95 statt 96 dp hoch. Drei Baselines verschieben sich um 1 dp und sind neu aufgezeichnet. Danach Editor-Tests, Roborazzi, detekt, Spotless, Lint, `:app`-Tests und `checkArchitecture` grün. Drehung und Prozess-Tod sind nur unter Robolectric geprüft.
 - 2026-11-27: T-A11-001 gemergt und verdrahtet („Plan als Liste“ im Menü ⋮ nach „Export“, sonst fällt „Export“ aus dem sichtbaren Menü). Danach `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün. Die neuen öffentlichen Typen in `:core:designsystem` (`AccessibilityAudit`, `AccessibilityFinding`, `AccessibilityRule`, `PlanSnapDragHandle`) sind ohne eigene ADR abgenommen: Das Paket `core/designsystem/…/a11y/` war in T-A11-001 eingeplant, bestehende Verträge ändern sich nicht. Nicht mit echtem TalkBack oder Gerät geprüft. Google-ATF-Prüfungen nicht eingebaut.
+- 2026-11-27: T-L10-001 gemergt (`d7c3513`, Paritätstest über alle Module in `:app`). `:core:render` nutzt jetzt wie alle Module `values/` für Englisch und `values-de/` für Deutsch, zwei deutsche Plurale korrigiert.
+- 2026-11-27: Anrede wird auf „du“ vereinheitlicht (T-L10-002, vor dem Gate), weil Projektliste und Leerzustände schon duzen und die App privat genutzt wird.
 
 ## Wiedereinstieg (Stand 2026-11-27, Welle 5 läuft)
 
 - **Welle 4:** fertig, Tag `wave-4`, gepusht (`392f918`), CI-Lauf grün.
-- **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014, T-E2E-003, T-UX-002, T-A11-001.
-- **Laufend:** T-L10-001 (`boilerplate-engineer`, neuer Worktree ab `main`).
+- **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014, T-E2E-003, T-UX-002, T-A11-001, T-L10-001.
+- **Laufend:** T-L10-002 (Anrede „du“, `boilerplate-engineer`, neuer Worktree ab `main`).
 - **Offen in Welle 5:** danach Wellen-Gate 5.
 - **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
 
