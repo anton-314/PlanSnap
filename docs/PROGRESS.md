@@ -111,6 +111,7 @@ Keine.
 - 2026-11-26: **Wellen-Gate 3 bestanden** auf `b53c9cb`. Build mit Kover, Architektur und Roborazzi grün, 2 140 JVM-Tests ohne Fehler. Pitest Geometrie 86 % (1 658 von 1 927). Instrumentiert 11 von 11, davon 8 PDF-Kalibrierungstests. Nachreview `APPROVE`: H1, M1 bis M4, N2 und N5 behoben, belegt durch Revert-Proben. Neu und mittel, nicht blockierend: Die Statuskarte zeigt bei 200 % Schrift im sichtbaren Bereich nichts, kommt als T-EDT-012 in Batch 4.1. N1, N2 und Nits stehen im Backlog. N3 hat der Orchestrator behoben: Eine `.pyc`-Datei war versehentlich eingecheckt, `.gitignore` deckt Python-Caches jetzt ab. Tag `wave-3`.
 - 2026-11-26: CI-Lauf für `wave-3` (`0803790`) grün.
 - 2026-11-27: T-EDT-012 gemergt (`24cfd78`, `:feature:editor` 256 Tests laut Agent, nach dem Merge Tests, Roborazzi, detekt und Spotless grün). Die Statuskarte hat einen Kompaktkopf, bei 200 % Schrift zweizeilig. Entscheidungen: Zwei Textzeilen sind dort zulässig. Die 35-%-Grenze gilt auch für die manuell aufgeklappte Karte (UX §2). Die Zustandsverdrahtung in `EditorNavigation.kt` ist abgenommen. Offen für die Verdrahtung durch den Orchestrator: Top-Bar-Titel einzeilig mit Ellipse, weil er bei 200 % auf drei Zeilen umbricht.
+- 2026-11-27: T-EDT-007 gemergt (`bb3ad60`, `:feature:editor` 311 Tests laut Agent im Worktree). Verdrahtung folgt gesammelt, wenn T-EDT-005, 006 und 008 gemergt sind: `DetailsHost`, `roomTypeName = rememberRoomTypeName()` am `PlanCanvas`, `DetailsMenu.entries` im Menü ⋮ (Raumdetails ohne Auswahl deaktiviert). Folgepunkte vor dem Gate: Raumtypnamen auch im Export (heute vermutlich Rohschlüssel, `:feature:export` darf nicht von `:feature:editor` abhängen), gemeinsame Flächenrundung für Statuskarte und Übersicht.
 
 ## Wiedereinstieg (Stand 2026-11-27)
 
@@ -118,9 +119,8 @@ Keine.
 - **Läuft, Welle 4 / Batch 4.1** (Basis `0803790`, Branches `worktree-<Worktree>`). Am 2026-11-27 mit neuen Agenten auf dem ungesicherten Worktree-Stand fortgesetzt (Agenten spulen auf `11061ff` vor und committen im Worktree):
   - T-EDT-005 (`ui-engineer`, `opening/`): `.claude/worktrees/agent-a55ec4cd278005d3e`
   - T-EDT-006 (`ui-engineer`, `rooms/` plus additiv `canvas/`): `.claude/worktrees/agent-a1029fa26f60a909a`
-  - T-EDT-007 (`ui-engineer`, `details/`): `.claude/worktrees/agent-ae348f7fc05e55f0f`
-  - T-EDT-008 (`ui-engineer`, `history/`): gestartet auf dem Commit dieses Eintrags, Worktree siehe `git worktree list`
-  - Gemergt: T-EDT-012 (`24cfd78`)
+  - T-EDT-008 (`ui-engineer`, `history/`): Basis `65217f3`, `.claude/worktrees/agent-ae74a92166760ba5e`
+  - Gemergt, noch zu verdrahten: T-EDT-007 (`bb3ad60`). Gemergt: T-EDT-012 (`24cfd78`)
 - **Einhängeregel Batch 4.1:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator. Die Agenten liefern Handler per `@IntoSet`, `XxxHost(state, onIntent)`, ggf. `xxxTapIntent` und Menüeinträge als Daten. Der Orchestrator verdrahtet beim Merge (Top-Bar-Überlaufmenü ⋮) und testet die Integration.
 - Dem Nutzer wurde eine Debug-APK zur Ansicht in den Windows-Download-Ordner gelegt (`fee05ca`).
 
