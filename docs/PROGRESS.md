@@ -126,14 +126,15 @@ Keine.
 - 2026-11-27: T-EDT-014 gemergt, `androidx.activity.compose` im Editor-Build ergänzt. Nach dem Merge Editor-Tests, Roborazzi, detekt, Spotless, Lint, `:app`-Tests und `checkArchitecture` grün. Offen bleibt: Bei 360 × 640 dp lassen Andock-Leiste plus Speichermeldung kaum antippbaren Plan.
 - 2026-11-27: Nutzungslimit erreicht. Die Agenten für T-E2E-003 und T-UX-002 wurden beendet, ihre Worktrees bleiben erhalten.
 
-## Wiedereinstieg (Stand 2026-11-27, Abbruch wegen Nutzungslimit)
+## Wiedereinstieg (Stand 2026-11-27, Welle 5 läuft)
 
-- **Welle 4:** fertig, Tag `wave-4`, gepusht (`392f918`). CI-Ergebnis noch prüfen.
+- **Welle 4:** fertig, Tag `wave-4`, gepusht (`392f918`), CI-Lauf grün.
 - **Welle 5, gemergt, noch nicht gepusht:** T-EXP-005, T-PRF-001, T-EDT-014.
-- **Unterbrochen** (Stand in den Worktrees prüfen, nichts verwerfen, neue Agenten darauf fortsetzen):
-  - T-E2E-003 (`test-engineer`, Basis `392f918`): `.claude/worktrees/agent-a9deb2b010ca13c7c`. Nach dem Fortsetzen auf `main` heben.
-  - T-UX-002 (`test-engineer`, Basis `3936e3d`): `.claude/worktrees/agent-a0a9bdde57f812f07`
-- **Offen in Welle 5:** T-A11-001, T-L10-001, dann Wellen-Gate 5.
+- **Laufend** (Basis `da8d13a`):
+  - T-E2E-003 (`test-engineer`): `.claude/worktrees/agent-a9deb2b010ca13c7c`, Branch `worktree-agent-a9deb2b010ca13c7c`
+  - T-UX-002 (`test-engineer`): `.claude/worktrees/agent-a0a9bdde57f812f07`, Branch `worktree-agent-a0a9bdde57f812f07`
+  - T-A11-001 (`ui-engineer`): neuer Worktree `.claude/worktrees/agent-a324afd5adc56bb94`
+- **Offen in Welle 5:** T-L10-001 (erst nach T-A11-001, weil beide `strings.xml` ändern), dann Wellen-Gate 5.
 - **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
 
 ## Nächste Schritte
