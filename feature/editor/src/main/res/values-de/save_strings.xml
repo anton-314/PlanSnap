@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="save_failed_title">Nicht gespeichert</string>
+    <string name="save_failed_general">Beim Verlassen gehen Änderungen verloren.</string>
+    <string name="save_failed_no_space">Speicher voll. Bitte Platz freigeben.</string>
+    <string name="save_retry">Erneut speichern</string>
+</resources>

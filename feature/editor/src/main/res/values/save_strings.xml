@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="save_failed_title">Not saved</string>
+    <string name="save_failed_general">Leaving the editor loses changes.</string>
+    <string name="save_failed_no_space">Storage is full. Please free up space.</string>
+    <string name="save_retry">Save again</string>
+</resources>
