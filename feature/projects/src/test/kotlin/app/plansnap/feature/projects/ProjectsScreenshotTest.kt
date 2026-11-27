@@ -2,6 +2,8 @@ package app.plansnap.feature.projects
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performClick
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.model.ProjectId
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
@@ -15,7 +17,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Screenshots of the project list: empty, loading, with projects and with the delete dialog (TESTING section 6). */
+/** Screenshots of the project list: empty, loading, filled, delete dialog and overflow menu (TESTING section 6). */
 @OptIn(ExperimentalRoborazziApi::class)
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -73,6 +75,15 @@ class ProjectsScreenshotTest {
     @Test
     fun `given the list is loading when shown then it matches the skeleton baseline`() =
         capture("projects-loading.png") { ProjectsScreen(ProjectsUiState(), noActions) }
+
+    @Test
+    @Config(qualifiers = "de-rDE-w360dp-h640dp-port-notnight-mdpi")
+    fun `given a narrow german screen when the overflow menu is open then it matches the baseline`() {
+        compose.setContent { PlanSnapTheme { ProjectsScreen(ProjectsUiState(list = projects), noActions) } }
+        compose.onNodeWithContentDescription("Weitere Aktionen").performClick()
+        compose.waitForIdle()
+        captureScreenRoboImage(filePath = "projects-overflow-menu-de.png", roborazziOptions = STRICT_OPTIONS)
+    }
 
     private fun capture(
         fileName: String,

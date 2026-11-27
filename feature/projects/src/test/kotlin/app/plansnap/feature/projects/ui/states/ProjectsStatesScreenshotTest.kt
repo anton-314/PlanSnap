@@ -52,6 +52,11 @@ class ProjectsStatesScreenshotTest {
         capture(empty, "states-projects-empty-fontscale-2.png", fontScale = 2f)
 
     @Test
+    @Config(qualifiers = "de-rDE-w320dp-h320dp-port-notnight-mdpi")
+    fun `given a failed list in a small window when the font scale is 2 then it matches the baseline`() =
+        capture(failed, "states-projects-failed-small-fontscale-2-de.png", fontScale = 2f)
+
+    @Test
     fun `given a loading list when dark then it matches the baseline`() =
         capture(ProjectsUiState(), "states-projects-loading-dark.png", darkTheme = true)
 

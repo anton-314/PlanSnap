@@ -8,6 +8,7 @@
     <string name="projects_importing">Importing project…</string>
     <string name="projects_loading">Loading projects…</string>
     <string name="projects_retry">Try again</string>
+    <string name="projects_overflow">More actions</string>
     <string name="projects_more_actions">More actions for %1$s</string>
     <string name="projects_open_project">Open %1$s</string>
     <plurals name="projects_room_count">

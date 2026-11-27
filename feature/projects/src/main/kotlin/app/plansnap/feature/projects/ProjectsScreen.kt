@@ -16,7 +16,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -24,8 +23,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,17 +34,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import app.plansnap.core.designsystem.component.PlanSnapButton
 import app.plansnap.core.designsystem.component.PlanSnapIconButton
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
@@ -66,7 +58,6 @@ import java.util.Date
  * @param actions Callbacks for user actions.
  * @param modifier Modifier for the screen.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectsScreen(
     state: ProjectsUiState,
@@ -83,19 +74,7 @@ fun ProjectsScreen(
     }
     Scaffold(
         modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.projects_title)) },
-                actions = {
-                    TextButton(onClick = actions.onImport, enabled = !state.isImporting) {
-                        Text(stringResource(R.string.projects_import))
-                    }
-                    TextButton(onClick = actions.onOpenSettings) {
-                        Text(stringResource(R.string.projects_open_settings))
-                    }
-                },
-            )
-        },
+        topBar = { ProjectsTopBar(state.isImporting, actions) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -231,23 +210,3 @@ internal fun ProjectsError.messageRes(): Int =
     }
 
 private fun formatDate(epochMs: Long): String = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(epochMs))
-
-/** Three vertical dots; the design system offers no overflow symbol. */
-private val MoreIcon: ImageVector by lazy(LazyThreadSafetyMode.NONE) {
-    ImageVector
-        .Builder(
-            name = "More",
-            defaultWidth = 24.dp,
-            defaultHeight = 24.dp,
-            viewportWidth = 24f,
-            viewportHeight = 24f,
-        ).addPath(
-            pathData =
-                addPathNodes(
-                    "M12,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2z" +
-                        "M12,10c-1.1,0 -2,0.9 -2,2s0.9,2 2,2 2,-0.9 2,-2 -0.9,-2 -2,-2z" +
-                        "M12,16c-1.1,0 -2,0.9 -2,2s0.9,2 2,2 2,-0.9 2,-2 -0.9,-2 -2,-2z",
-                ),
-            fill = SolidColor(Color.Black),
-        ).build()
-}

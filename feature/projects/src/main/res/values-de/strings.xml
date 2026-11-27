@@ -8,6 +8,7 @@
     <string name="projects_importing">Projekt wird importiert…</string>
     <string name="projects_loading">Projekte werden geladen…</string>
     <string name="projects_retry">Erneut versuchen</string>
+    <string name="projects_overflow">Weitere Aktionen</string>
     <string name="projects_more_actions">Weitere Aktionen für %1$s</string>
     <string name="projects_open_project">%1$s öffnen</string>
     <plurals name="projects_room_count">
