@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Menüeinträge der Raumfunktion -->
+    <string name="rooms_menu_add">Raum hinzufügen</string>
+    <string name="rooms_menu_dock">Raum andocken</string>
+    <string name="rooms_menu_grid">Raster</string>
+    <string name="rooms_menu_snap">Einrasten</string>
+
+    <!-- Andockblatt -->
+    <string name="rooms_room_default">Raum %1$d</string>
+    <string name="rooms_dock_title">Raum andocken</string>
+    <string name="rooms_dock_guest">Zu andockender Raum: %1$s</string>
+    <string name="rooms_dock_host_room">Wirtsraum</string>
+    <string name="rooms_dock_host_wall">Wirtswand oder Öffnung</string>
+    <string name="rooms_dock_wall">Wand %1$d · %2$s</string>
+    <string name="rooms_dock_wall_description">Wirtswand %1$d, %2$s</string>
+    <string name="rooms_dock_opening_door">Tür an Wand %1$d, bei %2$s</string>
+    <string name="rooms_dock_opening_window">Fenster an Wand %1$d, bei %2$s</string>
+    <string name="rooms_dock_opening_passage">Durchgang an Wand %1$d, bei %2$s</string>
+    <string name="rooms_dock_own_wall">Ihre Wand, die an den Wirt gelegt wird</string>
+    <string name="rooms_dock_own_wall_chip">Wand %1$d</string>
+    <string name="rooms_dock_own_wall_description">Eigene Wand %1$d, %2$s</string>
+    <string name="rooms_dock_pick">Im Plan wählen</string>
+    <string name="rooms_dock_cancel">Abbrechen</string>
+    <string name="rooms_dock_confirm">Raum andocken</string>
+    <string name="rooms_dock_incomplete">Wählen Sie die Wirtswand und Ihre eigene Wand, um fortzufahren.</string>
+    <string name="rooms_dock_pending">Mindestens einer der beiden Räume hat noch keine geschlossene Form. Der Raum wird platziert, sobald beide Formen bekannt sind.</string>
+
+    <!-- Richtung und Versatz -->
+    <string name="rooms_dock_direction">Wirtswand %1$d: Sie läuft von Ecke %2$d nach Ecke %3$d. In dieser Richtung wurde der Wirtsraum gemessen. Ein positiver Versatz verschiebt Ihren Raum mit ihr, ein negativer gegen sie.</string>
+    <string name="rooms_dock_direction_opening">Der Versatz zählt ab dem Beginn der Öffnung. Die Öffnung beginnt %1$s nach dem Wandanfang, in derselben Richtung gesehen.</string>
+    <string name="rooms_dock_direction_arrow">%1$d → %2$d</string>
+    <string name="rooms_dock_direction_description">Richtung der Wirtswand: von Ecke %1$d nach Ecke %2$d</string>
+    <string name="rooms_dock_offset_title">Versatz</string>
+    <string name="rooms_dock_offset_forward">In Richtung</string>
+    <string name="rooms_dock_offset_backward">Gegen die Richtung</string>
+    <string name="rooms_dock_offset_hint">0 setzt Ihre Wand bündig an den Anfang der Wirtswand oder der Öffnung.</string>
+    <string name="rooms_dock_offset_positive_value">+%1$s</string>
+    <string name="rooms_dock_offset_negative_value">−%1$s</string>
+    <string name="rooms_dock_offset_spoken">Versatz %1$s %2$s, %3$s</string>
+    <string name="rooms_dock_offset_invalid">Der Versatz ist keine gültige Zahl. Verwenden Sie Ziffern und ein Dezimaltrennzeichen.</string>
+
+    <!-- Wirt im Plan wählen -->
+    <string name="rooms_dock_picking_hint">Tippen Sie im Plan auf eine Wand oder Öffnung eines anderen Raums.</string>
+
+    <!-- Andockfehler -->
+    <string name="rooms_error_dock_cycle">Der Wirt ist selbst direkt oder über andere Räume an diesen Raum angedockt. Ein Andocken im Kreis ist nicht möglich. Wählen Sie einen anderen Wirt oder lösen Sie zuerst die andere Andockung.</string>
+    <string name="rooms_error_dock_opening_not_on_wall">Diese Öffnung liegt nicht an der gewählten Wand. Wählen Sie die Wand, an der die Öffnung sitzt.</string>
+</resources>

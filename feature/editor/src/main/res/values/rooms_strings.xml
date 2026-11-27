@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Menu entries of the rooms function -->
+    <string name="rooms_menu_add">Add room</string>
+    <string name="rooms_menu_dock">Dock room</string>
+    <string name="rooms_menu_grid">Grid</string>
+    <string name="rooms_menu_snap">Snapping</string>
+
+    <!-- Dock sheet -->
+    <string name="rooms_room_default">Room %1$d</string>
+    <string name="rooms_dock_title">Dock room</string>
+    <string name="rooms_dock_guest">Room to dock: %1$s</string>
+    <string name="rooms_dock_host_room">Host room</string>
+    <string name="rooms_dock_host_wall">Host wall or opening</string>
+    <string name="rooms_dock_wall">Wall %1$d · %2$s</string>
+    <string name="rooms_dock_wall_description">Host wall %1$d, %2$s</string>
+    <string name="rooms_dock_opening_door">Door on wall %1$d, at %2$s</string>
+    <string name="rooms_dock_opening_window">Window on wall %1$d, at %2$s</string>
+    <string name="rooms_dock_opening_passage">Passage on wall %1$d, at %2$s</string>
+    <string name="rooms_dock_own_wall">Your wall that is placed against the host</string>
+    <string name="rooms_dock_own_wall_chip">Wall %1$d</string>
+    <string name="rooms_dock_own_wall_description">Own wall %1$d, %2$s</string>
+    <string name="rooms_dock_pick">Choose on plan</string>
+    <string name="rooms_dock_cancel">Cancel</string>
+    <string name="rooms_dock_confirm">Dock room</string>
+    <string name="rooms_dock_incomplete">Choose the host wall and your own wall to continue.</string>
+    <string name="rooms_dock_pending">At least one of the two rooms has no closed shape yet. The room is placed as soon as both shapes are known.</string>
+
+    <!-- Direction and offset -->
+    <string name="rooms_dock_direction">Host wall %1$d: it runs from corner %2$d to corner %3$d. This is the direction in which that room was measured. A positive offset moves your room along it, a negative offset against it.</string>
+    <string name="rooms_dock_direction_opening">The offset counts from the start of the opening. The opening starts %1$s after the start of the wall, seen in the same direction.</string>
+    <string name="rooms_dock_direction_arrow">%1$d → %2$d</string>
+    <string name="rooms_dock_direction_description">Direction of the host wall: from corner %1$d to corner %2$d</string>
+    <string name="rooms_dock_offset_title">Offset</string>
+    <string name="rooms_dock_offset_forward">Along the direction</string>
+    <string name="rooms_dock_offset_backward">Against the direction</string>
+    <string name="rooms_dock_offset_hint">0 places your wall flush with the start of the host wall or opening.</string>
+    <string name="rooms_dock_offset_positive_value">+%1$s</string>
+    <string name="rooms_dock_offset_negative_value">−%1$s</string>
+    <string name="rooms_dock_offset_spoken">Offset %1$s %2$s, %3$s</string>
+    <string name="rooms_dock_offset_invalid">The offset is not a valid number. Use digits and one decimal separator.</string>
+
+    <!-- Selecting the host on the plan -->
+    <string name="rooms_dock_picking_hint">Tap a wall or an opening of another room on the plan.</string>
+
+    <!-- Dock errors -->
+    <string name="rooms_error_dock_cycle">The host is itself docked to this room, directly or through other rooms. Docking in a circle is not possible. Choose another host or release the other dock first.</string>
+    <string name="rooms_error_dock_opening_not_on_wall">That opening is not on the chosen wall. Choose the wall that carries the opening.</string>
+</resources>

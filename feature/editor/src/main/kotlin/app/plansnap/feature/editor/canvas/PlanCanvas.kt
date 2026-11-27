@@ -15,8 +15,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
@@ -64,6 +62,8 @@ private const val DEFAULT_PIXELS_PER_MM = 0.1
  * - **Pan:** one finger drags the plan, two fingers pan and pinch around their centroid, within the zoom limits.
  * - **Double tap:** fits the whole plan with 24 dp margin on every side. An empty plan leaves the view unchanged.
  * - **Tap:** hit-tests with a radius of 24 dp and reports the result to [onTap].
+ * - **Long press on a room (optional):** with active [roomGestures], one finger moves the room and a second finger
+ *   twists it. The callbacks only report; [roomPreview] draws the result without any scene or model change.
  * - **First view:** if [view] is `null` and the plan has content, the canvas reports a fitted view once it knows its
  *   size.
  *
@@ -77,6 +77,9 @@ private const val DEFAULT_PIXELS_PER_MM = 0.1
  * @param preview wall that is being typed, drawn instead of the stored scene of its room.
  * @param lengthUnit unit of dimension texts.
  * @param roomTypeName display name of a room type, the key itself by default.
+ * @param roomGestures callbacks of the long-press gesture on a room, disabled by default.
+ * @param roomPreview rigid transform drawn on the rooms that are being dragged, `null` for none.
+ * @param showGrid whether the background grid is drawn.
  */
 @Suppress("LongParameterList") // Compose API: the content, the callbacks and the optional display settings.
 @Composable
@@ -89,6 +92,9 @@ fun PlanCanvas(
     preview: WallPreview? = null,
     lengthUnit: LengthUnit = LengthUnit.CENTIMETER,
     roomTypeName: (RoomTypeKey) -> String = { it.value },
+    roomGestures: RoomGestureCallbacks = RoomGestureCallbacks.None,
+    roomPreview: RoomTransformPreview? = null,
+    showGrid: Boolean = false,
 ) {
     val math = remember { PlanViewMath() }
     val shown = remember(scene, preview) { scene.withPreview(preview) }
@@ -100,6 +106,7 @@ fun PlanCanvas(
     val currentScene by rememberUpdatedState(shown)
     val currentOnViewChange by rememberUpdatedState(onViewChange)
     val currentOnTap by rememberUpdatedState(onTap)
+    val currentRoomGestures = rememberUpdatedState(roomGestures)
 
     fun viewportNow(): Viewport = math.viewport(buffer.current ?: DEFAULT_VIEW, size.width, size.height)
 
@@ -122,7 +129,7 @@ fun PlanCanvas(
     }
 
     val viewport = math.viewport(buffer.current ?: DEFAULT_VIEW, size.width, size.height)
-    val rooms = remember(shown, viewport) { math.visibleRooms(shown.rooms, viewport, marginPx * 2) }
+    val frame = rememberFrame(math, shown, viewport, roomPreview, showGrid)
     val renderer = rememberSceneRenderer(lengthUnit, roomTypeName)
     val appearance = rememberAppearance()
     val description = planDescription(shown)
@@ -159,9 +166,9 @@ fun PlanCanvas(
                         )
                     },
                 )
-            },
+            }.roomGestureInput(currentRoomGestures, math, density.density, { currentScene }, { viewportNow() }),
     ) {
-        drawIntoCanvas { renderer.drawEditor(it.nativeCanvas, rooms, viewport, appearance) }
+        drawPlan(renderer, frame, viewport, appearance)
     }
 }
 
