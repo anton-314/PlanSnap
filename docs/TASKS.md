@@ -812,7 +812,7 @@ graph LR
 
 #### T-EXP-004 – Raumtypnamen im Export und gemeinsame Flächenrundung
 
-- **Modul:** :app, :feature:editor, gemeinsames Modul nach Wahl des Orchestrators
+- **Modul:** :app, :feature:editor (`:app` nutzt den Katalog des Editors, kein neues Modul, keine `:core`-Änderung)
 - **Rolle/Modell:** feature-engineer
 - **Größe:** S
 - **Abhängigkeiten:** T-EDT-007, Verdrahtung Batch 4.1

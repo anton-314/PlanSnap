@@ -118,7 +118,10 @@ internal class CommandRunner(
 
     /** Stores the changes that a failed save left pending. */
     suspend fun retrySave() {
-        if (needsSave) save()
+        if (needsSave) {
+            store.update { it.copy(save = SaveStatus.Saving) }
+            save()
+        }
     }
 
     private suspend fun commit(

@@ -11,6 +11,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import app.plansnap.core.common.result.DomainError
+import app.plansnap.core.common.result.StorageProblem
 import app.plansnap.core.common.runtime.ApplicationScope
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.domain.opening.DefaultOpeningRules
@@ -32,6 +34,7 @@ import app.plansnap.feature.editor.state.EditorViewModel
 import app.plansnap.feature.editor.state.ROOM_ID
 import app.plansnap.feature.editor.state.closedProject
 import app.plansnap.feature.editor.state.emptyProject
+import app.plansnap.testing.fixtures.fakes.FakeProjectSaver
 import app.plansnap.testing.fixtures.runtime.SequentialIdGenerator
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -61,8 +64,10 @@ class EditorWiringTest {
     private val scope = TestScope()
     private var exports = 0
 
+    private lateinit var rig: EditorRig
+
     private fun show(project: Project): EditorViewModel {
-        val rig = EditorRig(scope, project, AppSettings())
+        rig = EditorRig(scope, project, AppSettings())
         val ids = SequentialIdGenerator("gen")
         rig.handlers += OpeningHandler(ids, DefaultOpeningRules())
         rig.handlers += RoomsHandler(ids, rig.settingsRepository, ApplicationScope(scope.backgroundScope))
@@ -198,6 +203,27 @@ class EditorWiringTest {
                 .id
         val intents = planTapIntents(PlanTap(Vec2(0.0, 0.0), SceneTarget.Wall(host, wall)), viewModel.state.value)
         assertEquals(listOf(RoomsIntent.SelectHost(host, wall, null)), intents)
+    }
+
+    @Test
+    @Config(qualifiers = "en-rUS-w360dp-h640dp")
+    fun `given a failed save then the editor shows it above the plan and a retry stores the change`() {
+        val viewModel = show(closedProject(3000))
+        rig.saver.failures.failNext(
+            FakeProjectSaver.Operation.SAVE,
+            DomainError.Storage(StorageProblem.WRITE_FAILED),
+        )
+        choose("Add room")
+
+        compose.onNodeWithText("Save again").assertIsDisplayed().performClick()
+        settle()
+
+        compose.onNodeWithText("Save again").assertDoesNotExist()
+        assertEquals(
+            viewModel.state.value.project
+                ?.rooms,
+            rig.stored.rooms,
+        )
     }
 
     /** The closed room twice, the copy with ids of its own. */

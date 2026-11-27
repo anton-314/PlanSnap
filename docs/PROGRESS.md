@@ -114,16 +114,16 @@ Keine.
 - 2026-11-27: T-EDT-007 gemergt (`bb3ad60`, `:feature:editor` 311 Tests laut Agent im Worktree). Verdrahtung folgt gesammelt, wenn T-EDT-005, 006 und 008 gemergt sind: `DetailsHost`, `roomTypeName = rememberRoomTypeName()` am `PlanCanvas`, `DetailsMenu.entries` im Menü ⋮ (Raumdetails ohne Auswahl deaktiviert). Folgepunkte vor dem Gate: Raumtypnamen auch im Export (heute vermutlich Rohschlüssel, `:feature:export` darf nicht von `:feature:editor` abhängen), gemeinsame Flächenrundung für Statuskarte und Übersicht.
 - 2026-11-27: T-EDT-005 gemergt (`92bf74a`), nach dem Merge Tests, Roborazzi, detekt und Spotless von `:feature:editor` grün. Entscheidungen: Keine Ziehgeste für Öffnungen, weil UX §3/§4 keine definieren (Backlog). Rückmeldung entsteht bei jeder Formularänderung. Höhe, Brüstung und Anschlag sind nicht vorbelegt. Verdrahtung offen: `OpeningHost`, `openingTapIntent` (nach `SelectRoom`), `openingMenuEntries`. Backlog: Prüfung `OPENING_HAS_DOCKED_ROOMS` in die Domäne, Blatt-Helfer aus `shape/` in neutrales Paket.
 - 2026-11-27: T-EDT-008 gemergt (21 neue Tests, kein Funktionsfehler im Bestand). Verdrahtung offen: `HistoryButtons` in `EditorTopBar`, alte Strings `editor_undo`/`editor_redo` entfernen. Zu prüfen: Laut Agent zeigt kein Bildschirm `SaveStatus` an, ein Speicherfehler bliebe unsichtbar.
+- 2026-11-27: Batch 4.1 komplett und verdrahtet (`4d3defc`, T-EDT-006 `26c9978`, T-EDT-013 `9798143`). Überlaufmenü ⋮ nach UX §2 mit Öffnungen, Räumen, Raster, Einrasten, Raumdetails, Übersicht und Export. Der Export liegt damit im Menü. Tippen: Beim Andocken gehört der Tipp allein `rooms/`, sonst Raumauswahl und danach Öffnung bzw. Wand. `SaveHost` liegt über Plan und Statuskarte, `retrySave` setzt jetzt `Saving`. `:feature:editor` 535 JVM-Tests vor dem letzten Baseline-Lauf, danach Tests, Roborazzi, detekt, Spotless, Lint, `:app`-Tests und `checkArchitecture` grün. T-EDT-006 ohne 15°-Dreheinrasten (nicht spezifiziert). Öffnungs-Einrasten aus REQ-UX-010 fehlt (Backlog, für den Abschlussbericht vormerken).
+- 2026-11-27: T-EXP-004 ändert kein `:core`: `:app` reicht den Typnamen aus dem Editor-Katalog an die Exporter.
 
 ## Wiedereinstieg (Stand 2026-11-27)
 
 - **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`), CI grün.
-- **Läuft, Welle 4 / Batch 4.1** (Basis `0803790`, Branches `worktree-<Worktree>`). Am 2026-11-27 mit neuen Agenten auf dem ungesicherten Worktree-Stand fortgesetzt (Agenten spulen auf `11061ff` vor und committen im Worktree):
-  - T-EDT-006 (`ui-engineer`, `rooms/` plus additiv `canvas/`): `.claude/worktrees/agent-a1029fa26f60a909a`
-  - Gemergt, noch zu verdrahten: T-EDT-008, T-EDT-005 (`92bf74a`), T-EDT-007 (`bb3ad60`). Gemergt: T-EDT-012 (`24cfd78`)
-- Läuft zusätzlich: T-EDT-013 (`ui-engineer`, `save/`, Basis `7169d95`, Worktree siehe `git worktree list`). Danach T-EXP-004.
-- **Einhängeregel Batch 4.1:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator. Die Agenten liefern Handler per `@IntoSet`, `XxxHost(state, onIntent)`, ggf. `xxxTapIntent` und Menüeinträge als Daten. Der Orchestrator verdrahtet beim Merge (Top-Bar-Überlaufmenü ⋮) und testet die Integration.
-- Dem Nutzer wurde eine Debug-APK zur Ansicht in den Windows-Download-Ordner gelegt (`fee05ca`).
+- **Welle 4 / Batch 4.1:** komplett gemergt und verdrahtet, noch nicht gepusht.
+- **Läuft, Batch 4.2** (Basis: Commit dieses Eintrags, Worktrees siehe `git worktree list`): T-EDT-009 (`hints/`), T-UX-001 (`ui/states/`), T-EXP-004.
+- **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator.
+- Danach: verdrahten, Wellen-Gate 4.
 
 ## Nächste Schritte
 

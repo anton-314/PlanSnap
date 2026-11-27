@@ -45,6 +45,7 @@ import app.plansnap.feature.editor.rooms.roomGestureCallbacks
 import app.plansnap.feature.editor.rooms.roomsCanvasPreview
 import app.plansnap.feature.editor.rooms.roomsShowGrid
 import app.plansnap.feature.editor.rooms.roomsTapIntent
+import app.plansnap.feature.editor.save.SaveHost
 import app.plansnap.feature.editor.screen.EditorActions
 import app.plansnap.feature.editor.screen.EditorScreen
 import app.plansnap.feature.editor.screen.PLAN_MIN_HEIGHT
@@ -129,7 +130,10 @@ internal fun EditorContent(
             modifier = Modifier.fillMaxSize(),
             snackbarHost = { SnackbarHost(snackbar) },
         ) { canvasModifier ->
-            EditorCanvas(state, onIntent, canvasModifier)
+            Box(modifier = canvasModifier) {
+                EditorCanvas(state, onIntent, Modifier.fillMaxSize())
+                SaveHost(state, onIntent, Modifier.align(Alignment.TopCenter))
+            }
         }
         ShapeSheetHost(state, onIntent)
         OpeningHost(state, onIntent)

@@ -37,7 +37,6 @@
 - `OpeningStatusConsistencyTest`: Die Property-Basis um veraltete sowie schließende, aber nicht einfache Overlays erweitern (Nachreview Welle 2, Hinweis).
 - `:core:designsystem`: `PlanSnapNumericKey` mit Parameter `contentPadding` (feste 24 dp schneiden bei 200 % Schrift ab), `NumericKeyTextStyle` öffentlich, `error` in `PlanSnapTheme.colors`. Danach den eigenen Ziffernblock aus T-EDT-002 auf die Designsystem-Taste umstellen.
 - `EditorUiState.kt:176`: veraltetes `PersistentMap.put` durch `putting()` ersetzen.
-- Editor: Bei 200 % Schrift bricht der Titel der Top-Bar mitten im Wort um (`screen-fontscale-2.png`).
 - Einstellungen: Der Text der absoluten Toleranz sollte `drafts` synchron setzen, mit der Einheit aus `state.value`. Bisher läuft je Tastendruck eine eigene Coroutine nach `settings.first()` (Gate-Review Welle 3, N1, `SettingsViewModel.kt:63-70`).
 - Export: `NO_SPACE` wird beim Schreiben nie gemeldet, `PageExportFlow` und `JsonExporter` machen aus jeder `IOException` `WRITE_FAILED` (Gate-Review Welle 3, N3).
 - Editor und Export lesen beim Öffnen das Repository, während ein Job im ApplicationScope noch speichert. Das kann einen veralteten Stand ergeben, und der nächste Speichervorgang überschreibt dann die letzte Wand. Laden soll auf den Saver warten (Gate-Review Welle 3, N4). Mit T-EDT-008 oder in Phase 5 umsetzen.
@@ -46,3 +45,11 @@
 - Editor: Hat der Nutzer schon weitergetippt, als eine Wand abgelehnt wird, geht deren Wert verloren (`EditorSession.kt:162`). Den abgelehnten Wert in der Fehlermeldung nennen (Nachreview Welle 3, N1).
 - Export: `onDocumentChosen` bedient eine zurückgestellte URI nicht, wenn das Laden schon mit `Failed` oder `Empty` geendet hat oder `fit == Checking` ist. Ohne Ergebnis nach der Wiederherstellung bleibt `awaitingDocument` gesetzt. Fix über `serveDeferredDocument` bzw. `previewJob?.join()` (Nachreview Welle 3, N2).
 - Editor: Die Tasten `D` und `Diag` skalieren bei 200 % Schrift nicht mit und sind sichtbar kleiner (Nachreview Welle 3, Nit).
+- Editor: Rückfrage beim Verlassen, solange ein Speicherfehler offen ist (aus T-EDT-013).
+- Editor: `EditorUiState.draftError` zeigt keine UI an (aus T-EDT-013).
+- Editor: Ziehgeste für Öffnungen samt Einrasten (REQ-UX-010), dafür fehlt eine Festlegung in UX §4 (aus T-EDT-005/006).
+- Editor: Einrasten beim Drehen von Räumen als reine Domänenfunktion und Festlegung in UX §4 (aus T-EDT-006).
+- Plan: Richtungspfeil oder Eckennummern der Wirtswand beim Andocken (aus T-EDT-006).
+- `:core:domain`: Vorbedingung `OPENING_HAS_DOCKED_ROOMS` in `OpeningRules`, `opening/` bildet sie nach (aus T-EDT-005).
+- Editor: Blatt- und Texthelfer aus `shape/` in ein neutrales Paket verschieben (aus T-EDT-005).
+- Eingabeleiste: Bei Deutsch und 200 % Schrift bricht „Wand 5“ mitten im Wort um (`save-de-fontscale-2.png`), in T-A11-001 prüfen.
