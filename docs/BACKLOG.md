@@ -54,3 +54,5 @@
 - Editor: Blatt- und Texthelfer aus `shape/` in ein neutrales Paket verschieben (aus T-EDT-005).
 - Eingabeleiste: Bei Deutsch und 200 % Schrift bricht „Wand 5“ mitten im Wort um (`save-de-fontscale-2.png`), in T-A11-001 prüfen.
 - `:core:render`: `LabelTextFormatter` rundet Flächen über Double-Division, `DetailsFormat.area` über `BigDecimal`. Vereinheitlichen per Change-Request (aus T-EXP-004).
+- Vor einem App Bundle: `bundle.language.enableSplit = false` in `app/build.gradle.kts`, sonst fallen Exportsprachen weg (Gate-Review Welle 4, N3).
+- Entwürfe von Öffnung, Raumdetails und Andocken überleben keinen Prozess-Tod. ARCHITECTURE §5 verlangt das nur für die laufende Eingabe (Gate-Review Welle 4, N4).

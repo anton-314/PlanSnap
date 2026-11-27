@@ -1,6 +1,6 @@
 # Fortschritt
 
-**Aktuelle Phase:** 4 – Umsetzung, Welle 4
+**Aktuelle Phase:** 4 – Umsetzung, Welle 5
 **Letzte Aktualisierung:** 2026-11-27
 
 ## Phasen
@@ -11,7 +11,7 @@
 | 1 – Umgebung | Fertig | `docs/ENVIRONMENT.md`, Emulator-Boot ausgeführt |
 | 2 – Spezifikation | Fertig | Vom Auftraggeber freigegeben am 2026-11-23 |
 | 3 – Fundament | Fertig | Gate 2026-11-24 auf `ebe15b1`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 381 JVM-Tests, Pitest Geometrie 82 %, 2 instrumentierte Tests, Review `APPROVE`. Vertragsfreeze, Tag `phase-3-foundation` |
-| 4 – Umsetzung | Wellen 1 bis 3 fertig, Welle 4 als Nächstes | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
+| 4 – Umsetzung | Wellen 1 bis 4 fertig, Welle 5 läuft | Gate 2026-11-24 auf `1a5ec6e`: `./gradlew build koverVerify checkArchitecture verifyRoborazziDebug` grün, 1 058 JVM-Testergebnisse ohne Fehler. Pitest Geometrie 86 % (1 655 von 1 925), 2 instrumentierte Tests, Review `APPROVE`. Tag `wave-1`. **Welle 2 fertig:** Gate 2026-11-25 auf `4c5f514` (danach nur Doku): Build mit Kover, Architektur und Roborazzi grün, 1 705 JVM-Tests ohne Fehler, Pitest 86 % (1 661 von 1 927), 3 instrumentierte Tests. Review `CHANGES_REQUESTED`, nach CR-W2-06 Nachreview `APPROVE`. Tag `wave-2` |
 | 5 – Härtung | Offen | |
 | 6 – Release | Offen | |
 | 7 – Abschlussbericht | Offen | |
@@ -120,15 +120,15 @@ Keine.
 - 2026-11-27: T-EDT-009 gemergt (577 Editor-Tests laut Agent). Verdrahtung folgt mit T-UX-001. Entscheidungen: „Einmalig“ heißt bis zum Schließen (`dismissedHints`). Bei 360 × 640 dp und 200 % entfallen Hinweise, wenn unter der Karte weniger als 56 dp Plan bleiben. Nach beiden Merges Überlappung von Leerzustand und `NUMPAD`-Hinweis prüfen.
 - 2026-11-27: T-UX-001 und T-EDT-009 verdrahtet. **Kritischer Fehler gefunden und behoben:** In neu angelegten Projekten war der Ziffernblock deaktiviert, weil Projekte ohne Raum entstanden. Jetzt legt die Projektliste den ersten Raum an (UX §3), und die Eingabeleiste ist auch ohne Raum bedienbar. Beide Regressionstests waren vorher rot. Wellen-Gate 3 hatte den Fehler nicht erkannt, in Phase 5 muss ein E2E-Szenario beim leeren Start beginnen. Voller Build mit Kover, Architektur und Roborazzi danach grün.
 - 2026-11-27: T-PRJ-002 gemergt (`04c292e`). Wellen-Gate 4 auf `04c292e`: voller Build grün, 2 532 Testergebnisse ohne Fehler und Überspringer, instrumentiert 11 von 11. Pitest wird ohne Cache neu ausgeführt, das Review läuft.
+- 2026-11-27: **Wellen-Gate 4 bestanden** auf `04c292e`: voller Build grün, 2 532 Testergebnisse ohne Fehler, Pitest Geometrie 86 % (1 660 von 1 927, ohne Cache), instrumentiert 11 von 11, Review `APPROVE` ohne kritische und hohe Befunde. M1, M2, N1, N2 und N5 sind Batch 5.0, N3 und N4 im Backlog. Tag `wave-4`.
 
 ## Wiedereinstieg (Stand 2026-11-27)
 
-- **Welle 3:** fertig, Tag `wave-3`, gepusht (`0803790`), CI grün.
-- **Welle 4:** alle Aufgaben gemergt (`04c292e`), Wellen-Gate 4 läuft: Build und instrumentierte Tests grün, Pitest und Review (`reviewer`, Bereich `wave-3..04c292e`) offen.
-- Nach `APPROVE`: Tag `wave-4`, Push, CI prüfen, dann Welle 5.
-- **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator.
+- **Welle 4:** fertig, Tag `wave-4`.
+- **Als Nächstes:** Batch 5.0 (T-EDT-014, T-E2E-003, T-EXP-005), dann Batch 5.1 und folgende laut `docs/TASKS.md`.
+- **Einhängeregel:** `navigation/EditorNavigation.kt` und `screen/` gehören dem Orchestrator (T-EDT-014 darf `navigation/` ändern).
 
 ## Nächste Schritte
 
-1. Welle 4, Batch 4.1: T-EDT-005 bis T-EDT-008, T-EDT-012.
-2. Batch 4.2: T-EDT-009, T-UX-001, danach Wellen-Gate 4.
+1. Welle 5: Batch 5.0, 5.1 und folgende, dann Wellen-Gate 5.
+2. Phase 5 bis 7 laut `docs/ORCHESTRATION.md`.

@@ -42,6 +42,7 @@ graph LR
 | Welle 3 / 3.4 (Gate-Fix) | T-EDT-010, T-EDT-011, T-FEX-002 |
 | Welle 4 / 4.1 | T-EDT-005, T-EDT-006, T-EDT-007, T-EDT-008, T-EDT-012 |
 | Welle 4 / 4.2 | T-EDT-009, T-UX-001, T-EDT-013 (Fix), T-EXP-004 (Fix), T-PRJ-002 (Fix) |
+| Welle 5 / 5.0 (Gate-4-Befunde) | T-EDT-014, T-E2E-003, T-EXP-005 |
 | Welle 5 / 5.1 | T-A11-001, T-L10-001, T-UX-002, T-PRF-001 |
 | Phase 5 / H.1 | T-E2E-001, T-SEC-001 |
 | Phase 5 / H.2 | T-E2E-002 |
@@ -833,6 +834,42 @@ graph LR
 - **Tests:** Compose-UI, Roborazzi
 
 ## Welle 5
+
+### Batch 5.0 (Fixes aus Gate-Review 4)
+
+#### T-EDT-014 – Zusammenspiel Andocken und Speicherfehler (Gate-Review Welle 4: M1, N1, N5)
+
+- **Modul:** :feature:editor
+- **Rolle/Modell:** ui-engineer
+- **Größe:** S
+- **Abhängigkeiten:** Wave 4
+- **Besitzbereich:** `feature/editor/…/rooms/`, `save/`, `navigation/`
+- **Vertrag:** UX §3
+- **Akzeptanzkriterien:** Die Speicherfehler-Meldung verdeckt die Andock-Leiste nicht. Die Zurück-Taste beendet im Modus „Auf dem Plan wählen“ nur die Auswahl. `AddRoom` wählt den Raum erst nach erfolgreichem Befehl, zweimal schnell hinzugefügte Räume liegen nicht aufeinander. Der Andock-Entwurf wird bei Projektänderung neu geprüft.
+- **Tests:** Compose-Test bei 360 × 640 dp, Handler-Tests, vorher rot
+
+#### T-E2E-003 – Durchgehender Editor-Ablauf mit allen Teilfunktionen (Gate-Review Welle 4: M2)
+
+- **Modul:** :feature:editor, :app
+- **Rolle/Modell:** test-engineer
+- **Größe:** S
+- **Abhängigkeiten:** Wave 4
+- **Besitzbereich:** `feature/editor/src/test/…/e2e/`, `app/src/test/…/e2e/`
+- **Vertrag:** UX §3, TESTING
+- **Akzeptanzkriterien:** Ab neu angelegtem Projekt ohne Vorbereitung: messen, schließen, ausgleichen, Öffnung, zweiter Raum, andocken, Details, Übersicht, Undo/Redo, Neuöffnen, mit allen Handlern der Produktions-Verdrahtung.
+- **Tests:** JVM (Robolectric)
+
+#### T-EXP-005 – Export-Leerzustand bei Räumen ohne Wände (Gate-Review Welle 4: N2)
+
+- **Modul:** :feature:export
+- **Rolle/Modell:** feature-engineer
+- **Größe:** S
+- **Abhängigkeiten:** Wave 4
+- **Besitzbereich:** `feature/export/`
+- **Vertrag:** UX §1
+- **Akzeptanzkriterien:** Hat kein Raum eine Wand, erscheint „Noch kein Raum“.
+- **Tests:** ViewModel, vorher rot
+
 
 ### Batch 5.1
 
