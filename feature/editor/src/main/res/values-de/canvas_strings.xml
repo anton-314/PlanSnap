@@ -4,11 +4,11 @@
     <string name="canvas_description">Grundriss mit %1$s und %2$s</string>
     <plurals name="canvas_rooms">
         <item quantity="one">%d Raum</item>
-        <item quantity="other">%d Räumen</item>
+        <item quantity="other">%d Räume</item>
     </plurals>
     <plurals name="canvas_walls">
         <item quantity="one">%d Wand</item>
-        <item quantity="other">%d Wänden</item>
+        <item quantity="other">%d Wände</item>
     </plurals>
     <string name="canvas_action_fit">Plan einpassen</string>
 </resources>
