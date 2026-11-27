@@ -1,7 +1,6 @@
 package app.plansnap.feature.export.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.plansnap.core.designsystem.component.PlanSnapButton
 import app.plansnap.core.designsystem.component.PlanSnapIconButton
@@ -32,6 +30,9 @@ import app.plansnap.core.designsystem.component.PlanSnapIcons
 import app.plansnap.core.designsystem.component.PlanSnapOutlinedButton
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.feature.export.R
+import app.plansnap.feature.export.ui.states.ExportEmptyState
+import app.plansnap.feature.export.ui.states.ExportLoadFailedState
+import app.plansnap.feature.export.ui.states.ExportLoadingState
 
 /**
  * Stateless export dialog of docs/UX.md section 1: format, scale, paper, preflight warnings, share and save.
@@ -67,44 +68,11 @@ fun ExportScreen(
     ) { padding ->
         val content = Modifier.fillMaxSize().padding(padding)
         when (state) {
-            ExportUiState.Loading -> Centered(content) { CircularProgressIndicator() }
-            is ExportUiState.Empty -> Centered(content) { Hint(stringResource(R.string.export_empty_hint)) }
-            is ExportUiState.Failed -> FailedContent(state, actions, content)
+            ExportUiState.Loading -> ExportLoadingState(content)
+            is ExportUiState.Empty -> ExportEmptyState(content)
+            is ExportUiState.Failed -> ExportLoadFailedState(state.error, actions.onRetryLoad, content)
             is ExportUiState.Ready -> ReadyContent(state, actions, content)
         }
-    }
-}
-
-@Composable
-private fun Centered(
-    modifier: Modifier,
-    content: @Composable () -> Unit,
-) {
-    Box(
-        modifier = modifier.padding(PlanSnapTheme.spacing.l),
-        contentAlignment = Alignment.Center,
-    ) { content() }
-}
-
-@Composable
-private fun Hint(text: String) {
-    Text(text = text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
-}
-
-@Composable
-private fun FailedContent(
-    state: ExportUiState.Failed,
-    actions: ExportActions,
-    modifier: Modifier,
-) {
-    Column(modifier = modifier.padding(PlanSnapTheme.spacing.l)) {
-        MessageCard(
-            title = stringResource(R.string.export_error_title),
-            message = stringResource(errorMessage(state.error)),
-            action = stringResource(R.string.export_retry),
-            onAction = actions.onRetryLoad,
-            onDismiss = null,
-        )
     }
 }
 

@@ -2,18 +2,15 @@ package app.plansnap.feature.projects
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -26,7 +23,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -50,7 +46,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.plansnap.core.designsystem.component.PlanSnapButton
@@ -58,6 +53,9 @@ import app.plansnap.core.designsystem.component.PlanSnapIconButton
 import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.domain.repository.ProjectSummary
 import app.plansnap.core.model.ProjectId
+import app.plansnap.feature.projects.ui.states.ProjectsEmptyState
+import app.plansnap.feature.projects.ui.states.ProjectsFailedState
+import app.plansnap.feature.projects.ui.states.ProjectsLoadingState
 import java.text.DateFormat
 import java.util.Date
 
@@ -110,16 +108,16 @@ fun ProjectsScreen(
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 when (val list = state.list) {
                     ProjectListState.Loading -> {
-                        LoadingSkeleton()
+                        ProjectsLoadingState()
                     }
 
                     is ProjectListState.Failed -> {
-                        FailedMessage(list.error, actions.onRetry)
+                        ProjectsFailedState(list.error.messageRes(), actions.onRetry)
                     }
 
                     is ProjectListState.Loaded -> {
                         if (list.projects.isEmpty()) {
-                            EmptyMessage()
+                            ProjectsEmptyState()
                         } else {
                             ProjectList(list, actions)
                         }
@@ -134,57 +132,6 @@ fun ProjectsScreen(
         }
     }
     ProjectsDialogs(state.dialog, actions)
-}
-
-@Composable
-private fun EmptyMessage() {
-    Box(modifier = Modifier.fillMaxSize().padding(PlanSnapTheme.spacing.l), contentAlignment = Alignment.Center) {
-        Text(
-            text = stringResource(R.string.projects_empty_explanation),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
-
-@Composable
-private fun FailedMessage(
-    error: ProjectsError,
-    onRetry: () -> Unit,
-) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(PlanSnapTheme.spacing.l),
-        verticalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.m, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = stringResource(error.messageRes()),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-        )
-        TextButton(onClick = onRetry) { Text(stringResource(R.string.projects_retry)) }
-    }
-}
-
-@Composable
-private fun LoadingSkeleton() {
-    val loading = stringResource(R.string.projects_loading)
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(PlanSnapTheme.spacing.l)
-                .semantics { contentDescription = loading },
-        verticalArrangement = Arrangement.spacedBy(PlanSnapTheme.spacing.m),
-    ) {
-        repeat(SKELETON_ROWS) {
-            Surface(
-                modifier = Modifier.fillMaxWidth().height(SKELETON_ROW_HEIGHT),
-                shape = RoundedCornerShape(PlanSnapTheme.spacing.s),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-            ) {}
-        }
-    }
 }
 
 @Composable
@@ -284,9 +231,6 @@ internal fun ProjectsError.messageRes(): Int =
     }
 
 private fun formatDate(epochMs: Long): String = DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(epochMs))
-
-private const val SKELETON_ROWS = 3
-private val SKELETON_ROW_HEIGHT = 64.dp
 
 /** Three vertical dots; the design system offers no overflow symbol. */
 private val MoreIcon: ImageVector by lazy(LazyThreadSafetyMode.NONE) {
