@@ -23,6 +23,7 @@ import androidx.compose.ui.state.ToggleableState
 import app.plansnap.core.designsystem.component.PlanSnapIconButton
 import app.plansnap.core.designsystem.component.PlanSnapIcons
 import app.plansnap.feature.editor.R
+import app.plansnap.feature.editor.a11y.PlanOutlineMenu
 import app.plansnap.feature.editor.details.DetailsIntent
 import app.plansnap.feature.editor.details.DetailsMenu
 import app.plansnap.feature.editor.input.InputIcons
@@ -74,6 +75,9 @@ internal fun EditorOverflowMenu(
                 HorizontalDivider()
             }
             MenuEntry(R.string.editor_open_export) { select(actions.onOpenExport) }
+            if (state.project != null) {
+                MenuEntry(PlanOutlineMenu.label) { select { actions.onIntent(PlanOutlineMenu.intent) } }
+            }
         }
     }
 }

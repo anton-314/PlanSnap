@@ -35,6 +35,8 @@ import app.plansnap.core.designsystem.theme.PlanSnapTheme
 import app.plansnap.core.domain.evaluation.RoomEvaluation
 import app.plansnap.core.model.RoomId
 import app.plansnap.feature.editor.R
+import app.plansnap.feature.editor.a11y.PlanOutlineHost
+import app.plansnap.feature.editor.a11y.PlanOutlineMenu
 import app.plansnap.feature.editor.canvas.PlanCanvas
 import app.plansnap.feature.editor.canvas.PlanTap
 import app.plansnap.feature.editor.details.DetailsHost
@@ -136,6 +138,7 @@ internal fun EditorContent(
         ShapeSheetHost(state, onIntent)
         OpeningHost(state, onIntent)
         DetailsHost(state, onIntent)
+        PlanOutlineHost(state, onIntent)
     }
 }
 
@@ -205,6 +208,7 @@ private fun EditorCanvas(
                     roomGestures = roomGestures,
                     roomPreview = roomsCanvasPreview(state),
                     showGrid = roomsShowGrid(state),
+                    onShowOutline = { onIntent(PlanOutlineMenu.intent) },
                 )
                 HintsHost(state, onIntent, Modifier.align(Alignment.TopCenter))
             }
